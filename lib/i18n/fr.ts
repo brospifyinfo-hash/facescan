@@ -147,6 +147,14 @@ export const fr: Dict = {
       "Chaque chiffre est une mesure géométrique calculée sur votre appareil à partir de points faciaux et comparée à des plages de référence publiées. Une orientation personnelle — ni évaluation médicale, dermatologique ou psychologique, ni jugement sur l'apparence de qui que ce soit.",
     reference: "réf.",
     tableHead: ["Mesure", "Valeur", "Référence", "Statut", "Score"],
+    legendBand: "Plage normale",
+    legendNeedle: "Votre valeur",
+    legendScale: "Extrémités de l'échelle",
+    percentileTop: "Top {n} %",
+    percentileCaption:
+      "Vos proportions sont plus proches des plages de référence publiées que celles de {below} % de la distribution de comparaison modélisée.",
+    percentileWhat:
+      "Calculé à partir d'un modèle de 60 000 visages générés autour de moyennes anthropométriques publiées — ce n'est pas un classement de beauté, ni encore basé sur de vrais utilisateurs.",
   },
   checkout: {
     eyebrow: "Déblocage unique",

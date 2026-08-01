@@ -57,7 +57,9 @@ export function MetricsPanel({ metrics }: { metrics: Metric[] }) {
         </span>
       </div>
 
-      <div className="-mx-1 mt-4 flex gap-1.5 overflow-x-auto px-1 pb-1">
+      {/* Wraps rather than scrolls: a hidden horizontal scroll strip is
+          undiscoverable on a phone, and five tabs never fit at 375px. */}
+      <div className="mt-4 flex flex-wrap gap-1.5">
         {(["all", ...CATEGORY_ORDER] as Filter[]).map((f) => {
           const active = filter === f;
           return (
@@ -128,10 +130,32 @@ export function MetricsPanel({ metrics }: { metrics: Metric[] }) {
         </motion.div>
       </AnimatePresence>
 
+      {/* Legend — the dials are a speedometer; say so once rather than
+          leaving every reader to infer it. */}
+      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[10px] text-zinc-500">
+        <span className="flex items-center gap-1.5">
+          <svg width="16" height="7" aria-hidden>
+            <path d="M1 3.5 H15" stroke="#95BF47" strokeWidth={5} strokeLinecap="round" opacity={0.75} />
+          </svg>
+          {t.results.legendBand}
+        </span>
+        <span className="flex items-center gap-1.5">
+          <svg width="12" height="12" aria-hidden>
+            <line x1="1" y1="11" x2="11" y2="1" stroke="#95BF47" strokeWidth={2} strokeLinecap="round" />
+            <circle cx="1.5" cy="10.5" r="2" fill="#95BF47" />
+          </svg>
+          {t.results.legendNeedle}
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="tabular-nums text-zinc-600">0 — 10</span>
+          {t.results.legendScale}
+        </span>
+      </div>
+
       {/* Dial grid */}
       <motion.div
         layout
-        className="mt-4 grid grid-cols-4 gap-1 sm:grid-cols-6 lg:grid-cols-8"
+        className="mt-3 grid grid-cols-3 gap-1 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8"
       >
         <AnimatePresence mode="popLayout">
           {shown.map((m, i) => (

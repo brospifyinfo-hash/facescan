@@ -102,6 +102,12 @@ export interface Dict {
     disclaimer: string;
     reference: string;
     tableHead: string[];
+    legendBand: string;
+    legendNeedle: string;
+    legendScale: string;
+    percentileTop: string; // "Top {n}%"
+    percentileCaption: string;
+    percentileWhat: string;
   };
   checkout: {
     eyebrow: string;

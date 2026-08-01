@@ -70,6 +70,10 @@ export interface ScanMetrics {
   /** Natural width / height of the analyzed photo — drives the mesh overlay box. */
   aspect: number;
   mesh: MeshPaths | null;
+  /** Landmark overlay for the side photo — null when no face was detected
+   *  there (common on a true 90° profile); the UI then shows the grid. */
+  sideMesh: MeshPaths | null;
+  sideAspect: number | null;
   demo?: boolean;
 }
 

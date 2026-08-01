@@ -11,6 +11,7 @@
 
 import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 import { measure, type Point } from "./measure";
+import type { MeshPaths } from "./store";
 import { makeMetric, METRIC_ORDER, SPECS } from "./specs";
 import { clamp, toOverall, type CategoryId, type Metric } from "./metrics";
 import type { ScanMetrics } from "./store";
@@ -63,6 +64,43 @@ function dotsFrom(pts: ReadonlyArray<Point>): string {
   return d;
 }
 
+function meshFrom(flat: Point[]) {
+  const contours = [
+    ...FaceLandmarker.FACE_LANDMARKS_FACE_OVAL,
+    ...FaceLandmarker.FACE_LANDMARKS_LEFT_EYE,
+    ...FaceLandmarker.FACE_LANDMARKS_RIGHT_EYE,
+    ...FaceLandmarker.FACE_LANDMARKS_LEFT_EYEBROW,
+    ...FaceLandmarker.FACE_LANDMARKS_RIGHT_EYEBROW,
+    ...FaceLandmarker.FACE_LANDMARKS_LIPS,
+  ];
+  return {
+    tesselation: pathFrom(flat, FaceLandmarker.FACE_LANDMARKS_TESSELATION),
+    contours: pathFrom(flat, contours),
+    dots: dotsFrom(flat),
+  };
+}
+
+/**
+ * Landmark overlay for a secondary photo (the side profile).
+ *
+ * Only the front photo drives the measurements; this exists so the side shot
+ * carries the same real mesh rather than a decorative grid. Detection on a
+ * true 90-degree profile often fails — the caller falls back to the grid,
+ * which is visibly a placeholder rather than a fake mesh.
+ */
+export async function detectMesh(
+  image: HTMLImageElement,
+): Promise<{ mesh: MeshPaths; aspect: number } | null> {
+  const landmarker = await getLandmarker();
+  const raw = landmarker.detect(image).faceLandmarks?.[0];
+  if (!raw || raw.length < 468) return null;
+  const flat: Point[] = raw.map((pt) => ({ x: pt.x, y: pt.y }));
+  return {
+    mesh: meshFrom(flat),
+    aspect: image.naturalWidth / image.naturalHeight,
+  };
+}
+
 /** Analyze the front-profile photo. Returns null when no face is detected. */
 export async function analyzeFront(
   image: HTMLImageElement,
@@ -73,29 +111,16 @@ export async function analyzeFront(
   if (!raw || raw.length < 468) return null;
 
   const flat: Point[] = raw.map((pt) => ({ x: pt.x, y: pt.y }));
-  const measured = measure(flat);
-
-  const contours = [
-    ...FaceLandmarker.FACE_LANDMARKS_FACE_OVAL,
-    ...FaceLandmarker.FACE_LANDMARKS_LEFT_EYE,
-    ...FaceLandmarker.FACE_LANDMARKS_RIGHT_EYE,
-    ...FaceLandmarker.FACE_LANDMARKS_LEFT_EYEBROW,
-    ...FaceLandmarker.FACE_LANDMARKS_RIGHT_EYEBROW,
-    ...FaceLandmarker.FACE_LANDMARKS_LIPS,
-  ];
-
-  const { intercanthal, ...scores } = measured;
+  const { intercanthal, ...scores } = measure(flat);
 
   return {
     ...scores,
     interocularPx: Math.round(intercanthal * image.naturalWidth),
     landmarkCount: raw.length,
     aspect: image.naturalWidth / image.naturalHeight,
-    mesh: {
-      tesselation: pathFrom(flat, FaceLandmarker.FACE_LANDMARKS_TESSELATION),
-      contours: pathFrom(flat, contours),
-      dots: dotsFrom(flat),
-    },
+    mesh: meshFrom(flat),
+    sideMesh: null,
+    sideAspect: null,
   };
 }
 
@@ -158,6 +183,8 @@ export function demoMetrics(seed = "demo"): ScanMetrics {
     landmarkCount: 478,
     aspect: 0.8,
     mesh: null,
+    sideMesh: null,
+    sideAspect: null,
     demo: true,
   };
 }

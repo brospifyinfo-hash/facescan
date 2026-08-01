@@ -147,6 +147,14 @@ export const de: Dict = {
       "Jeder Wert ist eine geometrische Messung, die auf deinem Gerät aus Gesichtslandmarken berechnet und mit veröffentlichten Referenzbereichen verglichen wird. Orientierung zur Selbstoptimierung — keine medizinische, dermatologische oder psychologische Beurteilung und kein Urteil über das Aussehen eines Menschen.",
     reference: "Ref.",
     tableHead: ["Messwert", "Wert", "Referenz", "Status", "Score"],
+    legendBand: "Normalbereich",
+    legendNeedle: "Dein Wert",
+    legendScale: "Skalenenden",
+    percentileTop: "Top {n} %",
+    percentileCaption:
+      "Deine Proportionen liegen näher an den veröffentlichten Referenzbereichen als bei {below} % der modellierten Vergleichsverteilung.",
+    percentileWhat:
+      "Berechnet aus einem Modell von 60.000 Gesichtern rund um veröffentlichte anthropometrische Mittelwerte — keine Attraktivitäts-Rangliste und noch nicht auf Basis echter Nutzer.",
   },
   checkout: {
     eyebrow: "Einmalige Freischaltung",

@@ -147,6 +147,14 @@ export const es: Dict = {
       "Cada cifra es una medida geométrica calculada en tu dispositivo a partir de puntos faciales y comparada con rangos de referencia poblacionales publicados. Orientación para la mejora personal — no es una valoración médica, dermatológica ni psicológica, ni un juicio sobre el aspecto de nadie.",
     reference: "ref.",
     tableHead: ["Medida", "Valor", "Referencia", "Estado", "Puntos"],
+    legendBand: "Rango normal",
+    legendNeedle: "Tu valor",
+    legendScale: "Extremos de la escala",
+    percentileTop: "Top {n} %",
+    percentileCaption:
+      "Tus proporciones están más cerca de los rangos de referencia publicados que el {below} % de la distribución de comparación modelada.",
+    percentileWhat:
+      "Calculado a partir de un modelo de 60.000 rostros generados en torno a medias antropométricas publicadas: no es una clasificación de atractivo ni se basa todavía en usuarios reales.",
   },
   checkout: {
     eyebrow: "Desbloqueo único",

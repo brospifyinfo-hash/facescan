@@ -42,7 +42,9 @@ export default function UploadPage() {
           ))}
         </div>
 
-        <div className="mt-8 grid gap-6 sm:grid-cols-2">
+        {/* Side by side on every width — the two shots are a pair and read
+            as one instruction. */}
+        <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-6">
           <PhotoDrop
             label={t.upload.front}
             hint={t.upload.frontHint}

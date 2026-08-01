@@ -17,14 +17,16 @@ import { ActionPlan } from "@/components/dashboard/ActionPlan";
 import { FullReport } from "@/components/dashboard/FullReport";
 import { CheckoutModal } from "@/components/checkout/CheckoutModal";
 import { SessionTimer } from "@/components/checkout/SessionTimer";
-import { PRODUCT } from "@/lib/pricing";
+import { PercentileBadge } from "@/components/dashboard/PercentileBadge";
+import { formatPrice } from "@/lib/pricing";
 import { bandFor } from "@/lib/tiers";
-import { fill, useT } from "@/lib/i18n";
+import { fill, useI18n, useT } from "@/lib/i18n";
 import { useFunnel } from "@/lib/store";
 
 export default function ResultsPage() {
   const router = useRouter();
   const t = useT();
+  const { locale } = useI18n();
   const { metrics, quiz, photos, unlocked, unlock } = useFunnel();
   const [checkoutOpen, setCheckoutOpen] = useState(false);
 
@@ -81,8 +83,8 @@ export default function ResultsPage() {
           />
           <FaceMesh
             src={photos.side?.dataUrl}
-            mesh={null}
-            aspect={metrics.aspect}
+            mesh={metrics.sideMesh}
+            aspect={metrics.sideAspect ?? metrics.aspect}
             label={t.scan.side}
             className="aspect-[3/4]"
           />
@@ -115,6 +117,11 @@ export default function ResultsPage() {
               <p className="mt-2 text-[12px] leading-relaxed text-zinc-400">
                 {bandCopy.blurb}
               </p>
+
+              {/* Visible before payment — the hook is a real figure. */}
+              <div className="mt-3">
+                <PercentileBadge overall={metrics.overall} />
+              </div>
 
               <dl className="mt-4 grid grid-cols-3 gap-2 border-t border-white/[0.08] pt-3">
                 {[
@@ -233,7 +240,7 @@ export default function ResultsPage() {
 
                 <Button size="lg" className="mt-5 w-full" onClick={() => setCheckoutOpen(true)}>
                   <Lock className="h-4 w-4" />
-                  {t.results.unlockCta} — {PRODUCT.price} {PRODUCT.currency}
+                  {t.results.unlockCta} — {formatPrice(locale)}
                 </Button>
 
                 <p className="mt-2.5 text-[10px] text-zinc-500">

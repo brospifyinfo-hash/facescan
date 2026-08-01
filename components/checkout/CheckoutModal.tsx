@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Check, CreditCard, Loader2, Lock, ShieldCheck, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { fill, useT } from "@/lib/i18n";
-import { PRODUCT } from "@/lib/pricing";
+import { fill, useI18n, useT } from "@/lib/i18n";
+import { formatPrice } from "@/lib/pricing";
 
 /**
  * Checkout modal.
@@ -26,6 +26,7 @@ export function CheckoutModal({
   onSuccess: (email: string) => void;
 }) {
   const t = useT();
+  const { locale } = useI18n();
   const [email, setEmail] = useState("");
   const [pending, setPending] = useState(false);
 
@@ -53,7 +54,7 @@ export function CheckoutModal({
   // dashboard underneath. A hard unmount cannot fail that way.
   if (!open) return null;
 
-  const price = `${PRODUCT.price} ${PRODUCT.currency}`;
+  const price = formatPrice(locale);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-zinc-950/70 p-4 backdrop-blur-md">

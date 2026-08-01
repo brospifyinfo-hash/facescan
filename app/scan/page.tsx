@@ -56,6 +56,23 @@ export default function ScanPage() {
           const img = await analysis.loadImage(front!.dataUrl);
           metrics = await analysis.analyzeFront(img);
           if (!metrics) throw new Error("no-face");
+
+          // Overlay for the side shot too. Only the front photo drives the
+          // measurements; a failed detection here is not an error, it just
+          // means that panel shows the grid instead of a mesh.
+          const side = useFunnel.getState().photos.side;
+          if (side) {
+            try {
+              const sideImg = await analysis.loadImage(side.dataUrl);
+              const detected = await analysis.detectMesh(sideImg);
+              if (detected) {
+                metrics.sideMesh = detected.mesh;
+                metrics.sideAspect = detected.aspect;
+              }
+            } catch {
+              /* keep the grid fallback */
+            }
+          }
         }
 
         const remaining = SCAN_MS - (Date.now() - t0);

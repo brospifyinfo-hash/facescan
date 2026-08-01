@@ -147,6 +147,14 @@ export const en: Dict = {
       "Every figure is a geometric measurement computed on your device from facial landmarks, compared against published population reference ranges. Orientation for self-improvement — not a medical, dermatological, or psychological assessment, and not a verdict on anyone's appearance.",
     reference: "ref",
     tableHead: ["Measurement", "Value", "Reference", "Status", "Score"],
+    legendBand: "Normal range",
+    legendNeedle: "Your value",
+    legendScale: "Scale ends",
+    percentileTop: "Top {n}%",
+    percentileCaption:
+      "Your proportions sit closer to the published reference ranges than {below}% of the modelled comparison distribution.",
+    percentileWhat:
+      "Computed from a model of 60,000 faces drawn around published anthropometric means — not a ranking of attractiveness, and not yet based on real users.",
   },
   checkout: {
     eyebrow: "One-time unlock",
