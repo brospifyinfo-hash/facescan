@@ -33,8 +33,26 @@ categories, each scored against a published reference band:
 | Eye aperture | | Facial index | Midface ratio |
 | Brow position | | | |
 
-Plus ⚖️ Symmetry as its own composite. Every meter shows the raw value,
-the reference band, and where this face falls — not just a score.
+Plus ⚖️ Symmetry as its own composite.
+
+Each one renders as a **270° radial dial** carrying four things at once: the
+full measurement scale (track), the population reference band (accent arc),
+where this face falls (marker + filled arc), and the raw figure at the
+centre. A value in context beats a bare percentage.
+
+## Languages
+
+The page follows `navigator.languages` automatically and remembers a manual
+override in localStorage. **EN, DE, ES, FR** ship complete.
+
+Adding one is a single file: write it against the `Dict` type in
+`lib/i18n/types.ts`, register it in `lib/i18n/index.ts`, add the tag to
+`LOCALES`. The type checker then lists every string the new file still owes.
+
+All prose lives in the dictionaries — metrics, plan entries and score bands
+carry stable IDs and look their copy up at render time. Quiz answers are
+stored as stable keys too, so translating a visible option label can never
+change the plan logic.
 
 **Skin and hair are deliberately absent from the measurements.** Neither is
 derivable from landmark geometry. They're assessed from the photo by the
@@ -112,9 +130,16 @@ ANTHROPIC_API_KEY=sk-ant-...
    under GDPR; the on-device architecture is your strongest argument.
 4. **Reviews** — populate `lib/reviews.ts` when you have real ones.
 
-## Known environment note
+## Known environment notes
 
-`next/font/google` can't fetch Inter behind this machine's TLS-intercepting
-proxy and silently falls back to a system font. It resolves on any normal
-network (including Vercel builds); self-host the font if the proxy is
-permanent.
+- `next/font/google` can't fetch Inter behind a TLS-intercepting proxy and
+  silently falls back to a system font. Resolves on any normal network
+  (including Vercel builds).
+- **Never run `npm run build` while `next dev` is running** — they share
+  `.next` and the dev server dies with
+  `__webpack_modules__[moduleId] is not a function`. Stop dev, delete
+  `.next`, restart.
+- **Don't hand-write `-webkit-backdrop-filter`.** Lightning CSS collapses a
+  hand-written prefix pair into the prefixed form alone, which current Chrome
+  rejects — the glass blur then works in dev and silently disappears in
+  production. Write the unprefixed property only and let the build prefix it.
