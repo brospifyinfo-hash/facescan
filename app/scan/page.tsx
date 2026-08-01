@@ -99,9 +99,23 @@ export default function ScanPage() {
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col justify-center px-6 py-16">
-      <div className="grid gap-6 sm:grid-cols-2">
-        <FaceMesh src={photos.front?.dataUrl} mesh={null} aspect={0.8} scanning />
-        <FaceMesh src={photos.side?.dataUrl} mesh={null} aspect={0.8} scanning />
+      <div className="grid grid-cols-2 gap-3 sm:gap-5">
+        <FaceMesh
+          src={photos.front?.dataUrl}
+          mesh={null}
+          aspect={0.8}
+          label={t.scan.front}
+          className="aspect-[3/4]"
+          scanning
+        />
+        <FaceMesh
+          src={photos.side?.dataUrl}
+          mesh={null}
+          aspect={0.8}
+          label={t.scan.side}
+          className="aspect-[3/4]"
+          scanning
+        />
       </div>
 
       <div className="glass mt-8 rounded-[26px] p-6">

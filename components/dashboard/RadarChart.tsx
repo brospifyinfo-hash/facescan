@@ -10,7 +10,7 @@ export interface RadarAxis {
 /** Biometric radar. Pure SVG, no chart dependency. */
 export function RadarChart({
   axes,
-  size = 260,
+  size = 220,
   animate = true,
 }: {
   axes: RadarAxis[];
