@@ -6,40 +6,28 @@ import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { FaceMesh } from "@/components/dashboard/FaceMesh";
+import { useT } from "@/lib/i18n";
 import { useFunnel } from "@/lib/store";
 
 // Loading THEATER over REAL computation: MediaPipe FaceLandmarker runs
-// concurrently while the beam animation plays. Every line below names a
-// step that actually executes in lib/analysis.ts — presentation, not
-// fabrication. The pacing is fixed so the screen always feels the same.
-const LINES = [
-  "Loading FaceLandmarker model…",
-  "Detecting face region…",
-  "Mapping 478 facial landmarks…",
-  "Correcting head roll from canthi axis…",
-  "Measuring canthal tilt…",
-  "Analyzing jawline contour…",
-  "Computing bilateral symmetry…",
-  "Scoring facial proportions…",
-  "Compiling your action plan…",
-] as const;
-
+// concurrently while the beam animation plays. Every line names a step that
+// actually executes in lib/analysis.ts — presentation, not fabrication.
 const SCAN_MS = 10_000;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export default function ScanPage() {
   const router = useRouter();
+  const t = useT();
   const { photos, completeScan } = useFunnel();
   const started = useRef(false);
   const [progress, setProgress] = useState(0);
   const [lineIdx, setLineIdx] = useState(0);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<"noFace" | "model" | null>(null);
 
   useEffect(() => {
     if (started.current) return;
     started.current = true;
 
-    // Dev-only shortcut to test downstream screens without a face photo.
     const demo =
       process.env.NODE_ENV === "development" &&
       window.location.search.includes("demo=1");
@@ -50,13 +38,12 @@ export default function ScanPage() {
       return;
     }
 
+    const lineCount = 9;
     const t0 = Date.now();
     const tick = setInterval(() => {
       const elapsed = Date.now() - t0;
       setProgress(Math.min(99, (elapsed / SCAN_MS) * 100));
-      setLineIdx(
-        Math.min(LINES.length - 1, Math.floor(elapsed / (SCAN_MS / LINES.length))),
-      );
+      setLineIdx(Math.min(lineCount - 1, Math.floor(elapsed / (SCAN_MS / lineCount))));
     }, 80);
 
     (async () => {
@@ -80,11 +67,7 @@ export default function ScanPage() {
         router.push("/results");
       } catch (e) {
         clearInterval(tick);
-        setError(
-          e instanceof Error && e.message === "no-face"
-            ? "We couldn't detect a face in your front photo. Use even lighting, face the camera directly, and make sure your whole face is visible."
-            : "The on-device analysis model could not be loaded. Check your connection (the model downloads once) and try again.",
-        );
+        setError(e instanceof Error && e.message === "no-face" ? "noFace" : "model");
       }
     })();
 
@@ -95,15 +78,19 @@ export default function ScanPage() {
   if (error) {
     return (
       <main className="flex min-h-dvh items-center justify-center px-6">
-        <div className="glass-deep w-full max-w-md rounded-3xl p-8 text-center">
+        <div className="glass-strong w-full max-w-md rounded-[30px] p-8 text-center">
           <AlertTriangle className="mx-auto h-10 w-10 text-amber-400" />
-          <h1 className="mt-6 text-xl font-semibold">Scan failed</h1>
-          <p className="mt-3 text-sm leading-relaxed text-zinc-400">{error}</p>
+          <h1 className="mt-6 text-xl font-semibold tracking-tight">
+            {t.scan.failedTitle}
+          </h1>
+          <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+            {error === "noFace" ? t.scan.errNoFace : t.scan.errModel}
+          </p>
           <div className="mt-8 flex justify-center gap-3">
             <Link href="/upload">
-              <Button variant="outline">Back to photos</Button>
+              <Button variant="outline">{t.scan.backToPhotos}</Button>
             </Link>
-            <Button onClick={() => window.location.reload()}>Try again</Button>
+            <Button onClick={() => window.location.reload()}>{t.scan.retry}</Button>
           </div>
         </div>
       </main>
@@ -113,25 +100,14 @@ export default function ScanPage() {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col justify-center px-6 py-16">
       <div className="grid gap-6 sm:grid-cols-2">
-        <FaceMesh
-          src={photos.front?.dataUrl}
-          mesh={null}
-          aspect={0.8}
-          scanning
-        />
-        <FaceMesh
-          src={photos.side?.dataUrl}
-          mesh={null}
-          aspect={0.8}
-          scanning
-        />
+        <FaceMesh src={photos.front?.dataUrl} mesh={null} aspect={0.8} scanning />
+        <FaceMesh src={photos.side?.dataUrl} mesh={null} aspect={0.8} scanning />
       </div>
 
-      {/* Terminal readout */}
-      <div className="glass mt-8 rounded-2xl p-5">
+      <div className="glass mt-8 rounded-[26px] p-6">
         <div className="font-mono-terminal flex items-center gap-2 text-xs text-accent">
           <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-accent" />
-          {LINES[lineIdx]}
+          {t.scan.lines[lineIdx]}
         </div>
         <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/10">
           <div
@@ -140,16 +116,14 @@ export default function ScanPage() {
           />
         </div>
         <div className="mt-2 flex items-center justify-between text-[11px] text-zinc-500">
-          <span>Running locally in your browser — nothing is uploaded.</span>
+          <span>{t.scan.running}</span>
           <span className="font-mono-terminal tabular-nums">
             {Math.floor(progress)}%
           </span>
         </div>
       </div>
 
-      <p className="mt-6 text-center text-xs text-zinc-600">
-        Keep this tab open until the analysis completes.
-      </p>
+      <p className="mt-6 text-center text-xs text-zinc-600">{t.scan.keepOpen}</p>
     </main>
   );
 }

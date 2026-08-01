@@ -1,65 +1,82 @@
 // Metric descriptors + scoring.
 //
-// Every entry here is computed from the real 478-point landmark mesh. Ideal
-// bands come from published facial-anthropometry reference ranges (neoclassical
+// Every entry is computed from the real 478-point landmark mesh. Ideal bands
+// come from published facial-anthropometry reference ranges (neoclassical
 // canons, Farkas anthropometry, fWHR literature). They are population
 // references, not verdicts — the UI says so.
+//
+// NOTE: no human-readable strings live here. A metric carries an `id`; its
+// label and explanation come from the active dictionary (lib/i18n). That is
+// what makes the whole dashboard translatable.
 
-export type CategoryId = "core" | "eyes" | "jaw" | "proportions" | "midface";
+export type CategoryId = "eyes" | "jaw" | "proportions" | "midface";
 
-export interface Category {
-  id: CategoryId;
-  emoji: string;
-  label: string;
-  blurb: string;
-}
+export type MetricId =
+  | "canthalTilt"
+  | "esr"
+  | "eyeSpacing"
+  | "eyeAspect"
+  | "browPosition"
+  | "gonialAngle"
+  | "jawWidth"
+  | "chinRatio"
+  | "thirds"
+  | "fifths"
+  | "fwhr"
+  | "facialIndex"
+  | "mouthNose"
+  | "noseWidth"
+  | "lipRatio"
+  | "midface";
 
-export const CATEGORIES: Category[] = [
-  {
-    id: "eyes",
-    emoji: "👁️",
-    label: "Eye Region",
-    blurb: "Tilt, spacing and aperture — the highest-signal area of the face.",
-  },
-  {
-    id: "jaw",
-    emoji: "🗿",
-    label: "Jaw & Chin",
-    blurb: "Lower-third structure. The area most responsive to body fat.",
-  },
-  {
-    id: "proportions",
-    emoji: "📐",
-    label: "Proportions",
-    blurb: "How the face divides vertically and horizontally.",
-  },
-  {
-    id: "midface",
-    emoji: "👃",
-    label: "Nose & Mouth",
-    blurb: "Central-third relationships and lip balance.",
-  },
+export const CATEGORY_ORDER: CategoryId[] = [
+  "eyes",
+  "jaw",
+  "proportions",
+  "midface",
 ];
 
+export const CATEGORY_EMOJI: Record<CategoryId, string> = {
+  eyes: "👁️",
+  jaw: "🗿",
+  proportions: "📐",
+  midface: "👃",
+};
+
+export const METRIC_EMOJI: Record<MetricId, string> = {
+  canthalTilt: "👁️",
+  esr: "🎯",
+  eyeSpacing: "↔️",
+  eyeAspect: "🌙",
+  browPosition: "🪶",
+  gonialAngle: "📐",
+  jawWidth: "🔷",
+  chinRatio: "🧱",
+  thirds: "📊",
+  fifths: "🖐️",
+  fwhr: "🔶",
+  facialIndex: "📏",
+  mouthNose: "👄",
+  noseWidth: "👃",
+  lipRatio: "💋",
+  midface: "🎭",
+};
+
 export interface Metric {
-  id: string;
-  emoji: string;
-  label: string;
+  id: MetricId;
   category: CategoryId;
   /** Raw measured value. */
   value: number;
-  /** How the raw value is rendered (e.g. "1.92", "+3.4°", "0.46"). */
+  /** Rendered value (e.g. "1.92", "+3.4°", "0.46"). Locale-independent. */
   display: string;
   unit: string;
   /** Reference band [lo, hi] in the same units as `value`. */
   ideal: [number, number];
-  /** Scale bounds for the meter track. */
+  /** Scale bounds for the dial track. */
   scale: [number, number];
-  /** 0–100, 100 = inside the reference band. */
+  /** 0–100, 100 = dead centre of the reference band. */
   score: number;
-  /** "in" | "below" | "above" relative to the reference band. */
   position: "in" | "below" | "above";
-  note: string;
 }
 
 export const clamp = (v: number, lo: number, hi: number) =>
@@ -76,7 +93,7 @@ export const clamp = (v: number, lo: number, hi: number) =>
  *   - inside the band: 100 dead-centre, tapering to 86 at the edges
  *   - outside: steep decay, bottoming out at 12
  *
- * Sitting inside a canon band on every one of ~16 independent measurements
+ * Sitting inside a canon band on every one of 16 independent measurements
  * is genuinely rare, so realistic faces land in a realistic spread.
  */
 export function scoreBand(
@@ -100,7 +117,7 @@ export function scoreBand(
 /**
  * Map the 0–100 composite onto the 0–10 headline figure.
  *
- * A straight `harmony / 10` looks right but isn't: the composite of ~16
+ * A straight `harmony / 10` looks right but isn't: the composite of 16
  * band-scored measurements realistically lives in roughly [55, 95], so every
  * user would land between 5.5 and 9.5 and the bottom half of the scale would
  * never be used. Spreading that real window across [3.5, 9.5] makes a point
@@ -111,15 +128,29 @@ export function toOverall(harmony: number): number {
   return Number(clamp(spread, 1, 10).toFixed(1));
 }
 
-export const POSITION_LABEL: Record<Metric["position"], string> = {
-  in: "In reference range",
-  below: "Below reference range",
-  above: "Above reference range",
-};
-
 // Status encoding always ships icon + label, never colour alone.
 export const POSITION_ICON: Record<Metric["position"], string> = {
   in: "✓",
   below: "↓",
   above: "↑",
 };
+
+export type BandId =
+  | "exceptional"
+  | "strong"
+  | "solid"
+  | "reference"
+  | "developing";
+
+export type PlanId =
+  | "bodyFat"
+  | "guaSha"
+  | "tonguePosture"
+  | "retinoid"
+  | "spf"
+  | "asymmetry"
+  | "depuff"
+  | "proportions"
+  | "hair"
+  | "grooming"
+  | "sleep";

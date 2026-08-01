@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { TimerReset } from "lucide-react";
+import { useT } from "@/lib/i18n";
 import { useFunnel } from "@/lib/store";
 
 /**
@@ -15,6 +16,7 @@ export function SessionTimer() {
   const unlocked = useFunnel((s) => s.unlocked);
   const purge = useFunnel((s) => s.purge);
   const router = useRouter();
+  const t = useT();
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -38,16 +40,15 @@ export function SessionTimer() {
 
   return (
     <div
-      className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium ${
+      className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-[11px] font-medium ${
         urgent
-          ? "border-red-500/30 bg-red-500/10 text-red-300"
-          : "border-white/10 bg-white/5 text-zinc-400"
+          ? "border border-red-500/25 bg-red-500/10 text-red-300"
+          : "glass text-zinc-400"
       }`}
     >
       <TimerReset className="h-3.5 w-3.5" aria-hidden />
       <span>
-        Private session — your photos & scan are held in this browser only and
-        will be discarded in{" "}
+        {t.session.notice}{" "}
         <span className="font-mono-terminal tabular-nums text-zinc-200">
           {mm}:{ss}
         </span>

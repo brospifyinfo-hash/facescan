@@ -1,0 +1,383 @@
+import type { Dict } from "./types";
+
+export const fr: Dict = {
+  nav: { howItWorks: "Comment ça marche", language: "Langue" },
+  landing: {
+    badge: "IA sur votre appareil · Rien n'est envoyé pendant le scan gratuit",
+    headline: "Découvrez où vous en êtes",
+    headlineAccent: "vraiment.",
+    sub: "Analyse de géométrie faciale de précision clinique, entièrement exécutée dans votre navigateur. 478 points de repère. 16 mesures réelles. Un plan applicable dès aujourd'hui.",
+    cta: "Lancer le scan gratuit",
+    ctaNote:
+      "Scan gratuit · Aucun compte requis pour commencer · Paiement unique pour le rapport complet",
+    expired:
+      "Votre session a expiré — comme promis, vos photos et votre scan ont été effacés de la mémoire. Vous pouvez recommencer quand vous voulez.",
+    trust: [
+      {
+        title: "Vos photos ne sont jamais envoyées",
+        text: "Le scan gratuit s'exécute à 100 % sur votre appareil — vos photos restent dans cet onglet et expirent d'elles-mêmes.",
+      },
+      {
+        title: "Géométrie à 478 points",
+        text: "Des mesures réelles : écart de symétrie, inclinaison canthale en degrés, angles mandibulaires. Rien d'approximatif.",
+      },
+      {
+        title: "Paiement unique",
+        text: "Pas d'abonnement, pas de reconduction. Payez une fois, gardez votre rapport pour toujours.",
+      },
+    ],
+    stepsTitle: "Comment ça marche",
+    steps: [
+      { title: "Répondez à 6 questions", text: "60 secondes — cela calibre votre analyse." },
+      { title: "Deux photos", text: "Face et profil. Elles ne quittent jamais votre navigateur." },
+      { title: "Scan sur l'appareil", text: "478 points repérés et mesurés localement." },
+      { title: "Votre rapport", text: "16 mesures, scores par catégorie et un vrai plan d'action." },
+    ],
+    disclaimer:
+      "FaceScan fournit des estimations géométriques à titre d'orientation personnelle. Ce n'est pas un dispositif médical et aucun résultat ne constitue une évaluation médicale ou dermatologique.",
+  },
+  quiz: {
+    progress: "Question {n} sur {total}",
+    back: "Retour",
+    home: "Accueil",
+    minorTitle: "FaceScan est réservé aux 18 ans et plus",
+    minorBody:
+      "Votre structure faciale évolue encore : tout score donné aujourd'hui serait faux dans un an, et nous refusons par principe d'analyser le visage de mineurs. Revenez à 18 ans.",
+    minorCta: "Retour au début",
+    questions: [
+      {
+        title: "Comment calibrer votre scan ?",
+        sub: "Les plages de référence diffèrent — cela fixe la bonne base.",
+        options: ["Homme", "Femme"],
+      },
+      { title: "Quel âge avez-vous ?", options: ["Moins de 18 ans", "18–24", "25–34", "35+"] },
+      {
+        title: "Qu'est-ce qui vous gêne le plus sur votre visage ?",
+        options: ["Asymétrie", "Mâchoire peu marquée", "Contour des yeux", "Qualité de peau", "Cheveux qui s'affinent"],
+      },
+      {
+        title: "Pourcentage de masse grasse estimé ?",
+        sub: "La définition du visage dépend fortement de la masse grasse.",
+        options: ["Moins de 12 %", "12–18 %", "19–25 %", "Plus de 25 %", "Je ne sais pas"],
+      },
+      {
+        title: "Pratiquez-vous la posture linguale (mewing) ?",
+        options: ["Jamais", "Parfois", "Tous les jours"],
+      },
+      {
+        title: "Quel est votre objectif final ?",
+        options: ["Niveau mannequin", "Confiance en séduction", "Progression personnelle", "Simple curiosité"],
+      },
+    ],
+  },
+  upload: {
+    title: "Deux photos. C'est tout.",
+    sub: "Le scan repère 478 points faciaux sur votre photo de face ; le profil affine la géométrie.",
+    tips: [
+      "Lumière naturelle homogène — placez-vous face à une fenêtre",
+      "Expression neutre, bouche fermée",
+      "Sans lunettes, cheveux dégagés",
+    ],
+    front: "Photo de face",
+    frontHint: "Regardez droit vers l'objectif, tête droite.",
+    side: "Photo de profil",
+    sideHint: "Tournez-vous à 90° — oreille vers l'objectif.",
+    added: "ajoutée",
+    replace: "Changer la photo",
+    privacy:
+      "Les photos restent dans cet onglet — rien n'est envoyé pendant le scan gratuit.",
+    cta: "Lancer l'analyse",
+    errType: "Choisissez un fichier image (JPG, PNG, WebP).",
+    errSize: "L'image dépasse 10 Mo — choisissez-en une plus légère.",
+  },
+  scan: {
+    lines: [
+      "Chargement du modèle FaceLandmarker…",
+      "Détection de la zone du visage…",
+      "Repérage des 478 points faciaux…",
+      "Correction de l'inclinaison de la tête…",
+      "Mesure de l'inclinaison canthale…",
+      "Analyse du contour mandibulaire…",
+      "Calcul de la symétrie bilatérale…",
+      "Évaluation des proportions du visage…",
+      "Préparation de votre plan d'action…",
+    ],
+    running: "Exécution locale dans votre navigateur — rien n'est envoyé.",
+    keepOpen: "Gardez cet onglet ouvert jusqu'à la fin de l'analyse.",
+    failedTitle: "Échec du scan",
+    errNoFace:
+      "Nous n'avons pas détecté de visage sur votre photo de face. Utilisez une lumière homogène, regardez droit vers l'objectif et assurez-vous que tout votre visage est visible.",
+    errModel:
+      "Le modèle d'analyse n'a pas pu être chargé. Vérifiez votre connexion (le modèle se télécharge une seule fois) et réessayez.",
+    backToPhotos: "Retour aux photos",
+    retry: "Réessayer",
+    front: "Photo de face",
+    side: "Photo de profil",
+  },
+  results: {
+    overall: "Score global",
+    outOf: "sur 10",
+    demoData: "Données de démo",
+    landmarks: "Points",
+    measured: "Mesures",
+    inRange: "Dans la plage",
+    breakdown: "Détail biométrique",
+    breakdownSub: "Scores par catégorie issus de l'ensemble des mesures.",
+    symmetry: "Symétrie",
+    eyes: "Yeux",
+    jaw: "Mâchoire",
+    ratios: "Proportions",
+    midface: "Étage moyen",
+    allMeasurements: "Toutes les mesures",
+    allMeasurementsSub: "Le tableau complet derrière les diagrammes circulaires.",
+    skinTitle: "Peau & cheveux",
+    skinSub:
+      "Non déductible de la géométrie des points — évalué depuis votre photo par le modèle de vision dans votre rapport IA.",
+    planTitle: "Votre plan d'amélioration",
+    planSub: "Classé par impact attendu sur vos mesures précises.",
+    completed: "Terminé",
+    inCategoryRange: "{n}/{total} dans la plage",
+    unlockTitle: "{n} mesures sont prêtes",
+    unlockBody: "Vos trois plus grands leviers :",
+    unlockCta: "Tout débloquer",
+    unlockNote: "Paiement unique · Sans abonnement · Accès à vie",
+    unlockChips: ["👁️ Contour des yeux", "🗿 Mâchoire", "📐 Proportions", "👃 Étage moyen", "✨ Plan d'action"],
+    unlocked: "Analyse complète débloquée",
+    disclaimer:
+      "Chaque chiffre est une mesure géométrique calculée sur votre appareil à partir de points faciaux et comparée à des plages de référence publiées. Une orientation personnelle — ni évaluation médicale, dermatologique ou psychologique, ni jugement sur l'apparence de qui que ce soit.",
+    reference: "réf.",
+    tableHead: ["Mesure", "Valeur", "Référence", "Statut", "Score"],
+  },
+  checkout: {
+    eyebrow: "Déblocage unique",
+    product: "Analyse biométrique complète",
+    once: "une fois · sans abonnement",
+    features: [
+      "Les 16 mesures biométriques débloquées",
+      "Symétrie, inclinaison canthale et mâchoire en chiffres exacts",
+      "Plan d'action personnalisé",
+      "Rapport IA approfondi à partir de vos photos",
+      "Accès à vie — paiement unique",
+    ],
+    emailPlaceholder: "E-mail pour votre reçu",
+    cardNote: "Les données de carte sont saisies sur la page de paiement",
+    pay: "Payer {price} et débloquer",
+    processing: "Traitement…",
+    secure: "Paiement chiffré",
+    noCardData: "Les données de carte ne touchent jamais nos serveurs",
+    mockWarning:
+      "Version de développement — ceci est une simulation de paiement. Aucun paiement n'est prélevé et aucune donnée de carte n'est collectée. Branchez Stripe avant le lancement.",
+    close: "Fermer",
+  },
+  report: {
+    title: "Rapport IA approfondi",
+    body: "Votre rapport complet est généré par Claude Vision à partir de vos deux photos, de vos mesures et de vos réponses.",
+    consent:
+      "J'accepte que mes deux photos soient transmises une seule fois, de manière sécurisée, pour un traitement par IA afin de générer ce rapport. Elles ne sont pas conservées sur le serveur après traitement.",
+    generate: "Générer mon rapport complet",
+    generating: "Génération de votre rapport…",
+    oneTime: "Transmission unique, rien n'est conservé",
+    errNoPhotos:
+      "Vos photos ne sont plus dans cette session (elles ne sont jamais stockées). Relancez un scan pour générer le rapport.",
+    errNetwork: "Erreur réseau — veuillez réessayer.",
+  },
+  session: {
+    notice:
+      "Session privée — vos photos et votre scan ne sont que dans ce navigateur et seront effacés dans",
+  },
+  status: {
+    in: "Dans la plage de référence",
+    below: "Sous la plage de référence",
+    above: "Au-dessus de la plage",
+  },
+  statusShort: { in: "Dans la plage", below: "En dessous", above: "Au-dessus" },
+  categories: {
+    eyes: {
+      label: "Contour des yeux",
+      blurb: "Inclinaison, écartement et ouverture — la zone la plus déterminante du visage.",
+    },
+    jaw: {
+      label: "Mâchoire & menton",
+      blurb: "Structure de l'étage inférieur. La zone la plus sensible à la masse grasse.",
+    },
+    proportions: {
+      label: "Proportions",
+      blurb: "Comment le visage se divise verticalement et horizontalement.",
+    },
+    midface: {
+      label: "Nez & bouche",
+      blurb: "Rapports de l'étage central et équilibre des lèvres.",
+    },
+  },
+  metrics: {
+    canthalTilt: {
+      label: "Inclinaison canthale",
+      note: "Angle du canthus interne vers l'externe. Positif signifie que le coin externe est plus haut.",
+    },
+    esr: {
+      label: "Rapport d'écartement oculaire",
+      note: "Distance entre les canthus internes rapportée à la largeur du visage. Le canon néoclassique avoisine 0,45.",
+    },
+    eyeSpacing: {
+      label: "Écartement des yeux",
+      note: "Écart entre les yeux mesuré en largeurs d'œil. Le canon classique vaut exactement un.",
+    },
+    eyeAspect: {
+      label: "Ouverture palpébrale",
+      note: "Hauteur d'ouverture rapportée à la largeur. Une valeur basse peut simplement signifier que vous avez cligné — refaites la photo.",
+    },
+    browPosition: {
+      label: "Position du sourcil",
+      note: "Distance sourcil-paupière en hauteurs d'œil. Plus bas donne un regard plus encapuchonné et enfoncé.",
+    },
+    gonialAngle: {
+      label: "Angle goniaque",
+      note: "Angle de rupture de la mâchoire au gonion. Les angles fermés paraissent plus ciselés, mais la masse grasse le masque fortement.",
+    },
+    jawWidth: {
+      label: "Largeur mâchoire/pommettes",
+      note: "Largeur mandibulaire rapportée aux pommettes. Trop élevé, la ligne perd son fuselé ; trop bas, le visage paraît étroit.",
+    },
+    chinRatio: {
+      label: "Menton-philtrum",
+      note: "Hauteur du menton face au philtrum. La cible classique est d'environ deux pour un.",
+    },
+    thirds: {
+      label: "Tiers du visage",
+      note: "Régularité de la division en tiers supérieur, moyen et inférieur. Moins d'écart, plus proche du canon.",
+    },
+    fifths: {
+      label: "Cinquièmes du visage",
+      note: "Largeur du visage mesurée en largeurs d'œil. Le canon divise le visage en cinq cinquièmes verticaux égaux.",
+    },
+    fwhr: {
+      label: "fWHR",
+      note: "Rapport largeur/hauteur du visage — la mesure isolée la plus étudiée en morphologie faciale.",
+    },
+    facialIndex: {
+      label: "Indice facial",
+      note: "Hauteur totale face à la largeur. Plus élevé paraît long et étroit, plus bas court et large.",
+    },
+    mouthNose: {
+      label: "Largeur bouche/nez",
+      note: "Largeur de bouche en largeurs de nez. Le canon classique place la bouche à environ 1,5 fois le nez.",
+    },
+    noseWidth: {
+      label: "Largeur du nez",
+      note: "Largeur du nez rapportée au visage — l'un des cinquièmes horizontaux classiques.",
+    },
+    lipRatio: {
+      label: "Rapport des lèvres",
+      note: "Hauteur de la lèvre inférieure face à la supérieure. Environ 1,6 : 1 est la cible esthétique la plus citée.",
+    },
+    midface: {
+      label: "Rapport de l'étage moyen",
+      note: "Distance ligne des yeux-lèvre face à l'écartement des yeux. Les étages moyens compacts sont lus comme plus juvéniles.",
+    },
+  },
+  bands: {
+    exceptional: {
+      label: "Exceptionnel",
+      blurb:
+        "Géométrie de haut niveau sur presque toutes les mesures. Vos leviers sont dans l'affinage, pas la correction.",
+    },
+    strong: {
+      label: "Solide+",
+      blurb:
+        "Confortablement au-dessus de la plage de référence. Quelques ajustements ciblés vont loin d'ici.",
+    },
+    solid: {
+      label: "Solide",
+      blurb: "Bonne base avec une marge de progression claire et accessible.",
+    },
+    reference: {
+      label: "Plage de référence",
+      blurb:
+        "Pleinement dans la moyenne — et c'est exactement là que se trouvent les plus gros gains visibles.",
+    },
+    developing: {
+      label: "En progression",
+      blurb:
+        "Beaucoup de marge. Commencez par le haut de votre plan et descendez — les premiers points pèsent le plus.",
+    },
+  },
+  plan: {
+    bodyFat: {
+      title: "Descendre vers 12–18 % de masse grasse",
+      detail:
+        "La définition du visage est avant tout une affaire de masse grasse. Aller vers 12–18 % fera plus pour votre mâchoire et vos pommettes que n'importe quel appareil ou astuce du marché.",
+      tag: "Mâchoire",
+      cadence: "En continu",
+    },
+    guaSha: {
+      title: "Gua sha le long de la mâchoire et sous les yeux",
+      detail:
+        "Deux séances par semaine, peu d'huile, mouvements doux du menton vers l'oreille. Cela draine la lymphe : attendez un effet décongestionnant de quelques heures, pas un remodelage osseux.",
+      tag: "Mâchoire",
+      cadence: "2× / semaine",
+    },
+    tonguePosture: {
+      title: "Posture linguale quotidienne",
+      detail:
+        "Langue à plat contre le palais, lèvres closes, respiration nasale. Les preuves d'un changement osseux chez l'adulte sont minces : traitez cela comme un travail postural. Mâchez également des deux côtés.",
+      tag: "Mâchoire",
+      cadence: "Quotidien",
+    },
+    retinoid: {
+      title: "Rétinoïde le soir, 3 nuits par semaine",
+      detail:
+        "Commencez par l'adapalène 0,1 % ou le rétinol 0,3 % sur peau sèche après nettoyage, hydratant par-dessus. Passez au quotidien en 8–12 semaines. Aller plus fort plus vite n'achète que de l'irritation.",
+      tag: "Peau",
+      cadence: "3 nuits / semaine",
+    },
+    spf: {
+      title: "SPF 30+ tous les matins",
+      detail:
+        "L'intervention cutanée au meilleur rendement, et celle que tout le monde saute. Elle protège tout le reste, y compris le rétinoïde qui rend la peau sensible au soleil.",
+      tag: "Peau",
+      cadence: "Quotidien",
+    },
+    asymmetry: {
+      title: "Passez en revue les causes de votre asymétrie",
+      detail:
+        "Alternez le côté de mastication, cessez de dormir sur la même joue et réglez la hauteur d'écran pour ne pas incliner la tête huit heures par jour. De petits leviers — mais les seuls que vous maîtrisez.",
+      tag: "Symétrie",
+      cadence: "En continu",
+    },
+    depuff: {
+      title: "Routine anti-gonflement du contour des yeux",
+      detail:
+        "Moins de sel le soir, 7,5 h de sommeil minimum, alcool modéré et tête légèrement surélevée la nuit. La plupart des plaintes sur le contour des yeux relèvent de la rétention d'eau, pas de l'os.",
+      tag: "Yeux",
+      cadence: "Quotidien",
+    },
+    proportions: {
+      title: "Coiffez-vous avec vos proportions, pas contre elles",
+      detail:
+        "Les proportions verticales sont osseuses et ne changeront pas. Une coupe à la bonne hauteur et une ligne de barbe qui allonge ou élargit l'étage inférieur changent la lecture bien plus que n'importe quel exercice.",
+      tag: "Proportions",
+      cadence: "Prochaine coupe",
+    },
+    hair: {
+      title: "Chute de cheveux : agir tôt, voir un médecin",
+      detail:
+        "Le minoxidil et le finastéride sont les seules interventions à preuves solides, et les deux marchent mieux avant que la perte soit visible. Prenez rendez-vous plutôt que d'expérimenter avec des compléments.",
+      tag: "Cheveux",
+      cadence: "Ce mois-ci",
+    },
+    grooming: {
+      title: "Passage chez un vrai barbier",
+      detail:
+        "Une coupe adaptée à la forme de votre visage, des sourcils nettoyés plutôt que dessinés et une ligne de barbe régulière. Le changement le moins cher, le plus rapide et le plus visible de cette liste.",
+      tag: "Soin",
+      cadence: "Toutes les 4 semaines",
+    },
+    sleep: {
+      title: "Le sommeil est le multiplicateur",
+      detail:
+        "7,5–9 heures à horaires réguliers. Réparation cutanée, équilibre hydrique et fraîcheur du visage suivent le sommeil de bien plus près que n'importe quel produit de votre placard.",
+      tag: "Hygiène de vie",
+      cadence: "Chaque nuit",
+    },
+  },
+};

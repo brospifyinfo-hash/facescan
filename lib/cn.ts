@@ -1,3 +1,8 @@
-export function cn(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(" ");
+type ClassValue = string | false | null | undefined | ClassValue[];
+
+export function cn(...classes: ClassValue[]): string {
+  return classes
+    .flat(Infinity as 1)
+    .filter((c): c is string => Boolean(c))
+    .join(" ");
 }

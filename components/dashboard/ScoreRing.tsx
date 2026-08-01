@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useT } from "@/lib/i18n";
 
 /**
  * The hero figure. Exactly one per view, ≥48px, in the body sans.
@@ -16,6 +17,7 @@ export function ScoreRing({
   color?: string;
   size?: number;
 }) {
+  const t = useT();
   const stroke = 12;
   const r = (size - stroke) / 2 - 10;
   const c = 2 * Math.PI * r;
@@ -102,7 +104,7 @@ export function ScoreRing({
           {score.toFixed(1)}
         </motion.span>
         <span className="mt-1 text-[11px] font-medium uppercase tracking-[0.22em] text-zinc-500">
-          out of 10
+          {t.results.outOf}
         </span>
       </div>
     </div>

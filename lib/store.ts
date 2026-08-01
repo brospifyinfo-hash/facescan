@@ -1,16 +1,45 @@
 "use client";
 
 import { create } from "zustand";
-import type { Metric } from "./metrics";
+import type { Metric, MetricId } from "./metrics";
+
+// Quiz answers are stored as STABLE KEYS, never as display strings. The
+// plan rules below compare against them, so translating the visible option
+// labels must not change the logic.
+export type Gender = "male" | "female";
+export type AgeBand = "under18" | "18-24" | "25-34" | "35plus";
+export type Insecurity = "asymmetry" | "jawline" | "eyes" | "skin" | "hair";
+export type BodyFat = "under12" | "12-18" | "19-25" | "over25" | "unsure";
+export type Mewing = "never" | "sometimes" | "daily";
+export type Goal = "model" | "dating" | "self" | "curious";
 
 export interface QuizAnswers {
-  gender?: string;
-  age?: string;
-  insecurity?: string;
-  bodyFat?: string;
-  mewing?: string;
-  goal?: string;
+  gender?: Gender;
+  age?: AgeBand;
+  insecurity?: Insecurity;
+  bodyFat?: BodyFat;
+  mewing?: Mewing;
+  goal?: Goal;
 }
+
+/** Option keys per question, index-aligned with the dictionary's option labels. */
+export const QUIZ_KEYS = [
+  ["male", "female"],
+  ["under18", "18-24", "25-34", "35plus"],
+  ["asymmetry", "jawline", "eyes", "skin", "hair"],
+  ["under12", "12-18", "19-25", "over25", "unsure"],
+  ["never", "sometimes", "daily"],
+  ["model", "dating", "self", "curious"],
+] as const;
+
+export const QUIZ_FIELDS: Array<keyof QuizAnswers> = [
+  "gender",
+  "age",
+  "insecurity",
+  "bodyFat",
+  "mewing",
+  "goal",
+];
 
 export interface PhotoData {
   dataUrl: string;
@@ -25,21 +54,17 @@ export interface MeshPaths {
 }
 
 export interface ScanMetrics {
-  /** Hero figure, 0–10 with one decimal. Derived from `harmony`. */
+  /** Hero figure, 0–10 with one decimal. */
   overall: number;
   harmony: number;
   symmetry: number;
-  /** Category composites, 0–100. */
   eyesScore: number;
   jawScore: number;
   proportionsScore: number;
   midfaceScore: number;
-  /** The full measurement set — see lib/metrics.ts. */
   metrics: Metric[];
-  /** Labels of the three lowest-scoring measurements. */
-  weakest: string[];
-  canthalTiltDeg: number;
-  canthalTiltClass: "positive" | "neutral" | "negative";
+  /** IDs of the three lowest-scoring measurements. */
+  weakest: MetricId[];
   interocularPx: number;
   landmarkCount: number;
   /** Natural width / height of the analyzed photo — drives the mesh overlay box. */
@@ -58,7 +83,6 @@ interface FunnelState {
   photos: { front?: PhotoData; side?: PhotoData };
   metrics?: ScanMetrics;
   expiresAt?: number;
-  /** Set once the (mock) payment succeeds — unlocks the full dashboard. */
   unlocked: boolean;
   email?: string;
   expiredNotice: boolean;
@@ -83,7 +107,6 @@ export const useFunnel = create<FunnelState>((set) => ({
   setPhoto: (slot, photo) =>
     set((s) => ({ photos: { ...s.photos, [slot]: photo } })),
 
-  // Scan completion starts the real privacy countdown shown on /results.
   completeScan: (metrics) =>
     set({ metrics, expiresAt: Date.now() + SESSION_TTL_MS }),
 
@@ -91,8 +114,7 @@ export const useFunnel = create<FunnelState>((set) => ({
   // (consented) full-report generation can still access them.
   unlock: (email) => set({ unlocked: true, email, expiresAt: undefined }),
 
-  // The session timer really does what the UI claims: photos and results
-  // are wiped from memory when the countdown hits zero.
+  // The session timer really does what the UI claims.
   purge: () =>
     set({
       photos: {},
