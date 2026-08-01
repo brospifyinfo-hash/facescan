@@ -231,8 +231,8 @@ export const es: Dict = {
       note: "Distancia ceja-párpado en alturas de ojo. Menor se lee como una ceja más encapotada y hundida.",
     },
     gonialAngle: {
-      label: "Ángulo goníaco",
-      note: "Ángulo en el que gira la mandíbula en el gonion. Los ángulos cerrados se leen más marcados, aunque la grasa lo enmascara mucho.",
+      label: "Ángulo del contorno mandibular",
+      note: "Ángulo de superficie del pómulo a la mandíbula y al mentón: una aproximación al filo mandibular, no el ángulo goníaco cefalométrico. La grasa corporal lo enmascara mucho.",
     },
     jawWidth: {
       label: "Ancho mandíbula-pómulo",

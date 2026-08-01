@@ -51,29 +51,37 @@ export const SPECS: Record<MetricId, Spec> = {
     category: "eyes", unit: "×", ideal: [1.4, 2.4], scale: [0.6, 3.6],
     tol: 1.2, fmt: times, demo: [1.1, 2.8],
   },
+  // NOT the cephalometric gonial angle (118–130° on an X-ray) — this is the
+  // surface contour angle cheek→jaw→chin, which reads ~157° on a canonical
+  // face. Band centred on what the proxy actually measures.
   gonialAngle: {
-    category: "jaw", unit: "°", ideal: [118, 130], scale: [100, 150],
-    tol: 22, fmt: (v) => `${v.toFixed(1)}°`, demo: [112, 140],
+    category: "jaw", unit: "°", ideal: [150, 164], scale: [130, 185],
+    tol: 20, fmt: (v) => `${v.toFixed(1)}°`, demo: [144, 172],
   },
   jawWidth: {
     category: "jaw", unit: "", ideal: [0.74, 0.84], scale: [0.58, 1.0],
     tol: 0.16, fmt: plain, demo: [0.68, 0.9],
   },
   chinRatio: {
-    category: "jaw", unit: ":1", ideal: [1.8, 2.4], scale: [1.0, 3.6],
+    category: "jaw", unit: ":1", ideal: [1.65, 2.35], scale: [1.0, 3.6],
     tol: 0.9, fmt: toOne, demo: [1.4, 2.8],
   },
   thirds: {
     category: "proportions", unit: "%", ideal: [0, 6], scale: [0, 30],
     tol: 18, fmt: (v) => `${v.toFixed(1)}%`, demo: [1, 14],
   },
+  // The "five equal fifths" canon is an idealisation: a real average face is
+  // ~4.4 eye-widths wide, not 5. Band brackets the anthropometric mean.
   fifths: {
-    category: "proportions", unit: "×", ideal: [4.6, 5.4], scale: [3.6, 6.6],
-    tol: 1.2, fmt: times, demo: [4.2, 5.9],
+    category: "proportions", unit: "×", ideal: [4.15, 4.75], scale: [3.4, 6.0],
+    tol: 1.0, fmt: times, demo: [3.9, 5.1],
   },
+  // Measured against the mid-brow landmark, which sits higher than the brow
+  // line used in the fWHR literature — hence a lower band than the published
+  // 1.9 mean.
   fwhr: {
-    category: "proportions", unit: "", ideal: [1.75, 2.05], scale: [1.3, 2.6],
-    tol: 0.45, fmt: plain, demo: [1.6, 2.2],
+    category: "proportions", unit: "", ideal: [1.58, 1.86], scale: [1.2, 2.4],
+    tol: 0.4, fmt: plain, demo: [1.45, 2.0],
   },
   facialIndex: {
     category: "proportions", unit: "", ideal: [1.28, 1.45], scale: [1.0, 1.8],
@@ -87,13 +95,14 @@ export const SPECS: Record<MetricId, Spec> = {
     category: "midface", unit: "", ideal: [0.23, 0.28], scale: [0.15, 0.38],
     tol: 0.08, fmt: plain, demo: [0.2, 0.32],
   },
+  // 1.6:1 is the aesthetic ideal; the anatomical mean is nearer 1.25.
   lipRatio: {
-    category: "midface", unit: ":1", ideal: [1.3, 1.9], scale: [0.6, 3.0],
-    tol: 0.9, fmt: toOne, demo: [1.0, 2.3],
+    category: "midface", unit: ":1", ideal: [1.05, 1.65], scale: [0.6, 2.6],
+    tol: 0.8, fmt: toOne, demo: [0.9, 2.0],
   },
   midface: {
-    category: "midface", unit: "", ideal: [0.95, 1.12], scale: [0.7, 1.5],
-    tol: 0.28, fmt: plain, demo: [0.85, 1.25],
+    category: "midface", unit: "", ideal: [0.8, 0.98], scale: [0.6, 1.3],
+    tol: 0.25, fmt: plain, demo: [0.72, 1.08],
   },
 };
 

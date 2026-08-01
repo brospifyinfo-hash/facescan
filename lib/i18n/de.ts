@@ -231,8 +231,8 @@ export const de: Dict = {
       note: "Abstand Braue zu Lid, in Augenhöhen. Niedriger wirkt kapuzenartiger und tiefer gesetzt.",
     },
     gonialAngle: {
-      label: "Kieferwinkel",
-      note: "Winkel, in dem der Kiefer am Kieferwinkelpunkt abknickt. Engere Winkel wirken schärfer, Körperfett überdeckt das aber stark.",
+      label: "Kieferkontur-Winkel",
+      note: "Oberflächenwinkel vom Jochbein über den Kiefer zum Kinn — eine Näherung für die Schärfe der Kieferlinie, nicht der kephalometrische Kieferwinkel. Körperfett überdeckt das stark.",
     },
     jawWidth: {
       label: "Kiefer-zu-Wangen-Breite",

@@ -231,8 +231,8 @@ export const en: Dict = {
       note: "Brow-to-eyelid distance in eye-heights. Lower reads as a more hooded, deeper-set brow.",
     },
     gonialAngle: {
-      label: "Gonial angle",
-      note: "The angle the jaw turns at the gonion. Tighter angles read as sharper, though body fat masks this heavily.",
+      label: "Jaw contour angle",
+      note: "Surface angle from cheekbone to jaw to chin — an approximation of jaw sharpness, not the cephalometric gonial angle. Body fat masks this heavily.",
     },
     jawWidth: {
       label: "Jaw-to-cheek width",

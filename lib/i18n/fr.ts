@@ -231,8 +231,8 @@ export const fr: Dict = {
       note: "Distance sourcil-paupière en hauteurs d'œil. Plus bas donne un regard plus encapuchonné et enfoncé.",
     },
     gonialAngle: {
-      label: "Angle goniaque",
-      note: "Angle de rupture de la mâchoire au gonion. Les angles fermés paraissent plus ciselés, mais la masse grasse le masque fortement.",
+      label: "Angle du contour mandibulaire",
+      note: "Angle de surface de la pommette à la mâchoire puis au menton — une approximation du ciselé, pas l'angle goniaque céphalométrique. La masse grasse le masque fortement.",
     },
     jawWidth: {
       label: "Largeur mâchoire/pommettes",
