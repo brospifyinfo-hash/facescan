@@ -150,11 +150,18 @@ export const fr: Dict = {
     legendBand: "Plage normale",
     legendNeedle: "Votre valeur",
     legendScale: "Extrémités de l'échelle",
+    ringLegend:
+      "Chaque anneau montre la même chose : la proximité de cette mesure avec sa plage de référence, 0–100. Touchez-en un pour son échelle exacte.",
+    percentileBetter: "Mieux que {p} %",
     percentileTop: "Top {n} %",
     percentileCaption:
-      "Vos proportions sont plus proches des plages de référence publiées que celles de {below} % de la distribution de comparaison modélisée.",
+      "de la distribution de comparaison modélisée, selon la proximité aux proportions de référence publiées.",
     percentileWhat:
       "Calculé à partir d'un modèle de 60 000 visages générés autour de moyennes anthropométriques publiées — ce n'est pas un classement de beauté, ni encore basé sur de vrais utilisateurs.",
+    tierTitle: "Votre palier",
+    tierSub: "Sept paliers selon la conformité des proportions",
+    tierNote:
+      "Les visages ne diffèrent que par les proportions que le scan mesure — effilé de la mâchoire, longueur du menton, hauteur de l'étage moyen. Ce n'est pas une échelle de beauté.",
   },
   checkout: {
     eyebrow: "Déblocage unique",
@@ -226,10 +233,6 @@ export const fr: Dict = {
       label: "Rapport d'écartement oculaire",
       note: "Distance entre les canthus internes rapportée à la largeur du visage. Le canon néoclassique avoisine 0,45.",
     },
-    eyeSpacing: {
-      label: "Écartement des yeux",
-      note: "Écart entre les yeux mesuré en largeurs d'œil. Le canon classique vaut exactement un.",
-    },
     eyeAspect: {
       label: "Ouverture palpébrale",
       note: "Hauteur d'ouverture rapportée à la largeur. Une valeur basse peut simplement signifier que vous avez cligné — refaites la photo.",
@@ -284,27 +287,37 @@ export const fr: Dict = {
     },
   },
   bands: {
+    elite: {
+      label: "True Adam",
+      blurb:
+        "Presque chaque mesure se place au centre de sa plage de référence. Rare, et il reste peu à corriger.",
+    },
+    emerging: {
+      label: "Sub 5",
+      blurb:
+        "Plusieurs mesures tombent juste en dehors de leur plage de référence. Ce sont les gains les plus faciles de votre plan.",
+    },
     exceptional: {
-      label: "Exceptionnel",
+      label: "Chad",
       blurb:
         "Géométrie de haut niveau sur presque toutes les mesures. Vos leviers sont dans l'affinage, pas la correction.",
     },
     strong: {
-      label: "Solide+",
+      label: "HTN",
       blurb:
         "Confortablement au-dessus de la plage de référence. Quelques ajustements ciblés vont loin d'ici.",
     },
     solid: {
-      label: "Solide",
+      label: "MTN",
       blurb: "Bonne base avec une marge de progression claire et accessible.",
     },
     reference: {
-      label: "Plage de référence",
+      label: "LTN",
       blurb:
         "Pleinement dans la moyenne — et c'est exactement là que se trouvent les plus gros gains visibles.",
     },
     developing: {
-      label: "En progression",
+      label: "Sub 3",
       blurb:
         "Beaucoup de marge. Commencez par le haut de votre plan et descendez — les premiers points pèsent le plus.",
     },

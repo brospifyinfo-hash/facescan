@@ -11,6 +11,7 @@ import { FaceMesh } from "@/components/dashboard/FaceMesh";
 import { RadarChart } from "@/components/dashboard/RadarChart";
 import { ScoreRing, MiniRing } from "@/components/dashboard/ScoreRing";
 import { MetricsPanel } from "@/components/dashboard/MetricsPanel";
+import { TierLadder } from "@/components/dashboard/TierLadder";
 import { MeasurementTable } from "@/components/dashboard/MeasurementTable";
 import { LockedSection } from "@/components/dashboard/LockedSection";
 import { ActionPlan } from "@/components/dashboard/ActionPlan";
@@ -176,7 +177,12 @@ export default function ResultsPage() {
             </div>
           </LockedSection>
 
-          {/* All sixteen dials in one panel */}
+          {/* Visual tier ladder */}
+          <LockedSection locked={locked}>
+            <TierLadder current={band.id} />
+          </LockedSection>
+
+          {/* All fifteen rings in one panel */}
           <LockedSection locked={locked}>
             <MetricsPanel metrics={metrics.metrics} />
           </LockedSection>

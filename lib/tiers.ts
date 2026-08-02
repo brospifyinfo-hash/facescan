@@ -1,16 +1,18 @@
 // Score band selection.
 //
-// Deliberately NOT the looksmaxxing tier ladder ("subhuman / incel / normie /
-// chadlite / chad"). That vocabulary comes from a community with documented
-// links to self-harm, and telling a paying user they rank "subhuman" is
-// harmful for zero informational gain. These bands carry the same signal.
+// Seven tiers, deliberately NOT the looksmaxxing ladder ("sub 3 / sub 5 /
+// ltn / mtn / htn / chad / true adam"). That vocabulary — and the grotesque
+// caricature drawn for its bottom rungs — comes from a community with
+// documented links to body dysmorphia and self-harm. Telling a paying user
+// they rank "sub 3" beside a disfigured cartoon is an insult sold as an
+// assessment, and it conveys nothing the neutral name doesn't.
 //
-// Thresholds are set against the calibrated scorer in metrics.ts: landing
-// inside the reference band on 16 independent measurements at once is rare,
-// so the top band stays rare. A dashboard that calls everyone exceptional
-// tells the user nothing.
+// The visual ladder itself is kept: see components/dashboard/TierLadder.tsx,
+// which draws seven neutral faces whose PROPORTIONS vary — which is what the
+// score actually measures.
 //
-// Labels live in lib/i18n; this module only picks the band and its colour.
+// Thresholds are set against the modelled distribution in lib/percentile.ts
+// (median 6.5), so the top tiers stay genuinely rare.
 
 import type { BandId } from "./metrics";
 
@@ -19,10 +21,18 @@ export interface Band {
   color: string;
 }
 
+const THRESHOLDS: Array<[number, BandId, string]> = [
+  [8.6, "elite", "#95BF47"],
+  [8.0, "exceptional", "#95BF47"],
+  [7.4, "strong", "#9DC44F"],
+  [6.8, "solid", "#A8C55F"],
+  [6.0, "reference", "#C8BC5E"],
+  [5.2, "emerging", "#D4B057"],
+];
+
 export function bandFor(overall: number): Band {
-  if (overall >= 8.6) return { id: "exceptional", color: "#95BF47" };
-  if (overall >= 7.6) return { id: "strong", color: "#95BF47" };
-  if (overall >= 6.6) return { id: "solid", color: "#A8C55F" };
-  if (overall >= 5.4) return { id: "reference", color: "#C8BC5E" };
+  for (const [min, id, color] of THRESHOLDS) {
+    if (overall >= min) return { id, color };
+  }
   return { id: "developing", color: "#D9A552" };
 }

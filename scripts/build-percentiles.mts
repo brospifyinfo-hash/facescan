@@ -86,21 +86,25 @@ for (let i = 0; i < N; i++) {
   scores.push(
     measure(
       buildFace({
-        bizygomatic: draw(MM.bizygomatic, 0.05),
-        bigonial: draw(MM.bigonial, 0.07),
-        faceHeight: draw(MM.trichionMenton, 0.05),
-        eyeFissureWidth: draw(MM.eyeFissureWidth, 0.07),
-        intercanthal: draw(MM.intercanthal, 0.09),
-        eyeFissureHeight: draw(MM.eyeFissureHeight, 0.13),
-        browToLid: draw(MM.browToLid, 0.18),
-        noseWidth: draw(MM.noseWidth, 0.09),
-        mouthWidth: draw(MM.mouthWidth, 0.08),
-        philtrum: draw(MM.philtrum, 0.15),
-        upperVermillion: draw(MM.upperVermillion, 0.2),
-        lowerVermillion: draw(MM.lowerVermillion, 0.2),
-        tiltDeg: 4.5 + gauss() * 3,
-        thirdSkew: gauss() * 6,
-        asym: gauss() * 2,
+        // Coefficients of variation roughly doubled from the first pass.
+        // The tight version produced scores only in 7.4-8.9, so the lookup
+        // table was all zeros below that and the UI reported a meaningless
+        // "top 100%" for anyone under the model's floor.
+        bizygomatic: draw(MM.bizygomatic, 0.09),
+        bigonial: draw(MM.bigonial, 0.13),
+        faceHeight: draw(MM.trichionMenton, 0.09),
+        eyeFissureWidth: draw(MM.eyeFissureWidth, 0.13),
+        intercanthal: draw(MM.intercanthal, 0.16),
+        eyeFissureHeight: draw(MM.eyeFissureHeight, 0.24),
+        browToLid: draw(MM.browToLid, 0.32),
+        noseWidth: draw(MM.noseWidth, 0.16),
+        mouthWidth: draw(MM.mouthWidth, 0.14),
+        philtrum: draw(MM.philtrum, 0.26),
+        upperVermillion: draw(MM.upperVermillion, 0.34),
+        lowerVermillion: draw(MM.lowerVermillion, 0.34),
+        tiltDeg: 4.5 + gauss() * 5,
+        thirdSkew: gauss() * 11,
+        asym: gauss() * 4,
       }),
     ).overall,
   );

@@ -170,7 +170,6 @@ export function measure(flat: Point[]): Measured {
   const metrics: Metric[] = [
     makeMetric("canthalTilt", canthalTiltDeg),
     makeMetric("esr", interpupillary / bizygomatic),
-    makeMetric("eyeSpacing", intercanthal / (eyeWidth || 1e-6)),
     makeMetric("eyeAspect", eyeHeight / (eyeWidth || 1e-6)),
     makeMetric("browPosition", browGap / (eyeHeight || 1e-6)),
     makeMetric("gonialAngle", gonialAngle),

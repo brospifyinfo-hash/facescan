@@ -11,23 +11,22 @@ import {
   type Metric,
 } from "@/lib/metrics";
 import { MetricDial } from "./MetricDial";
+import { RangeBar } from "./RangeBar";
 import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/cn";
 
 type Filter = "all" | CategoryId;
 
 /**
- * All sixteen measurements in one panel: a filter row, a dense dial grid,
- * and a single shared detail strip. Previously this was four separate glass
- * cards each with its own padding and heading — on a phone that was roughly
- * five screens of scroll for information that fits in one.
+ * All fifteen measurements in one panel: a filter row, a dense ring grid
+ * where every ring means the same thing, and one shared detail strip
+ * carrying the exact scale for whichever ring is selected.
  */
 export function MetricsPanel({ metrics }: { metrics: Metric[] }) {
   const t = useT();
   const [filter, setFilter] = useState<Filter>("all");
 
-  // Default the detail strip to the weakest metric — the most useful thing
-  // to read first.
+  // Default to the weakest measurement — the most useful thing to read first.
   const weakest = useMemo(
     () => [...metrics].sort((a, b) => a.score - b.score)[0],
     [metrics],
@@ -47,7 +46,6 @@ export function MetricsPanel({ metrics }: { metrics: Metric[] }) {
 
   return (
     <section className="glass rounded-3xl p-4 sm:p-6">
-      {/* Header + filters */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="flex items-center gap-2 text-base font-semibold tracking-tight sm:text-lg">
           <span aria-hidden>🧬</span> {t.results.breakdown}
@@ -57,8 +55,8 @@ export function MetricsPanel({ metrics }: { metrics: Metric[] }) {
         </span>
       </div>
 
-      {/* Wraps rather than scrolls: a hidden horizontal scroll strip is
-          undiscoverable on a phone, and five tabs never fit at 375px. */}
+      {/* Wraps rather than scrolls: a hidden horizontal strip is
+          undiscoverable on a phone. */}
       <div className="mt-4 flex flex-wrap gap-1.5">
         {(["all", ...CATEGORY_ORDER] as Filter[]).map((f) => {
           const active = filter === f;
@@ -89,7 +87,12 @@ export function MetricsPanel({ metrics }: { metrics: Metric[] }) {
         })}
       </div>
 
-      {/* Detail strip — one shared explanation instead of sixteen paragraphs */}
+      {/* How to read the grid — stated once. */}
+      <p className="mt-3 text-[10px] leading-relaxed text-zinc-500">
+        {t.results.ringLegend}
+      </p>
+
+      {/* Detail strip — one shared explanation with the full scale */}
       <AnimatePresence mode="wait">
         <motion.div
           key={selected.id}
@@ -97,7 +100,7 @@ export function MetricsPanel({ metrics }: { metrics: Metric[] }) {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -6 }}
           transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-          className="glass-subtle mt-4 rounded-2xl p-4"
+          className="glass-subtle mt-3 rounded-2xl p-4"
         >
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <span className="text-base" aria-hidden>
@@ -108,9 +111,6 @@ export function MetricsPanel({ metrics }: { metrics: Metric[] }) {
             </span>
             <span className="text-sm font-semibold tabular-nums text-accent">
               {selected.display}
-            </span>
-            <span className="text-[11px] tabular-nums text-zinc-500">
-              {t.results.reference} {selected.ideal[0]}–{selected.ideal[1]}
             </span>
             <span
               className={cn(
@@ -124,38 +124,19 @@ export function MetricsPanel({ metrics }: { metrics: Metric[] }) {
               {t.statusShort[selected.position]}
             </span>
           </div>
+
+          <RangeBar metric={selected} />
+
           <p className="mt-2 text-[12px] leading-relaxed text-zinc-400">
             {t.metrics[selected.id].note}
           </p>
         </motion.div>
       </AnimatePresence>
 
-      {/* Legend — the dials are a speedometer; say so once rather than
-          leaving every reader to infer it. */}
-      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[10px] text-zinc-500">
-        <span className="flex items-center gap-1.5">
-          <svg width="16" height="7" aria-hidden>
-            <path d="M1 3.5 H15" stroke="#95BF47" strokeWidth={5} strokeLinecap="round" opacity={0.75} />
-          </svg>
-          {t.results.legendBand}
-        </span>
-        <span className="flex items-center gap-1.5">
-          <svg width="12" height="12" aria-hidden>
-            <line x1="1" y1="11" x2="11" y2="1" stroke="#95BF47" strokeWidth={2} strokeLinecap="round" />
-            <circle cx="1.5" cy="10.5" r="2" fill="#95BF47" />
-          </svg>
-          {t.results.legendNeedle}
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="tabular-nums text-zinc-600">0 — 10</span>
-          {t.results.legendScale}
-        </span>
-      </div>
-
-      {/* Dial grid */}
+      {/* 15 rings fill 3 and 5 columns exactly. */}
       <motion.div
         layout
-        className="mt-3 grid grid-cols-3 gap-1 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8"
+        className="mt-3 grid grid-cols-3 gap-1 sm:grid-cols-5"
       >
         <AnimatePresence mode="popLayout">
           {shown.map((m, i) => (

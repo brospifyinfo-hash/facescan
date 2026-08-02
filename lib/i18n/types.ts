@@ -105,9 +105,16 @@ export interface Dict {
     legendBand: string;
     legendNeedle: string;
     legendScale: string;
+    ringLegend: string;
+    /** Headline, always meaningful: "Better than {p}%". */
+    percentileBetter: string;
+    /** Badge, only rendered when the result is genuinely in the upper half. */
     percentileTop: string; // "Top {n}%"
     percentileCaption: string;
     percentileWhat: string;
+    tierTitle: string;
+    tierSub: string;
+    tierNote: string;
   };
   checkout: {
     eyebrow: string;

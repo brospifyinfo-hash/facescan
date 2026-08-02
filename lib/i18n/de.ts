@@ -147,14 +147,21 @@ export const de: Dict = {
       "Jeder Wert ist eine geometrische Messung, die auf deinem Gerät aus Gesichtslandmarken berechnet und mit veröffentlichten Referenzbereichen verglichen wird. Orientierung zur Selbstoptimierung — keine medizinische, dermatologische oder psychologische Beurteilung und kein Urteil über das Aussehen eines Menschen.",
     reference: "Ref.",
     tableHead: ["Messwert", "Wert", "Referenz", "Status", "Score"],
-    legendBand: "Normalbereich",
+    legendBand: "Normbereich",
     legendNeedle: "Dein Wert",
     legendScale: "Skalenenden",
+    ringLegend:
+      "Jeder Ring zeigt dasselbe: wie nah dieser Messwert an seinem Referenzbereich liegt, 0–100. Tippe einen an für die genaue Skala.",
+    percentileBetter: "Besser als {p} %",
     percentileTop: "Top {n} %",
     percentileCaption:
-      "Deine Proportionen liegen näher an den veröffentlichten Referenzbereichen als bei {below} % der modellierten Vergleichsverteilung.",
+      "der modellierten Vergleichsverteilung — gemessen an der Nähe zu den veröffentlichten Referenzproportionen.",
     percentileWhat:
       "Berechnet aus einem Modell von 60.000 Gesichtern rund um veröffentlichte anthropometrische Mittelwerte — keine Attraktivitäts-Rangliste und noch nicht auf Basis echter Nutzer.",
+    tierTitle: "Deine Stufe",
+    tierSub: "Sieben Stufen nach Proportionstreue",
+    tierNote:
+      "Die Gesichter unterscheiden sich nur in den Proportionen, die der Scan misst — Kieferverjüngung, Kinnlänge, Mittelgesichtshöhe. Sie sind keine Attraktivitätsskala.",
   },
   checkout: {
     eyebrow: "Einmalige Freischaltung",
@@ -226,10 +233,6 @@ export const de: Dict = {
       label: "Augenabstands-Verhältnis",
       note: "Abstand der inneren Augenwinkel im Verhältnis zur Gesichtsbreite. Der neoklassische Kanon liegt bei etwa 0,45.",
     },
-    eyeSpacing: {
-      label: "Augenabstand",
-      note: "Lücke zwischen den Augen, gemessen in Augenbreiten. Der klassische Kanon ist exakt eins.",
-    },
     eyeAspect: {
       label: "Lidspaltenöffnung",
       note: "Höhe der Augenöffnung im Verhältnis zur Breite. Niedrige Werte können schlicht heißen, dass du geblinzelt hast — dann neu aufnehmen.",
@@ -284,27 +287,37 @@ export const de: Dict = {
     },
   },
   bands: {
+    elite: {
+      label: "True Adam",
+      blurb:
+        "Nahezu jeder Messwert liegt mitten in seinem Referenzbereich. Selten — und da bleibt kaum etwas zu korrigieren.",
+    },
+    emerging: {
+      label: "Sub 5",
+      blurb:
+        "Mehrere Messwerte liegen knapp außerhalb ihres Referenzbereichs. Genau das sind die günstigsten Erfolge in deinem Plan.",
+    },
     exceptional: {
-      label: "Herausragend",
+      label: "Chad",
       blurb:
         "Spitzenwerte über nahezu alle Messungen. Deine Hebel liegen in der Feinabstimmung, nicht in der Korrektur.",
     },
     strong: {
-      label: "Stark",
+      label: "HTN",
       blurb:
         "Deutlich über dem Referenzbereich. Ein paar gezielte Anpassungen bringen dich von hier aus weit.",
     },
     solid: {
-      label: "Solide",
+      label: "MTN",
       blurb: "Gute Ausgangslage mit klarem, machbarem Verbesserungspotenzial.",
     },
     reference: {
-      label: "Referenzbereich",
+      label: "LTN",
       blurb:
         "Genau im Durchschnitt — und genau dort liegen die größten sichtbaren Gewinne.",
     },
     developing: {
-      label: "Ausbaufähig",
+      label: "Sub 3",
       blurb:
         "Viel Luft nach oben. Fang oben in deinem Plan an und arbeite dich runter — die ersten Punkte bewegen am meisten.",
     },

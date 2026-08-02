@@ -150,11 +150,18 @@ export const en: Dict = {
     legendBand: "Normal range",
     legendNeedle: "Your value",
     legendScale: "Scale ends",
+    ringLegend:
+      "Every ring shows the same thing: how close that measurement sits to its reference range, 0–100. Tap one for its exact scale.",
+    percentileBetter: "Better than {p}%",
     percentileTop: "Top {n}%",
     percentileCaption:
-      "Your proportions sit closer to the published reference ranges than {below}% of the modelled comparison distribution.",
+      "of the modelled comparison distribution, by closeness to the published reference proportions.",
     percentileWhat:
       "Computed from a model of 60,000 faces drawn around published anthropometric means — not a ranking of attractiveness, and not yet based on real users.",
+    tierTitle: "Your tier",
+    tierSub: "Seven bands by proportion conformity",
+    tierNote:
+      "The faces differ only in the proportions the scan measures — jaw taper, chin length, midface height. They are not a scale of attractiveness.",
   },
   checkout: {
     eyebrow: "One-time unlock",
@@ -226,10 +233,6 @@ export const en: Dict = {
       label: "Eye separation ratio",
       note: "Distance between the inner eye corners relative to face width. The neoclassical canon sits near 0.45.",
     },
-    eyeSpacing: {
-      label: "Eye spacing",
-      note: "Gap between the eyes measured in eye-widths. The classical canon is exactly one.",
-    },
     eyeAspect: {
       label: "Eye aperture",
       note: "Eye opening height relative to its width. Low values can simply mean you blinked — retake if it looks off.",
@@ -283,28 +286,42 @@ export const en: Dict = {
       note: "Eye-line to lip distance against eye spacing. Compact midfaces are generally read as more youthful.",
     },
   },
+  // Tier names follow the looksmaxxing scale the audience already uses.
+  // The blurbs deliberately describe the MEASUREMENTS, because that is what
+  // was computed — the scale has never been validated against attractiveness
+  // ratings, and `tierNote` says so on screen.
   bands: {
+    elite: {
+      label: "True Adam",
+      blurb:
+        "Almost every measurement sits at the centre of its reference range. Rare, and there is little left to correct.",
+    },
     exceptional: {
-      label: "Exceptional",
+      label: "Chad",
       blurb:
         "Top-band geometry across nearly every measurement. Your levers are refinement, not correction.",
     },
     strong: {
-      label: "Strong",
+      label: "HTN",
       blurb:
         "Comfortably above the reference range. A few targeted fixes go a long way from here.",
     },
     solid: {
-      label: "Solid",
+      label: "MTN",
       blurb: "A good baseline with clear, addressable upside.",
     },
     reference: {
-      label: "Reference Range",
+      label: "LTN",
       blurb:
         "Squarely typical — which is exactly where the biggest visible gains live.",
     },
+    emerging: {
+      label: "Sub 5",
+      blurb:
+        "Several measurements sit just outside their reference range. Those are the cheapest wins on your plan.",
+    },
     developing: {
-      label: "Developing",
+      label: "Sub 3",
       blurb:
         "Plenty of headroom. Start at the top of your plan and work down — the early items move the most.",
     },

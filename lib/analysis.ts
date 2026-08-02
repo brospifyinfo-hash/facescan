@@ -22,6 +22,7 @@ const MODEL_URL =
   "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
 
 let instance: FaceLandmarker | null = null;
+let permissive: FaceLandmarker | null = null;
 
 export async function getLandmarker(): Promise<FaceLandmarker> {
   if (instance) return instance;
@@ -32,6 +33,42 @@ export async function getLandmarker(): Promise<FaceLandmarker> {
     numFaces: 1,
   });
   return instance;
+}
+
+/**
+ * Second detector with lowered thresholds, used only for the side profile.
+ *
+ * The default 0.5 confidence is tuned for frontal faces and rejects most
+ * three-quarter and profile shots outright, which is why the side panel kept
+ * falling back to the plain grid. Accuracy matters less here — nothing is
+ * measured from this photo, the landmarks only drive the overlay.
+ */
+async function getPermissiveLandmarker(): Promise<FaceLandmarker> {
+  if (permissive) return permissive;
+  const fileset = await FilesetResolver.forVisionTasks(WASM_BASE);
+  permissive = await FaceLandmarker.createFromOptions(fileset, {
+    baseOptions: { modelAssetPath: MODEL_URL },
+    runningMode: "IMAGE",
+    numFaces: 1,
+    minFaceDetectionConfidence: 0.15,
+    minFacePresenceConfidence: 0.15,
+    minTrackingConfidence: 0.15,
+  });
+  return permissive;
+}
+
+/** Draw an image to a canvas, optionally mirrored. */
+function toCanvas(image: HTMLImageElement, mirror: boolean): HTMLCanvasElement {
+  const c = document.createElement("canvas");
+  c.width = image.naturalWidth;
+  c.height = image.naturalHeight;
+  const ctx = c.getContext("2d")!;
+  if (mirror) {
+    ctx.translate(c.width, 0);
+    ctx.scale(-1, 1);
+  }
+  ctx.drawImage(image, 0, 0);
+  return c;
 }
 
 export function loadImage(dataUrl: string): Promise<HTMLImageElement> {
@@ -91,14 +128,39 @@ function meshFrom(flat: Point[]) {
 export async function detectMesh(
   image: HTMLImageElement,
 ): Promise<{ mesh: MeshPaths; aspect: number } | null> {
-  const landmarker = await getLandmarker();
-  const raw = landmarker.detect(image).faceLandmarks?.[0];
-  if (!raw || raw.length < 468) return null;
-  const flat: Point[] = raw.map((pt) => ({ x: pt.x, y: pt.y }));
-  return {
-    mesh: meshFrom(flat),
-    aspect: image.naturalWidth / image.naturalHeight,
-  };
+  const aspect = image.naturalWidth / image.naturalHeight;
+
+  // Three passes, cheapest first. The mirrored retry matters because the
+  // detector is noticeably better at one facing direction than the other,
+  // so a left-facing profile that fails often succeeds flipped.
+  const attempts: Array<() => Promise<Point[] | null>> = [
+    async () => {
+      const r = (await getLandmarker()).detect(image).faceLandmarks?.[0];
+      return r && r.length >= 468 ? r.map((p) => ({ x: p.x, y: p.y })) : null;
+    },
+    async () => {
+      const r = (await getPermissiveLandmarker()).detect(image).faceLandmarks?.[0];
+      return r && r.length >= 468 ? r.map((p) => ({ x: p.x, y: p.y })) : null;
+    },
+    async () => {
+      const lm = await getPermissiveLandmarker();
+      const r = lm.detect(toCanvas(image, true)).faceLandmarks?.[0];
+      // Un-mirror the x coordinates so the overlay lands on the real photo.
+      return r && r.length >= 468
+        ? r.map((p) => ({ x: 1 - p.x, y: p.y }))
+        : null;
+    },
+  ];
+
+  for (const attempt of attempts) {
+    try {
+      const flat = await attempt();
+      if (flat) return { mesh: meshFrom(flat), aspect };
+    } catch {
+      /* try the next pass */
+    }
+  }
+  return null;
 }
 
 /** Analyze the front-profile photo. Returns null when no face is detected. */

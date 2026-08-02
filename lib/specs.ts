@@ -39,10 +39,6 @@ export const SPECS: Record<MetricId, Spec> = {
     category: "eyes", unit: "", ideal: [0.43, 0.47], scale: [0.34, 0.56],
     tol: 0.08, fmt: plain, demo: [0.4, 0.5],
   },
-  eyeSpacing: {
-    category: "eyes", unit: "×", ideal: [0.92, 1.08], scale: [0.6, 1.4],
-    tol: 0.3, fmt: times, demo: [0.82, 1.15],
-  },
   eyeAspect: {
     category: "eyes", unit: "", ideal: [0.28, 0.38], scale: [0.14, 0.52],
     tol: 0.16, fmt: plain, demo: [0.24, 0.4],

@@ -150,11 +150,18 @@ export const es: Dict = {
     legendBand: "Rango normal",
     legendNeedle: "Tu valor",
     legendScale: "Extremos de la escala",
+    ringLegend:
+      "Cada anillo muestra lo mismo: lo cerca que está esa medida de su rango de referencia, 0–100. Toca uno para ver su escala exacta.",
+    percentileBetter: "Mejor que el {p} %",
     percentileTop: "Top {n} %",
     percentileCaption:
-      "Tus proporciones están más cerca de los rangos de referencia publicados que el {below} % de la distribución de comparación modelada.",
+      "de la distribución de comparación modelada, por cercanía a las proporciones de referencia publicadas.",
     percentileWhat:
       "Calculado a partir de un modelo de 60.000 rostros generados en torno a medias antropométricas publicadas: no es una clasificación de atractivo ni se basa todavía en usuarios reales.",
+    tierTitle: "Tu nivel",
+    tierSub: "Siete niveles por conformidad de proporciones",
+    tierNote:
+      "Los rostros solo difieren en las proporciones que mide el escaneo: afilado mandibular, longitud del mentón, altura del tercio medio. No son una escala de atractivo.",
   },
   checkout: {
     eyebrow: "Desbloqueo único",
@@ -226,10 +233,6 @@ export const es: Dict = {
       label: "Índice de separación ocular",
       note: "Distancia entre los cantos internos respecto al ancho facial. El canon neoclásico ronda 0,45.",
     },
-    eyeSpacing: {
-      label: "Separación de los ojos",
-      note: "Hueco entre los ojos medido en anchos de ojo. El canon clásico es exactamente uno.",
-    },
     eyeAspect: {
       label: "Apertura ocular",
       note: "Altura de la apertura respecto a su ancho. Un valor bajo puede significar simplemente que parpadeaste — repite la foto.",
@@ -284,27 +287,37 @@ export const es: Dict = {
     },
   },
   bands: {
+    elite: {
+      label: "True Adam",
+      blurb:
+        "Casi todas las medidas se sitúan en el centro de su rango de referencia. Poco común, y queda poco que corregir.",
+    },
+    emerging: {
+      label: "Sub 5",
+      blurb:
+        "Varias medidas quedan justo fuera de su rango de referencia. Ahí están las mejoras más baratas de tu plan.",
+    },
     exceptional: {
-      label: "Excepcional",
+      label: "Chad",
       blurb:
         "Geometría de primer nivel en casi todas las medidas. Tus palancas están en el refinamiento, no en la corrección.",
     },
     strong: {
-      label: "Fuerte",
+      label: "HTN",
       blurb:
         "Cómodamente por encima del rango de referencia. Unos pocos ajustes concretos rinden mucho desde aquí.",
     },
     solid: {
-      label: "Sólido",
+      label: "MTN",
       blurb: "Buena base con un margen de mejora claro y abordable.",
     },
     reference: {
-      label: "Rango de referencia",
+      label: "LTN",
       blurb:
         "Plenamente en la media — que es justo donde están las mayores mejoras visibles.",
     },
     developing: {
-      label: "En desarrollo",
+      label: "Sub 3",
       blurb:
         "Mucho margen. Empieza por lo primero de tu plan y baja — los primeros puntos son los que más mueven.",
     },

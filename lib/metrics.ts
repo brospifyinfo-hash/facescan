@@ -11,10 +11,12 @@
 
 export type CategoryId = "eyes" | "jaw" | "proportions" | "midface";
 
+// 15 metrics, not 16: `eyeSpacing` (intercanthal / eye width) measured
+// essentially the same thing as `esr` (interpupillary / face width) with a
+// weaker reference basis, and 15 fills a 3- or 5-column grid exactly.
 export type MetricId =
   | "canthalTilt"
   | "esr"
-  | "eyeSpacing"
   | "eyeAspect"
   | "browPosition"
   | "gonialAngle"
@@ -46,7 +48,6 @@ export const CATEGORY_EMOJI: Record<CategoryId, string> = {
 export const METRIC_EMOJI: Record<MetricId, string> = {
   canthalTilt: "👁️",
   esr: "🎯",
-  eyeSpacing: "↔️",
   eyeAspect: "🌙",
   browPosition: "🪶",
   gonialAngle: "📐",
@@ -135,12 +136,26 @@ export const POSITION_ICON: Record<Metric["position"], string> = {
   above: "↑",
 };
 
+// Seven tiers so the dashboard can show a visual ladder with the user's
+// position on it. Ordered low → high; TIER_ORDER drives the rendering.
 export type BandId =
-  | "exceptional"
-  | "strong"
-  | "solid"
+  | "developing"
+  | "emerging"
   | "reference"
-  | "developing";
+  | "solid"
+  | "strong"
+  | "exceptional"
+  | "elite";
+
+export const TIER_ORDER: BandId[] = [
+  "developing",
+  "emerging",
+  "reference",
+  "solid",
+  "strong",
+  "exceptional",
+  "elite",
+];
 
 export type PlanId =
   | "bodyFat"
