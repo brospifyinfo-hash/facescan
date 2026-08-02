@@ -207,4 +207,6 @@ export type PlanId =
   | "proportions"
   | "hair"
   | "grooming"
-  | "sleep";
+  | "sleep"
+  | "smoking"
+  | "training";

@@ -5,10 +5,11 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
-  BadgeCheck,
-  ChevronDown,
+  ArrowUpRight,
   Cpu,
   Lock,
+  Minus,
+  Plus,
   ScanFace,
   ShieldCheck,
   X,
@@ -18,85 +19,71 @@ import { DevUnlock } from "@/components/ui/DevUnlock";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { HeroMesh } from "@/components/landing/HeroMesh";
 import { ReviewsSection } from "@/components/landing/ReviewsSection";
-import { CATEGORY_EMOJI, CATEGORY_ORDER, METRIC_EMOJI } from "@/lib/metrics";
+import { CATEGORY_ORDER } from "@/lib/metrics";
 import { METRIC_ORDER, SPECS } from "@/lib/specs";
-import { formatPrice } from "@/lib/pricing";
-import { useI18n, useT } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 import { useFunnel } from "@/lib/store";
 import { cn } from "@/lib/cn";
 
-const TRUST_ICONS = [ShieldCheck, Cpu, BadgeCheck];
+const TRUST_ICONS = [ShieldCheck, Cpu, Lock];
 
-/** Section shell with a consistent rhythm across the page. */
-function Section({
-  id,
+/** Consistent rhythm: hairline rule, small caps eyebrow, editorial heading. */
+function SectionHead({
+  index,
   eyebrow,
   title,
   sub,
-  children,
-  className,
 }: {
-  id?: string;
-  eyebrow?: string;
-  title?: string;
+  index: string;
+  eyebrow: string;
+  title: string;
   sub?: string;
-  children: React.ReactNode;
-  className?: string;
 }) {
   return (
-    <section id={id} className={cn("mx-auto w-full max-w-5xl px-5 sm:px-6", className)}>
-      {title ? (
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-          className="mx-auto max-w-2xl text-center"
-        >
-          {eyebrow ? (
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
-              {eyebrow}
-            </p>
-          ) : null}
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-            {title}
-          </h2>
-          {sub ? (
-            <p className="mx-auto mt-3 max-w-xl text-[15px] leading-relaxed text-zinc-400">
-              {sub}
-            </p>
-          ) : null}
-        </motion.div>
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      className="border-t border-white/[0.09] pt-6"
+    >
+      <div className="flex items-baseline gap-4">
+        <span className="font-mono-terminal text-[11px] tabular-nums text-accent">
+          {index}
+        </span>
+        <span className="font-mono-terminal text-[10px] uppercase tracking-[0.22em] text-zinc-500">
+          {eyebrow}
+        </span>
+      </div>
+      <h2 className="mt-4 max-w-2xl text-[26px] font-semibold leading-[1.15] tracking-tight sm:text-[34px]">
+        {title}
+      </h2>
+      {sub ? (
+        <p className="mt-3 max-w-xl text-[14px] leading-relaxed text-zinc-400">
+          {sub}
+        </p>
       ) : null}
-      {children}
-    </section>
+    </motion.div>
   );
 }
 
 function Faq({ q, a, index }: { q: string; a: string; index: number }) {
   const [open, setOpen] = useState(false);
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 14 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.45, delay: index * 0.05 }}
-      className="glass overflow-hidden rounded-2xl"
-    >
+    <div className="border-b border-white/[0.07]">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-white/[0.03]"
+        className="flex w-full items-center gap-5 py-4 text-left"
       >
+        <span className="font-mono-terminal text-[10px] tabular-nums text-zinc-600">
+          {String(index + 1).padStart(2, "0")}
+        </span>
         <span className="flex-1 text-[14px] font-medium text-zinc-100">{q}</span>
-        <motion.span
-          animate={{ rotate: open ? 180 : 0 }}
-          transition={{ duration: 0.25 }}
-          className="text-zinc-500"
-        >
-          <ChevronDown className="h-4 w-4" />
-        </motion.span>
+        <span className="text-zinc-500">
+          {open ? <Minus className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
+        </span>
       </button>
       <AnimatePresence initial={false}>
         {open ? (
@@ -104,20 +91,21 @@ function Faq({ q, a, index }: { q: string; a: string; index: number }) {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
-            <p className="px-5 pb-5 text-[13px] leading-relaxed text-zinc-400">{a}</p>
+            <p className="max-w-2xl pb-5 pl-[3.1rem] text-[13px] leading-relaxed text-zinc-400">
+              {a}
+            </p>
           </motion.div>
         ) : null}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }
 
 export default function LandingPage() {
   const t = useT();
-  const { locale } = useI18n();
   const expiredNotice = useFunnel((s) => s.expiredNotice);
   const clearExpiredNotice = useFunnel((s) => s.clearExpiredNotice);
 
@@ -131,19 +119,19 @@ export default function LandingPage() {
   return (
     <main className="flex min-h-dvh flex-col">
       {/* ---------------- Nav ---------------- */}
-      <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-zinc-950/70 backdrop-blur-xl">
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-5 py-3.5 sm:px-6">
+      <header className="sticky top-0 z-40 border-b border-white/[0.07] bg-zinc-950/80 backdrop-blur-xl">
+        <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-5 py-3.5 sm:px-8">
           <DevUnlock>
-            <span className="flex items-center gap-2">
-              <ScanFace className="h-5 w-5 text-accent" />
-              <span className="text-[13px] font-semibold tracking-[0.18em]">
+            <span className="flex items-center gap-2.5">
+              <ScanFace className="h-[18px] w-[18px] text-accent" />
+              <span className="text-[13px] font-semibold tracking-[0.16em]">
                 FACESCAN
               </span>
             </span>
           </DevUnlock>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <a
-              href="#how"
+              href="#method"
               className="hidden text-[13px] text-zinc-400 transition-colors hover:text-zinc-100 sm:block"
             >
               {t.nav.howItWorks}
@@ -154,91 +142,80 @@ export default function LandingPage() {
       </header>
 
       {expiredNotice ? (
-        <div className="mx-auto mt-4 w-full max-w-2xl px-5 sm:px-6">
-          <div className="glass flex items-start justify-between gap-4 rounded-2xl p-4 text-[13px] text-zinc-300">
+        <div className="mx-auto mt-4 w-full max-w-4xl px-5 sm:px-8">
+          <div className="flex items-start justify-between gap-4 rounded-xl border border-white/[0.09] bg-white/[0.02] p-4 text-[13px] text-zinc-300">
             <p>{t.landing.expired}</p>
-            <button
-              onClick={clearExpiredNotice}
-              aria-label="Dismiss"
-              className="text-zinc-500 hover:text-zinc-200"
-            >
-              <X className="h-4 w-4" />
+            <button onClick={clearExpiredNotice} aria-label="Dismiss">
+              <X className="h-4 w-4 text-zinc-500 hover:text-zinc-200" />
             </button>
           </div>
         </div>
       ) : null}
 
-      {/* ---------------- Hero ---------------- */}
-      <Section className="pb-20 pt-12 sm:pt-20">
-        <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
+      <div className="mx-auto w-full max-w-4xl px-5 sm:px-8">
+        {/* ---------------- Hero ---------------- */}
+        <section className="grid items-center gap-12 py-14 sm:py-20 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-            className="text-center lg:text-left"
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            <span className="glass inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[11px] font-medium text-zinc-400">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-60" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
-              </span>
+            <div className="flex items-center gap-2.5 font-mono-terminal text-[10px] uppercase tracking-[0.2em] text-zinc-500">
+              <span className="h-px w-6 bg-accent" />
               {t.landing.badge}
-            </span>
+            </div>
 
-            <h1 className="mt-7 text-[2.6rem] font-semibold leading-[1.04] tracking-tight sm:text-6xl">
+            <h1 className="mt-6 text-[2.7rem] font-semibold leading-[1.02] tracking-[-0.02em] sm:text-[4rem]">
               {t.landing.headline}{" "}
               <span className="text-accent">{t.landing.headlineAccent}</span>
             </h1>
 
-            <p className="mx-auto mt-5 max-w-lg text-[16px] leading-relaxed text-zinc-400 lg:mx-0">
+            <p className="mt-6 max-w-md text-[16px] leading-relaxed text-zinc-400">
               {t.landing.sub}
             </p>
 
-            <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
+            <div className="mt-9 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
               <Link href="/quiz" className="w-full sm:w-auto">
                 <Button size="lg" className="w-full sm:w-auto">
                   {t.landing.cta} <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <a href="#pricing" className="w-full sm:w-auto">
-                <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                  {formatPrice(locale)}
-                </Button>
-              </a>
+              <p className="text-[12px] leading-snug text-zinc-500">
+                {t.landing.ctaNote}
+              </p>
             </div>
-
-            <p className="mt-4 text-[12px] text-zinc-500">{t.landing.ctaNote}</p>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.94 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-            className="glass relative mx-auto w-full max-w-[380px] rounded-[32px] p-4"
+            className="relative mx-auto w-full max-w-[340px]"
           >
-            <HeroMesh className="aspect-square w-full" />
-            <div className="absolute inset-x-0 bottom-5 flex justify-center">
-              <span className="rounded-full bg-zinc-950/70 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.16em] text-zinc-400 backdrop-blur-sm">
-                478 · MediaPipe FaceLandmarker
-              </span>
+            <div className="rounded-2xl border border-white/[0.09] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),transparent)] p-3">
+              <HeroMesh className="aspect-square w-full" />
+              <div className="flex items-center justify-between border-t border-white/[0.07] px-1 pt-2.5 font-mono-terminal text-[9px] uppercase tracking-[0.14em] text-zinc-600">
+                <span>MediaPipe FaceLandmarker</span>
+                <span className="tabular-nums text-accent">478</span>
+              </div>
             </div>
           </motion.div>
-        </div>
+        </section>
 
-        {/* Trust row — every claim here is implemented, not asserted */}
-        <div className="mt-16 grid gap-3 sm:grid-cols-3">
+        {/* ---------------- Trust ---------------- */}
+        <section className="grid gap-px overflow-hidden rounded-2xl border border-white/[0.09] bg-white/[0.06] sm:grid-cols-3">
           {t.landing.trust.map((item, i) => {
             const Icon = TRUST_ICONS[i];
             return (
               <motion.div
                 key={item.title}
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.5, delay: i * 0.08 }}
-                className="glass glass-interactive rounded-2xl p-5 text-left"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.45, delay: i * 0.08 }}
+                className="bg-zinc-950 p-5"
               >
-                <Icon className="h-4.5 w-4.5 text-accent" />
+                <Icon className="h-4 w-4 text-accent" />
                 <h3 className="mt-3.5 text-[13px] font-semibold">{item.title}</h3>
                 <p className="mt-1.5 text-[12px] leading-relaxed text-zinc-500">
                   {item.text}
@@ -246,180 +223,154 @@ export default function LandingPage() {
               </motion.div>
             );
           })}
-        </div>
-      </Section>
+        </section>
 
-      {/* ---------------- What gets measured ---------------- */}
-      <Section
-        eyebrow="15 ×"
-        title={t.landing.measuredTitle}
-        sub={t.landing.measuredSub}
-        className="pb-20"
-      >
-        <div className="mt-10 grid gap-3 sm:grid-cols-2">
-          {CATEGORY_ORDER.map((cat, ci) => {
-            const ids = METRIC_ORDER.filter((id) => SPECS[id].category === cat);
-            return (
-              <motion.div
-                key={cat}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.5, delay: ci * 0.07 }}
-                className="glass rounded-2xl p-5"
-              >
-                <h3 className="flex items-center gap-2 text-[13px] font-semibold">
-                  <span aria-hidden>{CATEGORY_EMOJI[cat]}</span>
-                  {categoryLabel[cat]}
-                  <span className="ml-auto text-[11px] font-normal tabular-nums text-zinc-600">
-                    {ids.length}
-                  </span>
-                </h3>
-                <ul className="mt-3 flex flex-wrap gap-1.5">
-                  {ids.map((id) => (
-                    <li
-                      key={id}
-                      className="glass-subtle rounded-full px-2.5 py-1 text-[11px] text-zinc-400"
-                    >
-                      <span className="mr-1" aria-hidden>
-                        {METRIC_EMOJI[id]}
-                      </span>
-                      {t.metrics[id].label}
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
-            );
-          })}
-        </div>
-      </Section>
-
-      {/* ---------------- How it works ---------------- */}
-      <Section id="how" title={t.landing.stepsTitle} className="pb-20">
-        <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {t.landing.steps.map((step, i) => (
-            <motion.div
-              key={step.title}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.5, delay: i * 0.07 }}
-              className="glass relative overflow-hidden rounded-2xl p-5"
-            >
-              <span className="font-mono-terminal text-[11px] text-accent">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <h3 className="mt-2.5 text-[13px] font-semibold">{step.title}</h3>
-              <p className="mt-1.5 text-[12px] leading-relaxed text-zinc-500">
-                {step.text}
-              </p>
-            </motion.div>
-          ))}
-        </div>
-      </Section>
-
-      {/* ---------------- Privacy ---------------- */}
-      <Section className="pb-20">
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.55 }}
-          className="glass relative overflow-hidden rounded-[28px] p-7 sm:p-10"
-        >
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-accent/[0.07] blur-3xl"
+        {/* ---------------- What gets measured ---------------- */}
+        <section className="pt-20">
+          <SectionHead
+            index="01"
+            eyebrow="Instrumentation"
+            title={t.landing.measuredTitle}
+            sub={t.landing.measuredSub}
           />
-          <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-            <div>
-              <Lock className="h-5 w-5 text-accent" />
-              <h2 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">
-                {t.landing.privacyTitle}
-              </h2>
-              <p className="mt-3 text-[14px] leading-relaxed text-zinc-400">
-                {t.landing.privacyBody}
-              </p>
-            </div>
-            <ul className="flex flex-col gap-3">
-              {t.landing.privacyPoints.map((p) => (
-                <li
-                  key={p}
-                  className="glass-subtle flex items-start gap-3 rounded-2xl p-4 text-[13px] leading-relaxed text-zinc-300"
+
+          <div className="mt-10 divide-y divide-white/[0.07] border-y border-white/[0.07]">
+            {CATEGORY_ORDER.map((cat, ci) => {
+              const ids = METRIC_ORDER.filter((id) => SPECS[id].category === cat);
+              return (
+                <motion.div
+                  key={cat}
+                  initial={{ opacity: 0, y: 12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 0.45, delay: ci * 0.06 }}
+                  className="grid gap-2 py-4 sm:grid-cols-[150px_minmax(0,1fr)] sm:gap-6"
                 >
-                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-                  {p}
-                </li>
-              ))}
-            </ul>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-[13px] font-semibold text-zinc-200">
+                      {categoryLabel[cat]}
+                    </span>
+                    <span className="font-mono-terminal text-[10px] tabular-nums text-zinc-600">
+                      {String(ids.length).padStart(2, "0")}
+                    </span>
+                  </div>
+                  <p className="text-[13px] leading-relaxed text-zinc-500">
+                    {ids.map((id, i) => (
+                      <span key={id}>
+                        {i > 0 ? <span className="text-zinc-700"> · </span> : null}
+                        {t.metrics[id].label}
+                      </span>
+                    ))}
+                  </p>
+                </motion.div>
+              );
+            })}
           </div>
-        </motion.div>
-      </Section>
+        </section>
 
-      {/* ---------------- Pricing ---------------- */}
-      <Section
-        id="pricing"
-        title={t.landing.pricingTitle}
-        sub={t.landing.pricingSub}
-        className="pb-20"
-      >
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.55 }}
-          className="glass mx-auto mt-10 max-w-md rounded-[28px] p-7 sm:p-8"
-        >
-          <div className="flex items-baseline justify-center gap-2">
-            <span className="text-5xl font-semibold tracking-tight">
-              {formatPrice(locale)}
-            </span>
+        {/* ---------------- Method ---------------- */}
+        <section id="method" className="pt-20">
+          <SectionHead index="02" eyebrow="Method" title={t.landing.stepsTitle} />
+
+          <div className="mt-10 grid gap-px overflow-hidden rounded-2xl border border-white/[0.09] bg-white/[0.06] sm:grid-cols-2 lg:grid-cols-4">
+            {t.landing.steps.map((step, i) => (
+              <motion.div
+                key={step.title}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.45, delay: i * 0.06 }}
+                className="bg-zinc-950 p-5"
+              >
+                <span className="font-mono-terminal text-[10px] tabular-nums text-accent">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <h3 className="mt-2.5 text-[13px] font-semibold">{step.title}</h3>
+                <p className="mt-1.5 text-[12px] leading-relaxed text-zinc-500">
+                  {step.text}
+                </p>
+              </motion.div>
+            ))}
           </div>
-          <p className="mt-2 text-center text-[12px] text-zinc-500">
-            {t.landing.pricingNote}
-          </p>
+        </section>
 
-          <ul className="mt-7 flex flex-col gap-2.5">
-            {t.landing.pricingIncludes.map((f) => (
-              <li key={f} className="flex items-start gap-2.5 text-[13px] text-zinc-300">
-                <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-                {f}
-              </li>
+        {/* ---------------- Privacy ---------------- */}
+        <section className="pt-20">
+          <SectionHead
+            index="03"
+            eyebrow="Data"
+            title={t.landing.privacyTitle}
+            sub={t.landing.privacyBody}
+          />
+
+          <ul className="mt-9 grid gap-px overflow-hidden rounded-2xl border border-white/[0.09] bg-white/[0.06] sm:grid-cols-3">
+            {t.landing.privacyPoints.map((p, i) => (
+              <motion.li
+                key={p}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.45, delay: i * 0.07 }}
+                className="bg-zinc-950 p-5 text-[12px] leading-relaxed text-zinc-400"
+              >
+                <span className="font-mono-terminal mb-2.5 block text-[10px] tabular-nums text-accent">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                {p}
+              </motion.li>
             ))}
           </ul>
+        </section>
 
-          <Link href="/quiz" className="mt-7 block">
-            <Button size="lg" className="w-full">
-              {t.landing.ctaFinal} <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
-        </motion.div>
-      </Section>
+        {/* ---------------- FAQ ---------------- */}
+        <section className="pt-20">
+          <SectionHead index="04" eyebrow="FAQ" title={t.landing.faqTitle} />
+          <div className="mt-8 border-t border-white/[0.07]">
+            {t.landing.faq.map((item, i) => (
+              <Faq key={item.q} q={item.q} a={item.a} index={i} />
+            ))}
+          </div>
+        </section>
 
-      {/* ---------------- FAQ ---------------- */}
-      <Section title={t.landing.faqTitle} className="pb-20">
-        <div className="mx-auto mt-10 flex max-w-2xl flex-col gap-2.5">
-          {t.landing.faq.map((item, i) => (
-            <Faq key={item.q} q={item.q} a={item.a} index={i} />
-          ))}
-        </div>
-      </Section>
+        <ReviewsSection />
 
-      <ReviewsSection />
+        {/* ---------------- Closing CTA ---------------- */}
+        <section className="py-20">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col items-start justify-between gap-6 border-y border-white/[0.09] py-10 sm:flex-row sm:items-center"
+          >
+            <div>
+              <h2 className="text-[24px] font-semibold tracking-tight sm:text-[30px]">
+                {t.landing.headline} {t.landing.headlineAccent}
+              </h2>
+              <p className="mt-2 text-[13px] text-zinc-500">{t.landing.ctaNote}</p>
+            </div>
+            <Link href="/quiz" className="shrink-0">
+              <Button size="lg">
+                {t.landing.ctaFinal} <ArrowUpRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </motion.div>
+        </section>
+      </div>
 
       {/* ---------------- Footer ---------------- */}
-      <footer className="border-t border-white/[0.06] py-10">
-        <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-5 sm:px-6">
-          <div className="flex items-center gap-2">
-            <ScanFace className="h-4 w-4 text-accent" />
-            <span className="text-[11px] font-semibold tracking-[0.18em] text-zinc-400">
+      <footer className="border-t border-white/[0.07] py-9">
+        <div className="mx-auto flex w-full max-w-4xl flex-col gap-5 px-5 sm:px-8">
+          <div className="flex items-center gap-2.5">
+            <ScanFace className="h-3.5 w-3.5 text-accent" />
+            <span className="text-[10px] font-semibold tracking-[0.16em] text-zinc-500">
               FACESCAN
             </span>
           </div>
           <p className="max-w-2xl text-[11px] leading-relaxed text-zinc-600">
             {t.landing.disclaimer}
           </p>
-          <div className="flex gap-5 text-[11px] text-zinc-600">
+          <div className={cn("flex gap-5 text-[11px] text-zinc-600")}>
             <span>{t.landing.imprint}</span>
             <span>{t.landing.privacyLink}</span>
           </div>

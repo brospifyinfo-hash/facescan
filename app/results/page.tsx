@@ -17,6 +17,7 @@ import { DevUnlock, hasAccessCode } from "@/components/ui/DevUnlock";
 import { MeasurementTable } from "@/components/dashboard/MeasurementTable";
 import { LockedSection } from "@/components/dashboard/LockedSection";
 import { ActionPlan } from "@/components/dashboard/ActionPlan";
+import { MonthlyProgram } from "@/components/dashboard/MonthlyProgram";
 import { FullReport } from "@/components/dashboard/FullReport";
 import { CheckoutModal } from "@/components/checkout/CheckoutModal";
 import { SessionTimer } from "@/components/checkout/SessionTimer";
@@ -30,7 +31,7 @@ export default function ResultsPage() {
   const router = useRouter();
   const t = useT();
   const { locale } = useI18n();
-  const { metrics, quiz, photos, unlocked, unlock } = useFunnel();
+  const { metrics, quiz, photos, unlocked, plan, unlock } = useFunnel();
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [showRaw, setShowRaw] = useState(false);
 
@@ -250,7 +251,28 @@ export default function ResultsPage() {
             <ActionPlan quiz={quiz} metrics={metrics} interactive={!locked} />
           </LockedSection>
 
-          {unlocked ? <FullReport /> : null}
+          {/* The 4-week programme and the AI report belong to the higher
+              plan; Analysis buyers see an offer to add them instead. */}
+          {unlocked && plan === "complete" ? (
+            <>
+              <MonthlyProgram quiz={quiz} metrics={metrics} />
+              <FullReport />
+            </>
+          ) : null}
+
+          {unlocked && plan === "standard" ? (
+            <section className="rounded-3xl border border-accent/25 bg-accent/[0.05] p-5 sm:p-6">
+              <h2 className="text-base font-semibold tracking-tight">
+                {t.monthly.upsellTitle}
+              </h2>
+              <p className="mt-1.5 max-w-lg text-[12px] leading-relaxed text-zinc-400">
+                {t.monthly.upsellBody}
+              </p>
+              <Button className="mt-4" onClick={() => setCheckoutOpen(true)}>
+                {t.monthly.upsellCta} — {formatPrice(locale, "complete")}
+              </Button>
+            </section>
+          ) : null}
         </div>
 
         {/* Unlock overlay */}
@@ -290,7 +312,7 @@ export default function ResultsPage() {
 
                 <Button size="lg" className="mt-5 w-full" onClick={() => setCheckoutOpen(true)}>
                   <Lock className="h-4 w-4" />
-                  {t.results.unlockCta} — {formatPrice(locale)}
+                  {t.results.unlockCta}
                 </Button>
 
                 <p className="mt-2.5 text-[10px] text-zinc-500">
@@ -315,9 +337,10 @@ export default function ResultsPage() {
       <CheckoutModal
         open={checkoutOpen}
         onClose={() => setCheckoutOpen(false)}
-        onSuccess={(email) => {
+        initialPlan={plan === "standard" ? "complete" : "complete"}
+        onSuccess={(email, chosen) => {
           // TODO: unlock only after a Stripe webhook confirms payment.
-          unlock(email);
+          unlock(email, chosen);
           setCheckoutOpen(false);
           window.scrollTo({ top: 0, behavior: "smooth" });
         }}

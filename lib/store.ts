@@ -2,44 +2,81 @@
 
 import { create } from "zustand";
 import type { Metric, MetricId } from "./metrics";
+import type { PlanId } from "./pricing";
 
 // Quiz answers are stored as STABLE KEYS, never as display strings. The
 // plan rules below compare against them, so translating the visible option
 // labels must not change the logic.
-export type Gender = "male" | "female";
-export type AgeBand = "under18" | "18-24" | "25-34" | "35plus";
+export type Gender = "male" | "female" | "diverse" | "undisclosed";
+export type AgeBand = "under18" | "18-24" | "25-34" | "35-44" | "45plus";
 export type Insecurity = "asymmetry" | "jawline" | "eyes" | "skin" | "hair";
 export type BodyFat = "under12" | "12-18" | "19-25" | "over25" | "unsure";
 export type Mewing = "never" | "sometimes" | "daily";
 export type Goal = "model" | "dating" | "self" | "curious";
 
+export type Sleep = "under6" | "6-7" | "7-8" | "over8";
+export type Training = "none" | "1-2" | "3-4" | "5plus";
+export type Skincare = "none" | "basic" | "advanced";
+export type Smoking = "no" | "occasionally" | "daily";
+
 export interface QuizAnswers {
   gender?: Gender;
   age?: AgeBand;
+  /** Centimetres. */
+  height?: number;
+  /** Kilograms. */
+  weight?: number;
   insecurity?: Insecurity;
   bodyFat?: BodyFat;
+  training?: Training;
+  sleep?: Sleep;
+  skincare?: Skincare;
+  smoking?: Smoking;
   mewing?: Mewing;
   goal?: Goal;
 }
 
-/** Option keys per question, index-aligned with the dictionary's option labels. */
-export const QUIZ_KEYS = [
-  ["male", "female"],
-  ["under18", "18-24", "25-34", "35plus"],
-  ["asymmetry", "jawline", "eyes", "skin", "hair"],
-  ["under12", "12-18", "19-25", "over25", "unsure"],
-  ["never", "sometimes", "daily"],
-  ["model", "dating", "self", "curious"],
-] as const;
+/** BMI from the quiz, when both values were given. */
+export function bmiOf(q: QuizAnswers): number | null {
+  if (!q.height || !q.weight) return null;
+  const m = q.height / 100;
+  if (m <= 0.5) return null;
+  return Number((q.weight / (m * m)).toFixed(1));
+}
 
-export const QUIZ_FIELDS: Array<keyof QuizAnswers> = [
-  "gender",
-  "age",
-  "insecurity",
-  "bodyFat",
-  "mewing",
-  "goal",
-];
+/**
+ * Quiz shape. `keys` are stable identifiers stored in the answers; the
+ * visible labels live in the dictionaries and are index-aligned with them,
+ * so translating a label can never change the plan rules.
+ *
+ * `kind: "number"` questions capture a measurement instead of a choice.
+ */
+export type QuizStep =
+  | { kind: "choice"; field: keyof QuizAnswers; keys: readonly string[] }
+  | {
+      kind: "number";
+      field: "height" | "weight";
+      min: number;
+      max: number;
+      step: number;
+      unit: string;
+      preset: number;
+    };
+
+export const QUIZ_STEPS: readonly QuizStep[] = [
+  { kind: "choice", field: "gender", keys: ["male", "female", "diverse", "undisclosed"] },
+  { kind: "choice", field: "age", keys: ["under18", "18-24", "25-34", "35-44", "45plus"] },
+  { kind: "number", field: "height", min: 140, max: 215, step: 1, unit: "cm", preset: 178 },
+  { kind: "number", field: "weight", min: 40, max: 180, step: 1, unit: "kg", preset: 78 },
+  { kind: "choice", field: "bodyFat", keys: ["under12", "12-18", "19-25", "over25", "unsure"] },
+  { kind: "choice", field: "training", keys: ["none", "1-2", "3-4", "5plus"] },
+  { kind: "choice", field: "sleep", keys: ["under6", "6-7", "7-8", "over8"] },
+  { kind: "choice", field: "skincare", keys: ["none", "basic", "advanced"] },
+  { kind: "choice", field: "smoking", keys: ["no", "occasionally", "daily"] },
+  { kind: "choice", field: "insecurity", keys: ["asymmetry", "jawline", "eyes", "skin", "hair"] },
+  { kind: "choice", field: "mewing", keys: ["never", "sometimes", "daily"] },
+  { kind: "choice", field: "goal", keys: ["model", "dating", "self", "curious"] },
+] as const;
 
 export interface PhotoData {
   dataUrl: string;
@@ -88,12 +125,14 @@ interface FunnelState {
   metrics?: ScanMetrics;
   expiresAt?: number;
   unlocked: boolean;
+  /** Which plan was bought — gates the monthly programme and AI report. */
+  plan?: PlanId;
   email?: string;
   expiredNotice: boolean;
-  setAnswer: (key: keyof QuizAnswers, value: string) => void;
+  setAnswer: (key: keyof QuizAnswers, value: string | number) => void;
   setPhoto: (slot: "front" | "side", photo: PhotoData) => void;
   completeScan: (metrics: ScanMetrics) => void;
-  unlock: (email: string) => void;
+  unlock: (email: string, plan?: PlanId) => void;
   purge: () => void;
   clearExpiredNotice: () => void;
   reset: () => void;
@@ -116,7 +155,8 @@ export const useFunnel = create<FunnelState>((set) => ({
 
   // Paying stops the auto-purge: the photos must stay in memory so the
   // (consented) full-report generation can still access them.
-  unlock: (email) => set({ unlocked: true, email, expiresAt: undefined }),
+  unlock: (email, plan = "complete") =>
+    set({ unlocked: true, plan, email, expiresAt: undefined }),
 
   // The session timer really does what the UI claims.
   purge: () =>
@@ -136,6 +176,7 @@ export const useFunnel = create<FunnelState>((set) => ({
       metrics: undefined,
       expiresAt: undefined,
       unlocked: false,
+      plan: undefined,
       email: undefined,
     }),
 }));

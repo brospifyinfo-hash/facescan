@@ -91,31 +91,92 @@ export const es: Dict = {
     minorBody:
       "Tu estructura facial todavía está cambiando: cualquier puntuación que te diéramos hoy estaría equivocada en un año, y por principio no analizamos rostros de menores. Vuelve cuando tengas 18.",
     minorCta: "Volver al inicio",
+    numberHint: "Arrastra el control o escribe un valor",
+    next: "Continuar",
+    skip: "Omitir",
     questions: [
       {
         title: "¿Cómo calibramos tu escaneo?",
-        sub: "Los rangos de referencia difieren — esto fija la base correcta.",
-        options: ["Hombre", "Mujer"],
+        sub: "Los rangos de referencia difieren por sexo: esto fija la base correcta.",
+        options: ["Hombre", "Mujer", "No binario", "Prefiero no decirlo"],
       },
-      { title: "¿Cuántos años tienes?", options: ["Menos de 18", "18–24", "25–34", "35+"] },
+      {
+        title: "¿Cuántos años tienes?",
+        sub: "El tejido blando y la piel se comportan distinto en cada década.",
+        options: ["Menos de 18", "18–24", "25–34", "35–44", "45+"],
+      },
+      { title: "¿Cuánto mides?", sub: "Se usa junto al peso para estimar la composición corporal." },
+      { title: "¿Cuánto pesas?", sub: "La definición facial depende de la composición corporal más que de nada." },
+      {
+        title: "¿Porcentaje estimado de grasa corporal?",
+        sub: "Si no lo sabes, omítelo: altura y peso ya nos dan una lectura.",
+        options: ["Menos del 12 %", "12–18 %", "19–25 %", "Más del 25 %", "No lo sé"],
+      },
+      {
+        title: "¿Con qué frecuencia entrenas?",
+        sub: "La frecuencia marca lo rápido que puede moverse la grasa corporal.",
+        options: ["Ahora mismo no", "1–2 veces por semana", "3–4 veces por semana", "5 o más"],
+      },
+      {
+        title: "¿Cuánto duermes?",
+        sub: "La retención de líquidos y la reparación de la piel dependen del sueño más que de cualquier producto.",
+        options: ["Menos de 6 horas", "6–7 horas", "7–8 horas", "Más de 8 horas"],
+      },
+      {
+        title: "¿Tu rutina de cuidado actual?",
+        options: ["Ninguna", "Limpiador e hidratante", "Activos, SPF, rutina completa"],
+      },
+      {
+        title: "¿Fumas o vapeas?",
+        sub: "Se nota en la calidad de la piel y el tono bajo los ojos en un par de años.",
+        options: ["No", "Ocasionalmente", "A diario"],
+      },
       {
         title: "¿Qué es lo que más te molesta de tu cara?",
         options: ["Asimetría", "Mandíbula poco marcada", "Zona de los ojos", "Calidad de la piel", "Pérdida de pelo"],
-      },
-      {
-        title: "¿Porcentaje estimado de grasa corporal?",
-        sub: "La definición facial depende mucho de la grasa corporal.",
-        options: ["Menos del 12 %", "12–18 %", "19–25 %", "Más del 25 %", "No lo sé"],
       },
       {
         title: "¿Practicas la postura lingual (mewing)?",
         options: ["Nunca", "A veces", "A diario"],
       },
       {
-        title: "¿Cuál es tu objetivo final?",
+        title: "¿Qué buscas realmente?",
         options: ["Nivel modelo", "Confianza al ligar", "Mejora personal general", "Solo curiosidad"],
       },
     ],
+  },
+  plans: {
+    standard: {
+      name: "Análisis",
+      tagline: "Tu conjunto completo de medidas",
+      features: [
+        "Las 15 medidas biométricas con sus rangos de referencia",
+        "Puntuaciones por categoría y tu nivel en la escala",
+        "Plan de acción personalizado, ordenado por impacto",
+        "Tabla de datos completa de cada cifra",
+      ],
+      excluded: ["Programa de 4 semanas", "Informe detallado de IA"],
+    },
+    complete: {
+      name: "Programa",
+      tagline: "Análisis más un plan de 4 semanas",
+      features: [
+        "Todo lo del Análisis",
+        "Programa de 4 semanas, estructurado semana a semana",
+        "Informe detallado de IA escrito a partir de tus fotos",
+        "Todo queda tuyo — pago único",
+      ],
+      excluded: [],
+    },
+  },
+  monthly: {
+    title: "Tu programa de 4 semanas",
+    sub: "Construido con tus medidas y tus respuestas. Cada semana se apoya en la anterior.",
+    weekLabel: "Semana",
+    upsellTitle: "Programa de 4 semanas",
+    upsellBody:
+      "Un plan semana a semana centrado en tus medidas más débiles, más el informe de IA escrito a partir de tus fotos.",
+    upsellCta: "Añadir el programa",
   },
   upload: {
     title: "Dos fotos. Nada más.",
@@ -215,13 +276,14 @@ export const es: Dict = {
   },
   checkout: {
     eyebrow: "Desbloqueo único",
+    choosePlan: "Elige tu plan",
+    popular: "Más completo",
     product: "Análisis biométrico completo",
     once: "pago único · sin suscripción",
     features: [
-      "Las 16 medidas biométricas desbloqueadas",
+      "Las 15 medidas biométricas desbloqueadas",
       "Simetría, inclinación cantal y mandíbula en cifras exactas",
       "Plan de acción personalizado",
-      "Informe de IA a partir de tus fotos",
       "Acceso de por vida — pago único",
     ],
     emailPlaceholder: "Email para tu recibo",
@@ -442,6 +504,20 @@ export const es: Dict = {
         "Un corte acorde a tu forma de cara, cejas aseadas en vez de esculpidas y una línea de barba constante. El cambio más barato, rápido y visible de esta lista.",
       tag: "Cuidado",
       cadence: "Cada 4 semanas",
+    },
+    smoking: {
+      title: "Deja la nicotina",
+      detail:
+        "Fumar y vapear degradan el colágeno y apagan el tono bajo los ojos. Se nota en un par de años y es en parte reversible: nada más de esta lista se deshace tan rápido por seguir.",
+      tag: "Piel",
+      cadence: "Desde ya",
+    },
+    training: {
+      title: "Mete fuerza en tu semana",
+      detail:
+        "Dos o tres sesiones por semana son el mínimo para que una definición aguante. Entrenar conserva el músculo que si no perderías, y eso es lo que mantiene el dibujo de mandíbula y pómulos.",
+      tag: "Cuerpo",
+      cadence: "3× / semana",
     },
     sleep: {
       title: "El sueño es el multiplicador",

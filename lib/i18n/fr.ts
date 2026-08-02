@@ -91,31 +91,92 @@ export const fr: Dict = {
     minorBody:
       "Votre structure faciale évolue encore : tout score donné aujourd'hui serait faux dans un an, et nous refusons par principe d'analyser le visage de mineurs. Revenez à 18 ans.",
     minorCta: "Retour au début",
+    numberHint: "Faites glisser ou saisissez une valeur",
+    next: "Continuer",
+    skip: "Passer",
     questions: [
       {
         title: "Comment calibrer votre scan ?",
-        sub: "Les plages de référence diffèrent — cela fixe la bonne base.",
-        options: ["Homme", "Femme"],
+        sub: "Les plages de référence diffèrent selon le sexe — cela fixe la bonne base.",
+        options: ["Homme", "Femme", "Non binaire", "Je préfère ne pas dire"],
       },
-      { title: "Quel âge avez-vous ?", options: ["Moins de 18 ans", "18–24", "25–34", "35+"] },
+      {
+        title: "Quel âge avez-vous ?",
+        sub: "Les tissus mous et la peau évoluent différemment selon la décennie.",
+        options: ["Moins de 18 ans", "18–24", "25–34", "35–44", "45+"],
+      },
+      { title: "Combien mesurez-vous ?", sub: "Utilisé avec le poids pour estimer la composition corporelle." },
+      { title: "Combien pesez-vous ?", sub: "La définition du visage suit la composition corporelle plus que tout." },
+      {
+        title: "Pourcentage de masse grasse estimé ?",
+        sub: "Si vous ne savez pas, passez : taille et poids donnent déjà une lecture.",
+        options: ["Moins de 12 %", "12–18 %", "19–25 %", "Plus de 25 %", "Je ne sais pas"],
+      },
+      {
+        title: "À quelle fréquence vous entraînez-vous ?",
+        sub: "La fréquence détermine la vitesse à laquelle la masse grasse peut bouger.",
+        options: ["Pas en ce moment", "1–2 fois par semaine", "3–4 fois par semaine", "5 fois ou plus"],
+      },
+      {
+        title: "Combien dormez-vous ?",
+        sub: "La rétention d'eau et la réparation cutanée suivent le sommeil de plus près que n'importe quel produit.",
+        options: ["Moins de 6 heures", "6–7 heures", "7–8 heures", "Plus de 8 heures"],
+      },
+      {
+        title: "Votre routine de soin actuelle ?",
+        options: ["Aucune", "Nettoyant et hydratant", "Actifs, SPF, routine complète"],
+      },
+      {
+        title: "Fumez-vous ou vapotez-vous ?",
+        sub: "Cela se voit sur la qualité de peau et le contour des yeux en deux ou trois ans.",
+        options: ["Non", "Occasionnellement", "Tous les jours"],
+      },
       {
         title: "Qu'est-ce qui vous gêne le plus sur votre visage ?",
         options: ["Asymétrie", "Mâchoire peu marquée", "Contour des yeux", "Qualité de peau", "Cheveux qui s'affinent"],
-      },
-      {
-        title: "Pourcentage de masse grasse estimé ?",
-        sub: "La définition du visage dépend fortement de la masse grasse.",
-        options: ["Moins de 12 %", "12–18 %", "19–25 %", "Plus de 25 %", "Je ne sais pas"],
       },
       {
         title: "Pratiquez-vous la posture linguale (mewing) ?",
         options: ["Jamais", "Parfois", "Tous les jours"],
       },
       {
-        title: "Quel est votre objectif final ?",
+        title: "Que cherchez-vous vraiment ?",
         options: ["Niveau mannequin", "Confiance en séduction", "Progression personnelle", "Simple curiosité"],
       },
     ],
+  },
+  plans: {
+    standard: {
+      name: "Analyse",
+      tagline: "Votre jeu de mesures complet",
+      features: [
+        "Les 15 mesures biométriques avec leurs plages de référence",
+        "Scores par catégorie et votre palier sur l'échelle",
+        "Plan d'action personnalisé, classé par impact",
+        "Tableau de données complet pour chaque chiffre",
+      ],
+      excluded: ["Programme de 4 semaines", "Rapport IA approfondi"],
+    },
+    complete: {
+      name: "Programme",
+      tagline: "L'analyse plus un plan de 4 semaines",
+      features: [
+        "Tout ce que contient l'Analyse",
+        "Programme de 4 semaines, structuré semaine par semaine",
+        "Rapport IA approfondi rédigé à partir de vos photos",
+        "Tout vous reste — paiement unique",
+      ],
+      excluded: [],
+    },
+  },
+  monthly: {
+    title: "Votre programme de 4 semaines",
+    sub: "Construit à partir de vos mesures et de vos réponses. Chaque semaine s'appuie sur la précédente.",
+    weekLabel: "Semaine",
+    upsellTitle: "Programme de 4 semaines",
+    upsellBody:
+      "Un plan semaine par semaine centré sur vos mesures les plus faibles, avec le rapport IA rédigé à partir de vos photos.",
+    upsellCta: "Ajouter le programme",
   },
   upload: {
     title: "Deux photos. C'est tout.",
@@ -215,13 +276,14 @@ export const fr: Dict = {
   },
   checkout: {
     eyebrow: "Déblocage unique",
+    choosePlan: "Choisissez votre formule",
+    popular: "Le plus complet",
     product: "Analyse biométrique complète",
     once: "une fois · sans abonnement",
     features: [
-      "Les 16 mesures biométriques débloquées",
+      "Les 15 mesures biométriques débloquées",
       "Symétrie, inclinaison canthale et mâchoire en chiffres exacts",
       "Plan d'action personnalisé",
-      "Rapport IA approfondi à partir de vos photos",
       "Accès à vie — paiement unique",
     ],
     emailPlaceholder: "E-mail pour votre reçu",
@@ -442,6 +504,20 @@ export const fr: Dict = {
         "Une coupe adaptée à la forme de votre visage, des sourcils nettoyés plutôt que dessinés et une ligne de barbe régulière. Le changement le moins cher, le plus rapide et le plus visible de cette liste.",
       tag: "Soin",
       cadence: "Toutes les 4 semaines",
+    },
+    smoking: {
+      title: "Arrêter la nicotine",
+      detail:
+        "Le tabac et la vape dégradent le collagène et ternissent le contour des yeux. Cela se voit en deux ou trois ans et reste en partie réversible — rien d'autre sur cette liste ne s'annule aussi vite en continuant.",
+      tag: "Peau",
+      cadence: "Dès maintenant",
+    },
+    training: {
+      title: "Mettre de la musculation dans la semaine",
+      detail:
+        "Deux à trois séances par semaine sont le minimum pour qu'une sèche tienne. Soulever préserve le muscle que vous perdriez sinon, et c'est lui qui maintient le dessin de la mâchoire et des pommettes.",
+      tag: "Corps",
+      cadence: "3× / semaine",
     },
     sleep: {
       title: "Le sommeil est le multiplicateur",

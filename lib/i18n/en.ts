@@ -90,31 +90,92 @@ export const en: Dict = {
     minorBody:
       "Your facial structure is still changing — any score we gave you today would be wrong within a year, and we don't analyze minors' faces on principle. Come back when you're 18.",
     minorCta: "Back to start",
+    numberHint: "Drag the slider or type a value",
+    next: "Continue",
+    skip: "Skip",
     questions: [
       {
         title: "How should we calibrate your scan?",
-        sub: "Facial reference ranges differ — this sets the right baseline.",
-        options: ["Male", "Female"],
+        sub: "Reference ranges differ by sex — this sets the right baseline.",
+        options: ["Male", "Female", "Non-binary", "Prefer not to say"],
       },
-      { title: "How old are you?", options: ["Under 18", "18–24", "25–34", "35+"] },
+      {
+        title: "How old are you?",
+        sub: "Soft tissue and skin behave differently by decade.",
+        options: ["Under 18", "18–24", "25–34", "35–44", "45+"],
+      },
+      { title: "How tall are you?", sub: "Used together with weight to estimate body composition." },
+      { title: "What do you weigh?", sub: "Facial definition tracks body composition more than anything else." },
+      {
+        title: "Estimated body-fat percentage?",
+        sub: "If you're unsure, skip it — height and weight already give us a reading.",
+        options: ["Under 12%", "12–18%", "19–25%", "Over 25%", "Not sure"],
+      },
+      {
+        title: "How often do you train?",
+        sub: "Training frequency shapes how fast the body-fat lever can move.",
+        options: ["Not currently", "1–2× a week", "3–4× a week", "5× or more"],
+      },
+      {
+        title: "How much do you sleep?",
+        sub: "Fluid retention and skin repair track sleep more tightly than any product.",
+        options: ["Under 6 hours", "6–7 hours", "7–8 hours", "Over 8 hours"],
+      },
+      {
+        title: "Your current skincare routine?",
+        options: ["None", "Cleanser and moisturizer", "Actives, SPF, the full routine"],
+      },
+      {
+        title: "Do you smoke or vape?",
+        sub: "It shows in skin quality and under-eye tone within a couple of years.",
+        options: ["No", "Occasionally", "Daily"],
+      },
       {
         title: "What bothers you most about your face?",
         options: ["Asymmetry", "Weak jawline", "Eye area", "Skin quality", "Thinning hair"],
-      },
-      {
-        title: "Estimated body-fat percentage?",
-        sub: "Facial definition correlates strongly with body fat.",
-        options: ["Under 12%", "12–18%", "19–25%", "Over 25%", "Not sure"],
       },
       {
         title: "Do you practice tongue posture (mewing)?",
         options: ["Never", "Sometimes", "Every day"],
       },
       {
-        title: "What's your ultimate goal?",
+        title: "What are you actually after?",
         options: ["Model-tier looks", "Dating confidence", "General self-improvement", "Just curious"],
       },
     ],
+  },
+  plans: {
+    standard: {
+      name: "Analysis",
+      tagline: "Your full measurement set",
+      features: [
+        "All 15 biometric measurements with reference ranges",
+        "Category scores and your tier placement",
+        "Personalized action plan, ordered by impact",
+        "Complete data table for every figure",
+      ],
+      excluded: ["4-week programme", "AI deep-dive report"],
+    },
+    complete: {
+      name: "Programme",
+      tagline: "Analysis plus a 4-week plan",
+      features: [
+        "Everything in Analysis",
+        "4-week programme, structured week by week",
+        "AI deep-dive report written from your photos",
+        "Everything stays yours — one-time payment",
+      ],
+      excluded: [],
+    },
+  },
+  monthly: {
+    title: "Your 4-week programme",
+    sub: "Built from your measurements and your answers. Each week adds to the last.",
+    weekLabel: "Week",
+    upsellTitle: "4-week programme",
+    upsellBody:
+      "A week-by-week plan built around your weakest measurements, plus the AI deep-dive report written from your photos.",
+    upsellCta: "Add the programme",
   },
   upload: {
     title: "Two photos. That's it.",
@@ -214,13 +275,14 @@ export const en: Dict = {
   },
   checkout: {
     eyebrow: "One-time unlock",
+    choosePlan: "Choose your plan",
+    popular: "Most complete",
     product: "Full Biometric Analysis",
     once: "once · no subscription",
     features: [
-      "All 16 biometric measurements unlocked",
+      "All 15 biometric measurements unlocked",
       "Symmetry, canthal tilt & jawline in exact figures",
-      "Personalized glow-up action plan",
-      "AI deep-dive report from your photos",
+      "Personalized action plan",
       "Lifetime access — one-time payment",
     ],
     emailPlaceholder: "Email for your receipt",
@@ -445,6 +507,20 @@ export const en: Dict = {
         "A cut matched to your face shape, brows cleaned up rather than sculpted, and a consistent beard line. Cheapest, fastest, most visible change on this list.",
       tag: "Grooming",
       cadence: "Every 4 weeks",
+    },
+    smoking: {
+      title: "Drop the nicotine",
+      detail:
+        "Smoking and vaping degrade collagen and dull under-eye tone. It shows within a couple of years and is partly reversible — nothing else on this list gets undone as fast by carrying on.",
+      tag: "Skin",
+      cadence: "Starting now",
+    },
+    training: {
+      title: "Get resistance training into the week",
+      detail:
+        "Two to three sessions a week is the floor that makes a cut hold. Lifting keeps the muscle you'd otherwise lose, and that's what preserves the jaw and cheek definition you're cutting for.",
+      tag: "Body",
+      cadence: "3× / week",
     },
     sleep: {
       title: "Sleep is the multiplier",

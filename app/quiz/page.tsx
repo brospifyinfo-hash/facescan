@@ -4,11 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, ShieldAlert } from "lucide-react";
+import { ArrowLeft, ArrowRight, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { fill, useT } from "@/lib/i18n";
-import { QUIZ_FIELDS, QUIZ_KEYS, useFunnel } from "@/lib/store";
+import { QUIZ_STEPS, useFunnel } from "@/lib/store";
 import { cn } from "@/lib/cn";
 
 export default function QuizPage() {
@@ -18,33 +18,35 @@ export default function QuizPage() {
   const [step, setStep] = useState(0);
   const [minorGate, setMinorGate] = useState(false);
 
-  const question = t.quiz.questions[step];
-  const field = QUIZ_FIELDS[step];
-  const keys = QUIZ_KEYS[step];
-  const progress = (step / t.quiz.questions.length) * 100;
+  const spec = QUIZ_STEPS[step];
+  const copy = t.quiz.questions[step];
+  const total = QUIZ_STEPS.length;
+  const progress = (step / total) * 100;
 
-  const select = (index: number) => {
-    const key = keys[index];
-    setAnswer(field, key);
+  const advance = () => {
+    if (step + 1 < total) setStep(step + 1);
+    else router.push("/upload");
+  };
+
+  const choose = (index: number) => {
+    if (spec.kind !== "choice") return;
+    const key = spec.keys[index];
+    setAnswer(spec.field, key);
 
     // Facial-aesthetics scoring for minors is both ethically off-limits and
-    // technically meaningless (facial structure is still developing).
-    if (field === "age" && key === "under18") {
+    // technically meaningless — the structure is still developing.
+    if (spec.field === "age" && key === "under18") {
       setMinorGate(true);
       return;
     }
-
-    setTimeout(() => {
-      if (step + 1 < t.quiz.questions.length) setStep(step + 1);
-      else router.push("/upload");
-    }, 240);
+    setTimeout(advance, 200);
   };
 
   if (minorGate) {
     return (
       <main className="flex min-h-dvh items-center justify-center px-6">
-        <div className="glass-strong w-full max-w-md rounded-[30px] p-8 text-center">
-          <ShieldAlert className="mx-auto h-10 w-10 text-accent" />
+        <div className="glass-strong w-full max-w-md rounded-[28px] p-8 text-center">
+          <ShieldAlert className="mx-auto h-9 w-9 text-accent" />
           <h1 className="mt-6 text-2xl font-semibold tracking-tight">
             {t.quiz.minorTitle}
           </h1>
@@ -59,9 +61,14 @@ export default function QuizPage() {
     );
   }
 
+  const numberValue =
+    spec.kind === "number"
+      ? ((quiz[spec.field] as number | undefined) ?? spec.preset)
+      : 0;
+
   return (
     <main className="flex min-h-dvh flex-col">
-      <div className="fixed inset-x-0 top-0 z-10 h-1 bg-white/5">
+      <div className="fixed inset-x-0 top-0 z-10 h-[3px] bg-white/[0.06]">
         <motion.div
           className="h-full bg-accent"
           animate={{ width: `${progress}%` }}
@@ -74,59 +81,122 @@ export default function QuizPage() {
       </div>
 
       <div className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center px-6 pb-16">
-        <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
-          {fill(t.quiz.progress, { n: step + 1, total: t.quiz.questions.length })}
+        <p className="font-mono-terminal text-[11px] uppercase tracking-[0.18em] text-zinc-500">
+          {fill(t.quiz.progress, { n: step + 1, total })}
         </p>
 
         <AnimatePresence mode="wait">
           <motion.div
             key={step}
-            initial={{ opacity: 0, y: 14 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -14 }}
-            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
           >
-            <h1 className="mt-4 text-3xl font-semibold tracking-tight">
-              {question.title}
+            <h1 className="mt-4 text-[26px] font-semibold leading-tight tracking-tight sm:text-3xl">
+              {copy.title}
             </h1>
-            {question.sub ? (
-              <p className="mt-2 text-sm text-zinc-500">{question.sub}</p>
+            {copy.sub ? (
+              <p className="mt-2.5 text-[13px] leading-relaxed text-zinc-500">
+                {copy.sub}
+              </p>
             ) : null}
 
-            <div className="mt-10 flex flex-col gap-3">
-              {question.options.map((option, i) => {
-                const active = quiz[field] === keys[i];
-                return (
-                  <button
-                    key={option}
-                    onClick={() => select(i)}
-                    className={cn(
-                      "glass glass-interactive rounded-2xl px-6 py-4 text-left text-sm font-medium",
-                      active && "border-accent/50 bg-accent/10 text-accent",
-                    )}
-                  >
-                    {option}
-                  </button>
-                );
-              })}
-            </div>
+            {spec.kind === "choice" ? (
+              <div className="mt-8 flex flex-col gap-2">
+                {(copy.options ?? []).map((option, i) => {
+                  const active = quiz[spec.field] === spec.keys[i];
+                  return (
+                    <button
+                      key={option}
+                      onClick={() => choose(i)}
+                      className={cn(
+                        "group flex items-center justify-between rounded-2xl border px-5 py-4 text-left text-[14px] font-medium transition-all duration-200",
+                        active
+                          ? "border-accent/60 bg-accent/[0.09] text-accent"
+                          : "border-white/[0.08] bg-white/[0.02] text-zinc-200 hover:border-white/20 hover:bg-white/[0.05]",
+                      )}
+                    >
+                      {option}
+                      <span
+                        className={cn(
+                          "h-1.5 w-1.5 rounded-full transition-colors",
+                          active ? "bg-accent" : "bg-white/10 group-hover:bg-white/25",
+                        )}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="mt-8">
+                <div className="flex items-end justify-center gap-2">
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={spec.min}
+                    max={spec.max}
+                    value={numberValue}
+                    onChange={(e) =>
+                      setAnswer(
+                        spec.field,
+                        Math.max(spec.min, Math.min(spec.max, Number(e.target.value) || spec.min)),
+                      )
+                    }
+                    className="w-32 border-b border-white/15 bg-transparent pb-1 text-center text-5xl font-semibold tabular-nums outline-none transition-colors focus:border-accent [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                    aria-label={copy.title}
+                  />
+                  <span className="pb-2 text-lg text-zinc-500">{spec.unit}</span>
+                </div>
+
+                <input
+                  type="range"
+                  min={spec.min}
+                  max={spec.max}
+                  step={spec.step}
+                  value={numberValue}
+                  onChange={(e) => setAnswer(spec.field, Number(e.target.value))}
+                  className="mt-7 w-full accent-[#95BF47]"
+                  aria-label={copy.title}
+                />
+                <div className="mt-1 flex justify-between font-mono-terminal text-[10px] tabular-nums text-zinc-600">
+                  <span>
+                    {spec.min} {spec.unit}
+                  </span>
+                  <span>{t.quiz.numberHint}</span>
+                  <span>
+                    {spec.max} {spec.unit}
+                  </span>
+                </div>
+
+                <Button size="lg" className="mt-8 w-full" onClick={advance}>
+                  {t.quiz.next} <ArrowRight className="h-4 w-4" />
+                </Button>
+                <button
+                  onClick={advance}
+                  className="mt-3 w-full text-center text-[12px] text-zinc-500 transition-colors hover:text-zinc-300"
+                >
+                  {t.quiz.skip}
+                </button>
+              </div>
+            )}
           </motion.div>
         </AnimatePresence>
 
-        <div className="mt-12">
+        <div className="mt-10">
           {step > 0 ? (
             <button
               onClick={() => setStep(step - 1)}
-              className="flex items-center gap-1.5 text-sm text-zinc-500 transition-colors hover:text-zinc-200"
+              className="flex items-center gap-1.5 text-[13px] text-zinc-500 transition-colors hover:text-zinc-200"
             >
-              <ArrowLeft className="h-4 w-4" /> {t.quiz.back}
+              <ArrowLeft className="h-3.5 w-3.5" /> {t.quiz.back}
             </button>
           ) : (
             <Link
               href="/"
-              className="flex items-center gap-1.5 text-sm text-zinc-500 transition-colors hover:text-zinc-200"
+              className="flex items-center gap-1.5 text-[13px] text-zinc-500 transition-colors hover:text-zinc-200"
             >
-              <ArrowLeft className="h-4 w-4" /> {t.quiz.home}
+              <ArrowLeft className="h-3.5 w-3.5" /> {t.quiz.home}
             </Link>
           )}
         </div>

@@ -91,31 +91,92 @@ export const de: Dict = {
     minorBody:
       "Deine Gesichtsstruktur verändert sich noch — jeder Wert, den wir dir heute geben, wäre in einem Jahr falsch. Und wir analysieren aus Prinzip keine Gesichter von Minderjährigen. Komm wieder, wenn du 18 bist.",
     minorCta: "Zurück zum Start",
+    numberHint: "Regler ziehen oder Wert eintippen",
+    next: "Weiter",
+    skip: "Überspringen",
     questions: [
       {
         title: "Wie sollen wir deinen Scan kalibrieren?",
-        sub: "Die Referenzbereiche unterscheiden sich — das setzt die richtige Basis.",
-        options: ["Männlich", "Weiblich"],
+        sub: "Die Referenzbereiche unterscheiden sich nach Geschlecht — das setzt die richtige Basis.",
+        options: ["Männlich", "Weiblich", "Divers", "Will ich nicht sagen"],
       },
-      { title: "Wie alt bist du?", options: ["Unter 18", "18–24", "25–34", "35+"] },
+      {
+        title: "Wie alt bist du?",
+        sub: "Weichgewebe und Haut verhalten sich pro Lebensjahrzehnt anders.",
+        options: ["Unter 18", "18–24", "25–34", "35–44", "45+"],
+      },
+      { title: "Wie groß bist du?", sub: "Zusammen mit dem Gewicht zur Einschätzung der Körperzusammensetzung." },
+      { title: "Was wiegst du?", sub: "Die Definition im Gesicht hängt an der Körperzusammensetzung wie an nichts sonst." },
+      {
+        title: "Geschätzter Körperfettanteil?",
+        sub: "Wenn du unsicher bist, überspring es — Größe und Gewicht geben uns schon einen Anhaltspunkt.",
+        options: ["Unter 12 %", "12–18 %", "19–25 %", "Über 25 %", "Weiß ich nicht"],
+      },
+      {
+        title: "Wie oft trainierst du?",
+        sub: "Die Trainingsfrequenz bestimmt, wie schnell sich der Körperfett-Hebel bewegen lässt.",
+        options: ["Aktuell gar nicht", "1–2× pro Woche", "3–4× pro Woche", "5× oder öfter"],
+      },
+      {
+        title: "Wie viel schläfst du?",
+        sub: "Wassereinlagerung und Hautregeneration hängen enger am Schlaf als an jedem Produkt.",
+        options: ["Unter 6 Stunden", "6–7 Stunden", "7–8 Stunden", "Über 8 Stunden"],
+      },
+      {
+        title: "Deine aktuelle Hautpflege?",
+        options: ["Keine", "Reinigung und Creme", "Wirkstoffe, LSF, volle Routine"],
+      },
+      {
+        title: "Rauchst oder dampfst du?",
+        sub: "Man sieht es innerhalb weniger Jahre am Hautbild und an der Augenpartie.",
+        options: ["Nein", "Gelegentlich", "Täglich"],
+      },
       {
         title: "Was stört dich an deinem Gesicht am meisten?",
         options: ["Asymmetrie", "Schwache Kieferlinie", "Augenpartie", "Hautbild", "Dünner werdendes Haar"],
-      },
-      {
-        title: "Geschätzter Körperfettanteil?",
-        sub: "Die Definition im Gesicht hängt stark am Körperfett.",
-        options: ["Unter 12 %", "12–18 %", "19–25 %", "Über 25 %", "Weiß ich nicht"],
       },
       {
         title: "Trainierst du Zungenhaltung (Mewing)?",
         options: ["Nie", "Manchmal", "Täglich"],
       },
       {
-        title: "Was ist dein eigentliches Ziel?",
+        title: "Worum geht es dir wirklich?",
         options: ["Model-Niveau", "Selbstbewusstsein beim Daten", "Allgemeine Selbstoptimierung", "Nur neugierig"],
       },
     ],
+  },
+  plans: {
+    standard: {
+      name: "Analyse",
+      tagline: "Dein vollständiger Messsatz",
+      features: [
+        "Alle 15 biometrischen Messwerte mit Referenzbereichen",
+        "Kategorie-Scores und deine Stufe auf der Skala",
+        "Personalisierter Aktionsplan, nach Wirkung sortiert",
+        "Vollständige Datentabelle zu jedem Wert",
+      ],
+      excluded: ["4-Wochen-Programm", "KI-Tiefenanalyse"],
+    },
+    complete: {
+      name: "Programm",
+      tagline: "Analyse plus 4-Wochen-Plan",
+      features: [
+        "Alles aus der Analyse",
+        "4-Wochen-Programm, Woche für Woche strukturiert",
+        "KI-Tiefenanalyse, aus deinen Fotos geschrieben",
+        "Alles bleibt deins — Einmalzahlung",
+      ],
+      excluded: [],
+    },
+  },
+  monthly: {
+    title: "Dein 4-Wochen-Programm",
+    sub: "Aus deinen Messwerten und Antworten gebaut. Jede Woche baut auf der vorherigen auf.",
+    weekLabel: "Woche",
+    upsellTitle: "4-Wochen-Programm",
+    upsellBody:
+      "Ein Wochenplan rund um deine schwächsten Messwerte, dazu die KI-Tiefenanalyse aus deinen Fotos.",
+    upsellCta: "Programm dazunehmen",
   },
   upload: {
     title: "Zwei Fotos. Mehr nicht.",
@@ -215,13 +276,14 @@ export const de: Dict = {
   },
   checkout: {
     eyebrow: "Einmalige Freischaltung",
+    choosePlan: "Wähle deinen Plan",
+    popular: "Am vollständigsten",
     product: "Vollständige biometrische Analyse",
     once: "einmalig · kein Abo",
     features: [
-      "Alle 16 biometrischen Messwerte freigeschaltet",
+      "Alle 15 biometrischen Messwerte freigeschaltet",
       "Symmetrie, Lidachse & Kieferlinie in exakten Zahlen",
-      "Personalisierter Glow-Up-Aktionsplan",
-      "KI-Tiefenanalyse aus deinen Fotos",
+      "Personalisierter Aktionsplan",
       "Lebenslanger Zugriff — Einmalzahlung",
     ],
     emailPlaceholder: "E-Mail für deine Rechnung",
@@ -442,6 +504,20 @@ export const de: Dict = {
         "Ein Schnitt passend zu deiner Gesichtsform, aufgeräumte statt gezupfter Brauen und eine saubere Bartlinie. Die günstigste, schnellste und sichtbarste Veränderung auf dieser Liste.",
       tag: "Grooming",
       cadence: "Alle 4 Wochen",
+    },
+    smoking: {
+      title: "Nikotin weglassen",
+      detail:
+        "Rauchen und Dampfen bauen Kollagen ab und trüben den Ton unter den Augen. Das ist innerhalb weniger Jahre sichtbar und teilweise umkehrbar — nichts sonst auf dieser Liste wird durch Weitermachen so schnell zunichtegemacht.",
+      tag: "Haut",
+      cadence: "Ab sofort",
+    },
+    training: {
+      title: "Krafttraining in die Woche bringen",
+      detail:
+        "Zwei bis drei Einheiten pro Woche sind das Minimum, damit eine Diät hält. Training bewahrt die Muskulatur, die du sonst verlierst — und genau die erhält die Definition an Kiefer und Wangen, für die du abnimmst.",
+      tag: "Körper",
+      cadence: "3× / Woche",
     },
     sleep: {
       title: "Schlaf ist der Multiplikator",

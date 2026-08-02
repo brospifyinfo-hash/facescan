@@ -101,12 +101,22 @@ export function DevUnlock({ children }: { children: React.ReactNode }) {
               autoFocus
               type="password"
               inputMode="numeric"
+              enterKeyHint="go"
               value={code}
               onChange={(e) => setCode(e.target.value)}
               placeholder="••••"
               aria-label="Code"
               className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center text-lg tracking-[0.5em] outline-none transition-colors placeholder:text-zinc-700 focus:border-accent/50"
             />
+            {/* An explicit submit — a soft keyboard has no reliable Enter,
+                so the prompt was impossible to confirm on a phone. */}
+            <button
+              type="submit"
+              disabled={code.length === 0}
+              className="mt-3 w-full rounded-2xl bg-accent py-2.5 text-sm font-semibold text-zinc-950 transition-opacity disabled:opacity-30"
+            >
+              OK
+            </button>
           </motion.form>
         </div>
       ) : null}

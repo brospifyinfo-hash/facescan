@@ -56,7 +56,11 @@ export interface Dict {
     minorTitle: string;
     minorBody: string;
     minorCta: string;
-    questions: Array<{ title: string; sub?: string; options: string[] }>;
+    /** Index-aligned with QUIZ_STEPS. `options` is absent on number steps. */
+    questions: Array<{ title: string; sub?: string; options?: string[] }>;
+    numberHint: string;
+    next: string;
+    skip: string;
   };
   upload: {
     title: string;
@@ -132,8 +136,28 @@ export interface Dict {
     tierSub: string;
     tierNote: string;
   };
+  plans: Record<
+    "standard" | "complete",
+    {
+      name: string;
+      tagline: string;
+      features: string[];
+      /** Shown struck through with a cross — what this plan does NOT include. */
+      excluded: string[];
+    }
+  >;
+  monthly: {
+    title: string;
+    sub: string;
+    weekLabel: string;
+    upsellTitle: string;
+    upsellBody: string;
+    upsellCta: string;
+  };
   checkout: {
     eyebrow: string;
+    choosePlan: string;
+    popular: string;
     product: string;
     once: string;
     features: string[];
