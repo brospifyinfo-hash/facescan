@@ -28,9 +28,11 @@ export default function ScanPage() {
     if (started.current) return;
     started.current = true;
 
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("raw")) sessionStorage.setItem("facescan.raw", "1");
+
     const demo =
-      process.env.NODE_ENV === "development" &&
-      window.location.search.includes("demo=1");
+      process.env.NODE_ENV === "development" && params.get("demo") === "1";
 
     const front = useFunnel.getState().photos.front;
     if (!front && !demo) {

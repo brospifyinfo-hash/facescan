@@ -12,6 +12,7 @@ import { RadarChart } from "@/components/dashboard/RadarChart";
 import { ScoreRing, MiniRing } from "@/components/dashboard/ScoreRing";
 import { MetricsPanel } from "@/components/dashboard/MetricsPanel";
 import { TierLadder } from "@/components/dashboard/TierLadder";
+import { RawDiagnostics } from "@/components/dashboard/RawDiagnostics";
 import { MeasurementTable } from "@/components/dashboard/MeasurementTable";
 import { LockedSection } from "@/components/dashboard/LockedSection";
 import { ActionPlan } from "@/components/dashboard/ActionPlan";
@@ -30,10 +31,22 @@ export default function ResultsPage() {
   const { locale } = useI18n();
   const { metrics, quiz, photos, unlocked, unlock } = useFunnel();
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [showRaw, setShowRaw] = useState(false);
 
   useEffect(() => {
     if (!metrics) router.replace("/upload");
   }, [metrics, router]);
+
+  // Calibration aid, opened with ?raw=1 on ANY page of the funnel — the flag
+  // rides in sessionStorage because reloading /results would drop the scan
+  // (it only ever lives in memory). Deliberately outside the paywall: this is
+  // a diagnostic for whoever runs the site, not a product feature.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).has("raw")) {
+      sessionStorage.setItem("facescan.raw", "1");
+    }
+    setShowRaw(sessionStorage.getItem("facescan.raw") === "1");
+  }, []);
 
   if (!metrics) return null;
 
@@ -144,6 +157,12 @@ export default function ResultsPage() {
           </div>
         </div>
       </motion.section>
+
+      {showRaw ? (
+        <div className="mt-3">
+          <RawDiagnostics metrics={metrics} />
+        </div>
+      ) : null}
 
       {/* ================= LOCKED REGION ================= */}
       <section className="relative mt-3">

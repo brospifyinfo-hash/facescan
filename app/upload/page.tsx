@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, Lightbulb, ShieldCheck } from "lucide-react";
@@ -15,6 +16,13 @@ export default function UploadPage() {
   const t = useT();
   const { photos, setPhoto } = useFunnel();
   const ready = Boolean(photos.front && photos.side);
+
+  // Pick up ?raw=1 here so the diagnostic survives to /results.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).has("raw")) {
+      sessionStorage.setItem("facescan.raw", "1");
+    }
+  }, []);
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col px-6 py-8">
