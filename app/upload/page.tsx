@@ -15,7 +15,9 @@ export default function UploadPage() {
   const router = useRouter();
   const t = useT();
   const { photos, setPhoto } = useFunnel();
-  const ready = Boolean(photos.front && photos.side);
+  // Only the front photo drives the measurements, so it is the only one
+  // required. The side shot just gives the AI report a second angle.
+  const ready = Boolean(photos.front);
 
   // Pick up ?raw=1 here so the diagnostic survives to /results.
   useEffect(() => {
@@ -62,6 +64,7 @@ export default function UploadPage() {
           />
           <PhotoDrop
             label={t.upload.side}
+            badge={t.upload.optional}
             hint={t.upload.sideHint}
             silhouette={<SideSilhouette className="h-full w-full" />}
             value={photos.side}
@@ -69,7 +72,11 @@ export default function UploadPage() {
           />
         </div>
 
-        <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <p className="mt-3 text-[11px] leading-relaxed text-zinc-500">
+          {t.upload.sideSkipNote}
+        </p>
+
+        <div className="mt-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="flex items-center gap-2 text-xs text-zinc-500">
             <ShieldCheck className="h-4 w-4 shrink-0 text-accent" />
             {t.upload.privacy}

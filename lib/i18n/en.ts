@@ -33,8 +33,54 @@ export const en: Dict = {
       { title: "On-device scan", text: "478 landmarks mapped and measured locally." },
       { title: "Your report", text: "16 measurements, category scores, and a real action plan." },
     ],
+    measuredTitle: "What actually gets measured",
+    measuredSub:
+      "Fifteen measurements from the landmark mesh, each checked against a published anthropometric reference range.",
+    privacyTitle: "Your photo never leaves this device",
+    privacyBody:
+      "This isn't a policy promise — it's how the app is built. The analysis model downloads to your browser and runs there. No upload endpoint is involved in the free scan.",
+    privacyPoints: [
+      "The scan runs in your browser; there is no server to send photos to.",
+      "Photos live in the tab's memory only — no disk, no cookies, no account.",
+      "The session clears itself after 15 minutes, and closing the tab clears it instantly.",
+    ],
+    pricingTitle: "One price, paid once",
+    pricingSub: "No subscription, no auto-renewal, no upsell.",
+    pricingIncludes: [
+      "All 15 biometric measurements with their reference ranges",
+      "Category scores and your tier placement",
+      "Personalized action plan ordered by projected impact",
+      "AI deep-dive report generated from your photos",
+    ],
+    pricingNote: "The scan and your overall score are free. You only pay to see the detail.",
+    faqTitle: "Questions worth asking",
+    faq: [
+      {
+        q: "How accurate is this?",
+        a: "The landmark detection is precise — it's the same model used in production computer-vision systems. The interpretation is the softer part: scores compare your measurements to published population reference ranges, and those ranges describe averages, not beauty. Treat the numbers as orientation, not verdict.",
+      },
+      {
+        q: "Is this an attractiveness rating?",
+        a: "No. It measures how closely your facial proportions track published reference ranges. That correlates with perceived attractiveness in the research literature, but this specific score has never been validated against attractiveness ratings, and we don't claim it has.",
+      },
+      {
+        q: "What happens to my photos?",
+        a: "During the free scan, nothing — they never leave your browser. If you buy the report and explicitly consent, the two photos are transmitted once for the AI analysis and are not stored on the server afterwards.",
+      },
+      {
+        q: "Why do you need a side photo?",
+        a: "You don't. Every measurement comes from the front photo. A side shot only gives the AI report a second angle to comment on, so it's optional.",
+      },
+      {
+        q: "Can I use this if I'm under 18?",
+        a: "No. Facial structure is still changing, so any score would be wrong within a year, and we don't analyze minors' faces on principle.",
+      },
+    ],
+    ctaFinal: "Run your scan",
     disclaimer:
-      "FaceScan provides geometric estimates for self-improvement guidance. It is not a medical device, and no result constitutes a medical or dermatological assessment.",
+      "FaceScan provides geometric estimates for self-improvement guidance. It is not a medical device, and no result constitutes a medical, dermatological or psychological assessment.",
+    imprint: "Imprint",
+    privacyLink: "Privacy",
   },
   quiz: {
     progress: "Question {n} of {total}",
@@ -82,6 +128,9 @@ export const en: Dict = {
     frontHint: "Look straight into the camera, head level.",
     side: "Side Profile",
     sideHint: "Turn 90° — ear toward the camera.",
+    optional: "optional",
+    sideSkipNote:
+      "The side photo is optional — every measurement comes from the front profile. Adding it just gives the AI report a second angle.",
     added: "added",
     replace: "Replace photo",
     privacy:

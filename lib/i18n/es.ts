@@ -33,8 +33,55 @@ export const es: Dict = {
       { title: "Escaneo en tu dispositivo", text: "478 puntos mapeados y medidos localmente." },
       { title: "Tu informe", text: "16 medidas, puntuaciones por categoría y un plan de acción real." },
     ],
+    measuredTitle: "Qué se mide realmente",
+    measuredSub:
+      "Quince medidas de la malla de puntos, cada una contrastada con un rango de referencia antropométrico publicado.",
+    privacyTitle: "Tu foto no sale de este dispositivo",
+    privacyBody:
+      "No es una promesa de una política de privacidad, es la arquitectura. El modelo de análisis se descarga a tu navegador y se ejecuta ahí. En el escaneo gratuito no interviene ningún punto de subida.",
+    privacyPoints: [
+      "El escaneo corre en tu navegador: no hay servidor al que enviar fotos.",
+      "Las fotos viven solo en la memoria de la pestaña: sin disco, sin cookies, sin cuenta.",
+      "La sesión se borra sola a los 15 minutos, y cerrar la pestaña la borra al instante.",
+    ],
+    pricingTitle: "Un precio, pagado una vez",
+    pricingSub: "Sin suscripción, sin renovación automática, sin ventas añadidas.",
+    pricingIncludes: [
+      "Las 15 medidas biométricas con sus rangos de referencia",
+      "Puntuaciones por categoría y tu nivel en la escala",
+      "Plan de acción personalizado, ordenado por impacto previsto",
+      "Informe detallado de IA generado a partir de tus fotos",
+    ],
+    pricingNote:
+      "El escaneo y tu puntuación global son gratis. Solo pagas por el detalle.",
+    faqTitle: "Preguntas que merecen respuesta",
+    faq: [
+      {
+        q: "¿Cómo de preciso es?",
+        a: "La detección de puntos es precisa: es el mismo modelo que se usa en sistemas de visión por computador en producción. Lo blando es la interpretación: las puntuaciones comparan tus medidas con rangos de referencia poblacionales, y esos rangos describen medias, no belleza. Tómalas como orientación, no como veredicto.",
+      },
+      {
+        q: "¿Es una valoración de atractivo?",
+        a: "No. Mide lo cerca que están tus proporciones faciales de rangos de referencia publicados. Eso correlaciona con el atractivo percibido en la literatura científica, pero esta puntuación concreta nunca se ha validado contra valoraciones de atractivo, y no afirmamos lo contrario.",
+      },
+      {
+        q: "¿Qué pasa con mis fotos?",
+        a: "Durante el escaneo gratuito, nada: no salen de tu navegador. Si compras el informe y das tu consentimiento explícito, las dos fotos se transmiten una sola vez para el análisis de IA y no se almacenan después en el servidor.",
+      },
+      {
+        q: "¿Por qué hace falta una foto de perfil?",
+        a: "No hace falta. Todas las medidas salen de la foto frontal. El perfil solo da un segundo ángulo al informe de IA, por eso es opcional.",
+      },
+      {
+        q: "¿Puedo usarlo si soy menor de 18?",
+        a: "No. La estructura facial todavía cambia, así que cualquier puntuación estaría equivocada en un año, y por principio no analizamos rostros de menores.",
+      },
+    ],
+    ctaFinal: "Haz tu escaneo",
     disclaimer:
-      "FaceScan ofrece estimaciones geométricas como orientación para la mejora personal. No es un producto sanitario y ningún resultado constituye una valoración médica o dermatológica.",
+      "FaceScan ofrece estimaciones geométricas como orientación para la mejora personal. No es un producto sanitario y ningún resultado constituye una valoración médica, dermatológica ni psicológica.",
+    imprint: "Aviso legal",
+    privacyLink: "Privacidad",
   },
   quiz: {
     progress: "Pregunta {n} de {total}",
@@ -82,6 +129,9 @@ export const es: Dict = {
     frontHint: "Mira de frente a la cámara, cabeza nivelada.",
     side: "Foto de perfil",
     sideHint: "Gírate 90° — oreja hacia la cámara.",
+    optional: "opcional",
+    sideSkipNote:
+      "La foto de perfil es opcional: todas las medidas salen de la frontal. Solo añade un segundo ángulo al informe de IA.",
     added: "añadida",
     replace: "Cambiar foto",
     privacy:

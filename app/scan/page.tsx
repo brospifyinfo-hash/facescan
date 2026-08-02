@@ -12,7 +12,11 @@ import { useFunnel } from "@/lib/store";
 // Loading THEATER over REAL computation: MediaPipe FaceLandmarker runs
 // concurrently while the beam animation plays. Every line names a step that
 // actually executes in lib/analysis.ts — presentation, not fabrication.
-const SCAN_MS = 10_000;
+// Floor, not a fixed duration: the screen ends as soon as the real analysis
+// is done, and only waits out the remainder if the model finished sooner.
+// Ten seconds of padding was most of the wait — the computation itself is
+// well under a second once the model is cached.
+const MIN_MS = 3_400;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export default function ScanPage() {
@@ -44,9 +48,9 @@ export default function ScanPage() {
     const t0 = Date.now();
     const tick = setInterval(() => {
       const elapsed = Date.now() - t0;
-      setProgress(Math.min(99, (elapsed / SCAN_MS) * 100));
-      setLineIdx(Math.min(lineCount - 1, Math.floor(elapsed / (SCAN_MS / lineCount))));
-    }, 80);
+      setProgress(Math.min(97, (elapsed / MIN_MS) * 100));
+      setLineIdx(Math.min(lineCount - 1, Math.floor(elapsed / (MIN_MS / lineCount))));
+    }, 60);
 
     (async () => {
       try {
@@ -77,12 +81,12 @@ export default function ScanPage() {
           }
         }
 
-        const remaining = SCAN_MS - (Date.now() - t0);
+        const remaining = MIN_MS - (Date.now() - t0);
         if (remaining > 0) await sleep(remaining);
         clearInterval(tick);
         setProgress(100);
         completeScan(metrics);
-        await sleep(450);
+        await sleep(300);
         router.push("/results");
       } catch (e) {
         clearInterval(tick);
@@ -118,7 +122,14 @@ export default function ScanPage() {
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col justify-center px-6 py-16">
-      <div className="grid grid-cols-2 gap-3 sm:gap-5">
+      {/* Only render the side panel when a side photo exists — it is optional. */}
+      <div
+        className={
+          photos.side
+            ? "grid grid-cols-2 gap-3 sm:gap-5"
+            : "mx-auto w-full max-w-[280px]"
+        }
+      >
         <FaceMesh
           src={photos.front?.dataUrl}
           mesh={null}
@@ -127,14 +138,16 @@ export default function ScanPage() {
           className="aspect-[3/4]"
           scanning
         />
-        <FaceMesh
-          src={photos.side?.dataUrl}
-          mesh={null}
-          aspect={0.8}
-          label={t.scan.side}
-          className="aspect-[3/4]"
-          scanning
-        />
+        {photos.side ? (
+          <FaceMesh
+            src={photos.side.dataUrl}
+            mesh={null}
+            aspect={0.8}
+            label={t.scan.side}
+            className="aspect-[3/4]"
+            scanning
+          />
+        ) : null}
       </div>
 
       <div className="glass mt-8 rounded-[26px] p-6">

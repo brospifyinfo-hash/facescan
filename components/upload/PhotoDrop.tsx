@@ -10,12 +10,15 @@ const MAX_BYTES = 10 * 1024 * 1024;
 
 export function PhotoDrop({
   label,
+  badge,
   hint,
   silhouette,
   value,
   onPhoto,
 }: {
   label: string;
+  /** Small qualifier next to the label, e.g. "optional". */
+  badge?: string;
   hint: string;
   silhouette: React.ReactNode;
   value?: PhotoData;
@@ -87,8 +90,15 @@ export function PhotoDrop({
             <div className="h-40 w-40 text-zinc-600 transition-colors group-hover:text-zinc-500">
               {silhouette}
             </div>
-            <div className="mt-4 flex items-center gap-2 text-sm font-medium text-zinc-200">
-              <ImageUp className="h-4 w-4 text-accent" /> {label}
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm font-medium text-zinc-200">
+              <span className="flex items-center gap-2">
+                <ImageUp className="h-4 w-4 text-accent" /> {label}
+              </span>
+              {badge ? (
+                <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] font-normal uppercase tracking-wider text-zinc-500">
+                  {badge}
+                </span>
+              ) : null}
             </div>
             <p className="mt-1 max-w-[85%] text-center text-xs text-zinc-500">
               {hint}

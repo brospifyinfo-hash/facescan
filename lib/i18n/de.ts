@@ -33,8 +33,55 @@ export const de: Dict = {
       { title: "Scan auf dem Gerät", text: "478 Landmarken werden lokal erfasst und vermessen." },
       { title: "Dein Report", text: "16 Messwerte, Kategorie-Scores und ein echter Aktionsplan." },
     ],
+    measuredTitle: "Was tatsächlich gemessen wird",
+    measuredSub:
+      "Fünfzehn Messwerte aus dem Landmarken-Netz, jeder gegen einen veröffentlichten anthropometrischen Referenzbereich geprüft.",
+    privacyTitle: "Dein Foto verlässt dieses Gerät nicht",
+    privacyBody:
+      "Das ist kein Versprechen in einer Datenschutzerklärung, sondern die Architektur. Das Analysemodell wird in deinen Browser geladen und läuft dort. Beim Gratis-Scan ist überhaupt kein Upload-Endpunkt beteiligt.",
+    privacyPoints: [
+      "Der Scan läuft in deinem Browser — es gibt keinen Server, an den Fotos gehen könnten.",
+      "Fotos liegen nur im Speicher des Tabs: keine Festplatte, keine Cookies, kein Konto.",
+      "Die Sitzung löscht sich nach 15 Minuten selbst, Tab schließen löscht sofort.",
+    ],
+    pricingTitle: "Ein Preis, einmal bezahlt",
+    pricingSub: "Kein Abo, keine automatische Verlängerung, kein Upselling.",
+    pricingIncludes: [
+      "Alle 15 biometrischen Messwerte mit ihren Referenzbereichen",
+      "Kategorie-Scores und deine Stufe auf der Skala",
+      "Personalisierter Aktionsplan, nach erwarteter Wirkung sortiert",
+      "KI-Tiefenanalyse aus deinen Fotos",
+    ],
+    pricingNote:
+      "Scan und Gesamtwert sind kostenlos. Du zahlst nur für die Details.",
+    faqTitle: "Fragen, die sich lohnen",
+    faq: [
+      {
+        q: "Wie genau ist das?",
+        a: "Die Landmarken-Erkennung ist präzise — es ist dasselbe Modell, das in produktiven Computer-Vision-Systemen läuft. Weicher ist die Deutung: Die Scores vergleichen deine Messwerte mit veröffentlichten Referenzbereichen, und die beschreiben Durchschnitte, keine Schönheit. Nimm die Zahlen als Orientierung, nicht als Urteil.",
+      },
+      {
+        q: "Ist das eine Attraktivitätsbewertung?",
+        a: "Nein. Gemessen wird, wie nah deine Gesichtsproportionen an veröffentlichten Referenzbereichen liegen. Das korreliert in der Forschung mit empfundener Attraktivität, aber dieser konkrete Score wurde nie gegen Attraktivitätsurteile validiert — und wir behaupten das auch nicht.",
+      },
+      {
+        q: "Was passiert mit meinen Fotos?",
+        a: "Beim Gratis-Scan gar nichts — sie verlassen deinen Browser nie. Kaufst du den Report und stimmst ausdrücklich zu, werden die beiden Fotos einmalig zur KI-Analyse übertragen und danach nicht auf dem Server gespeichert.",
+      },
+      {
+        q: "Warum braucht ihr ein Profilbild?",
+        a: "Brauchen wir nicht. Alle Messwerte stammen aus dem Frontalbild. Ein Profilbild gibt dem KI-Report nur eine zweite Perspektive — deshalb ist es optional.",
+      },
+      {
+        q: "Kann ich das unter 18 nutzen?",
+        a: "Nein. Die Gesichtsstruktur verändert sich noch, jeder Wert wäre in einem Jahr falsch. Und wir analysieren aus Prinzip keine Gesichter von Minderjährigen.",
+      },
+    ],
+    ctaFinal: "Scan starten",
     disclaimer:
-      "FaceScan liefert geometrische Schätzwerte zur Orientierung bei der Selbstoptimierung. Es ist kein Medizinprodukt, und kein Ergebnis stellt eine medizinische oder dermatologische Beurteilung dar.",
+      "FaceScan liefert geometrische Schätzwerte zur Orientierung bei der Selbstoptimierung. Es ist kein Medizinprodukt, und kein Ergebnis stellt eine medizinische, dermatologische oder psychologische Beurteilung dar.",
+    imprint: "Impressum",
+    privacyLink: "Datenschutz",
   },
   quiz: {
     progress: "Frage {n} von {total}",
@@ -82,6 +129,9 @@ export const de: Dict = {
     frontHint: "Schau gerade in die Kamera, Kopf waagerecht.",
     side: "Profilbild",
     sideHint: "Dreh dich um 90° — Ohr zur Kamera.",
+    optional: "optional",
+    sideSkipNote:
+      "Das Profilbild ist optional — alle Messwerte stammen aus dem Frontalbild. Es gibt dem KI-Report nur eine zweite Perspektive.",
     added: "hinzugefügt",
     replace: "Foto ersetzen",
     privacy:

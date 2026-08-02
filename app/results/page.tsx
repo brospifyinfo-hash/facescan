@@ -13,6 +13,7 @@ import { ScoreRing, MiniRing } from "@/components/dashboard/ScoreRing";
 import { MetricsPanel } from "@/components/dashboard/MetricsPanel";
 import { TierLadder } from "@/components/dashboard/TierLadder";
 import { RawDiagnostics } from "@/components/dashboard/RawDiagnostics";
+import { DevUnlock, hasAccessCode } from "@/components/ui/DevUnlock";
 import { MeasurementTable } from "@/components/dashboard/MeasurementTable";
 import { LockedSection } from "@/components/dashboard/LockedSection";
 import { ActionPlan } from "@/components/dashboard/ActionPlan";
@@ -48,6 +49,17 @@ export default function ResultsPage() {
     setShowRaw(sessionStorage.getItem("facescan.raw") === "1");
   }, []);
 
+  // Owner access code — unlocks every gated section with no visible marker,
+  // so the paid experience can be reviewed exactly as a customer sees it.
+  useEffect(() => {
+    const apply = () => {
+      if (hasAccessCode()) unlock("owner@local");
+    };
+    apply();
+    window.addEventListener("facescan:access", apply);
+    return () => window.removeEventListener("facescan:access", apply);
+  }, [unlock]);
+
   if (!metrics) return null;
 
   const band = bandFor(metrics.overall);
@@ -59,10 +71,14 @@ export default function ResultsPage() {
     <main className="mx-auto w-full max-w-5xl px-3 py-5 sm:px-6 sm:py-8">
       <header className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <ScanFace className="h-4 w-4 text-accent" />
-          <span className="text-[11px] font-semibold tracking-[0.2em]">
-            FACESCAN
-          </span>
+          <DevUnlock>
+            <span className="flex items-center gap-2">
+              <ScanFace className="h-4 w-4 text-accent" />
+              <span className="text-[11px] font-semibold tracking-[0.2em]">
+                FACESCAN
+              </span>
+            </span>
+          </DevUnlock>
           {metrics.demo ? (
             <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[9px] font-medium text-amber-300">
               🧪 {t.results.demoData}
@@ -85,9 +101,16 @@ export default function ResultsPage() {
         transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
         className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]"
       >
-        {/* Front + side, side by side — equal height, each keeping its own
-            aspect so the landmark mesh stays aligned. */}
-        <div className="grid grid-cols-2 gap-3">
+        {/* Front + side side by side when both exist; a single centred panel
+            when the optional side photo was skipped. Each keeps its own
+            aspect ratio so the landmark mesh stays aligned. */}
+        <div
+          className={
+            photos.side
+              ? "grid grid-cols-2 gap-3"
+              : "mx-auto w-full max-w-[300px]"
+          }
+        >
           <FaceMesh
             src={photos.front?.dataUrl}
             mesh={metrics.mesh}
@@ -95,13 +118,15 @@ export default function ResultsPage() {
             label={t.scan.front}
             className="aspect-[3/4]"
           />
-          <FaceMesh
-            src={photos.side?.dataUrl}
-            mesh={metrics.sideMesh}
-            aspect={metrics.sideAspect ?? metrics.aspect}
-            label={t.scan.side}
-            className="aspect-[3/4]"
-          />
+          {photos.side ? (
+            <FaceMesh
+              src={photos.side.dataUrl}
+              mesh={metrics.sideMesh}
+              aspect={metrics.sideAspect ?? metrics.aspect}
+              label={t.scan.side}
+              className="aspect-[3/4]"
+            />
+          ) : null}
         </div>
 
         {/* Score card */}

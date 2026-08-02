@@ -33,7 +33,21 @@ export interface Dict {
     trust: Array<{ title: string; text: string }>;
     stepsTitle: string;
     steps: Array<{ title: string; text: string }>;
+    measuredTitle: string;
+    measuredSub: string;
+    privacyTitle: string;
+    privacyBody: string;
+    privacyPoints: string[];
+    pricingTitle: string;
+    pricingSub: string;
+    pricingIncludes: string[];
+    pricingNote: string;
+    faqTitle: string;
+    faq: Array<{ q: string; a: string }>;
+    ctaFinal: string;
     disclaimer: string;
+    imprint: string;
+    privacyLink: string;
   };
   quiz: {
     progress: string; // "Question {n} of {total}"
@@ -52,6 +66,8 @@ export interface Dict {
     frontHint: string;
     side: string;
     sideHint: string;
+    optional: string;
+    sideSkipNote: string;
     added: string;
     replace: string;
     privacy: string;

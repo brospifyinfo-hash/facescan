@@ -33,8 +33,55 @@ export const fr: Dict = {
       { title: "Scan sur l'appareil", text: "478 points repérés et mesurés localement." },
       { title: "Votre rapport", text: "16 mesures, scores par catégorie et un vrai plan d'action." },
     ],
+    measuredTitle: "Ce qui est réellement mesuré",
+    measuredSub:
+      "Quinze mesures issues du maillage de points, chacune confrontée à une plage de référence anthropométrique publiée.",
+    privacyTitle: "Votre photo ne quitte pas cet appareil",
+    privacyBody:
+      "Ce n'est pas une promesse de politique de confidentialité, c'est l'architecture. Le modèle d'analyse est téléchargé dans votre navigateur et s'y exécute. Aucun point d'envoi n'intervient dans le scan gratuit.",
+    privacyPoints: [
+      "Le scan tourne dans votre navigateur : il n'y a aucun serveur où envoyer des photos.",
+      "Les photos ne vivent que dans la mémoire de l'onglet : pas de disque, pas de cookies, pas de compte.",
+      "La session s'efface d'elle-même après 15 minutes, et fermer l'onglet l'efface aussitôt.",
+    ],
+    pricingTitle: "Un prix, payé une fois",
+    pricingSub: "Sans abonnement, sans reconduction, sans vente additionnelle.",
+    pricingIncludes: [
+      "Les 15 mesures biométriques avec leurs plages de référence",
+      "Scores par catégorie et votre palier sur l'échelle",
+      "Plan d'action personnalisé, classé par impact attendu",
+      "Rapport IA approfondi généré à partir de vos photos",
+    ],
+    pricingNote:
+      "Le scan et votre score global sont gratuits. Vous ne payez que pour le détail.",
+    faqTitle: "Les questions qui comptent",
+    faq: [
+      {
+        q: "Quelle est la précision ?",
+        a: "La détection des points est précise — c'est le modèle utilisé dans des systèmes de vision par ordinateur en production. L'interprétation est la partie plus souple : les scores comparent vos mesures à des plages de référence publiées, et ces plages décrivent des moyennes, pas la beauté. Prenez les chiffres comme une orientation, pas un verdict.",
+      },
+      {
+        q: "Est-ce une note de beauté ?",
+        a: "Non. On mesure la proximité de vos proportions faciales avec des plages de référence publiées. Cela corrèle avec l'attrait perçu dans la littérature, mais ce score précis n'a jamais été validé contre des évaluations de beauté, et nous ne prétendons pas le contraire.",
+      },
+      {
+        q: "Que deviennent mes photos ?",
+        a: "Pendant le scan gratuit, rien : elles ne quittent pas votre navigateur. Si vous achetez le rapport et donnez votre accord explicite, les deux photos sont transmises une seule fois pour l'analyse IA et ne sont pas conservées ensuite sur le serveur.",
+      },
+      {
+        q: "Pourquoi une photo de profil ?",
+        a: "Elle n'est pas nécessaire. Toutes les mesures viennent de la photo de face. Le profil ne fait qu'ajouter un second angle au rapport IA, il est donc facultatif.",
+      },
+      {
+        q: "Puis-je l'utiliser si j'ai moins de 18 ans ?",
+        a: "Non. La structure du visage évolue encore, tout score serait faux dans un an, et nous refusons par principe d'analyser le visage de mineurs.",
+      },
+    ],
+    ctaFinal: "Lancer votre scan",
     disclaimer:
-      "FaceScan fournit des estimations géométriques à titre d'orientation personnelle. Ce n'est pas un dispositif médical et aucun résultat ne constitue une évaluation médicale ou dermatologique.",
+      "FaceScan fournit des estimations géométriques à titre d'orientation personnelle. Ce n'est pas un dispositif médical et aucun résultat ne constitue une évaluation médicale, dermatologique ou psychologique.",
+    imprint: "Mentions légales",
+    privacyLink: "Confidentialité",
   },
   quiz: {
     progress: "Question {n} sur {total}",
@@ -82,6 +129,9 @@ export const fr: Dict = {
     frontHint: "Regardez droit vers l'objectif, tête droite.",
     side: "Photo de profil",
     sideHint: "Tournez-vous à 90° — oreille vers l'objectif.",
+    optional: "facultatif",
+    sideSkipNote:
+      "La photo de profil est facultative : toutes les mesures viennent de la photo de face. Elle ne fait qu'ajouter un second angle au rapport IA.",
     added: "ajoutée",
     replace: "Changer la photo",
     privacy:
