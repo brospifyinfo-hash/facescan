@@ -1,0 +1,17 @@
+# Keep the deploy payload to source only.
+#
+# Without this the CLI uploaded the local .next directory — about 200 MB of
+# build output Vercel neither needs nor uses, since it builds remotely from
+# source. On a flaky connection that upload stalls, and a stalled upload is
+# worse than a failed one: the CLI dedupes by file hash, so a deployment can
+# be created from whichever files did make it, producing a "Ready" build that
+# quietly contains stale code.
+#
+# Source-only payload is well under a megabyte.
+
+.next
+node_modules
+.vercel/output
+.git
+scripts
+*.tsbuildinfo
