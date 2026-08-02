@@ -97,10 +97,30 @@ export const clamp = (v: number, lo: number, hi: number) =>
  * Sitting inside a canon band on every one of 16 independent measurements
  * is genuinely rare, so realistic faces land in a realistic spread.
  */
+/**
+ * Which direction of deviation is actually a problem.
+ *
+ * "band"  — both directions are worse (a true target ratio)
+ * "up"    — above the band is fine; only falling short costs points
+ * "down"  — below the band is fine; only overshooting costs points
+ *
+ * This exists because symmetric scoring measured AVERAGENESS, not aesthetics.
+ * A model-tier face has a stronger canthal tilt, a larger eye aperture, a
+ * narrower nose and more jaw taper than the population mean — and the
+ * symmetric scorer docked it for every one of them, so the more striking the
+ * face, the worse it scored. Measured: the plain anthropometric average hit
+ * 9.6/10 while a model-tier face got 8.3 and a more pronounced one 7.6.
+ */
+export type Direction = "band" | "up" | "down";
+
+/** How far past the band the preferred direction stays unpenalised. */
+const PLATEAU = 0.75;
+
 export function scoreBand(
   value: number,
   [lo, hi]: [number, number],
   tolerance: number,
+  dir: Direction = "band",
 ): { score: number; position: Metric["position"] } {
   if (value >= lo && value <= hi) {
     const mid = (lo + hi) / 2;
@@ -108,10 +128,25 @@ export function scoreBand(
     const off = Math.min(1, Math.abs(value - mid) / halfWidth);
     return { score: Math.round(100 - off * 14), position: "in" };
   }
-  const d = value < lo ? lo - value : value - hi;
+
+  const above = value > hi;
+  const d = above ? value - hi : lo - value;
+  const favoured = (above && dir === "up") || (!above && dir === "down");
+
+  if (favoured) {
+    const plateau = tolerance * PLATEAU;
+    // Full marks while the deviation runs the flattering way, then a gentle
+    // decline — an extreme is still an extreme.
+    if (d <= plateau) return { score: 100, position: "in" };
+    return {
+      score: Math.round(clamp(100 - ((d - plateau) / tolerance) * 37, 40, 100)),
+      position: "in",
+    };
+  }
+
   return {
     score: Math.round(clamp(86 - (d / tolerance) * 74, 12, 86)),
-    position: value < lo ? "below" : "above",
+    position: above ? "above" : "below",
   };
 }
 
@@ -125,7 +160,11 @@ export function scoreBand(
  * of difference actually mean something.
  */
 export function toOverall(harmony: number): number {
-  const spread = ((harmony - 55) / 40) * 6 + 3.5;
+  // Remapped after directional scoring: with the flattering direction no
+  // longer penalised, the realistic composite window moved up to roughly
+  // [72, 89] with a canonical face near 97. The old window would have put
+  // almost everyone above 9.
+  const spread = ((harmony - 70) / 28) * 6.5 + 3.0;
   return Number(clamp(spread, 1, 10).toFixed(1));
 }
 

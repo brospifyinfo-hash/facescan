@@ -58,6 +58,23 @@ function FaceGlyph({ t, active }: { t: number; active: boolean }) {
     return `M${x0} ${y + 1.0} Q${(x0 + x1) / 2} ${y - 1.6 - t} ${x1} ${y - rise}`;
   };
 
+  // Hair fills out up the ladder: thinning fringe at the bottom, a styled
+  // sweep in the middle, and the long curtain the top tier is known for.
+  const hair =
+    t < 0.3
+      ? // sparse fringe
+        `M${cx - cheekW * 0.72} 15 Q${cx} 4 ${cx + cheekW * 0.72} 15 Q${cx + cheekW * 0.3} 11 ${cx} 12 Q${cx - cheekW * 0.3} 11 ${cx - cheekW * 0.72} 15 Z`
+      : t < 0.62
+        ? // fuller cap
+          `M${cx - cheekW * 0.95} 20 Q${cx - cheekW * 0.8} 4 ${cx} 3.5 Q${cx + cheekW * 0.8} 4 ${cx + cheekW * 0.95} 20 Q${cx + cheekW * 0.55} 12 ${cx} 12.5 Q${cx - cheekW * 0.55} 12 ${cx - cheekW * 0.95} 20 Z`
+        : t < 0.92
+          ? // styled sweep with volume
+            `M${cx - cheekW * 1.02} 24 Q${cx - cheekW * 0.95} 2 ${cx} 2 Q${cx + cheekW * 0.95} 2 ${cx + cheekW * 1.02} 24 Q${cx + cheekW * 0.6} 11 ${cx - cheekW * 0.12} 13 Q${cx - cheekW * 0.7} 13 ${cx - cheekW * 1.02} 24 Z`
+          : // long curtain framing the face, centre-parted
+            `M${cx - cheekW * 1.14} ${chinY - 4} Q${cx - cheekW * 1.3} 22 ${cx - cheekW * 0.8} 6 Q${cx} -2 ${cx + cheekW * 0.8} 6 Q${cx + cheekW * 1.3} 22 ${cx + cheekW * 1.14} ${chinY - 4} Q${cx + cheekW * 0.92} ${chinY - 22} ${cx + cheekW * 0.62} 14 Q${cx + cheekW * 0.2} 9 ${cx} 15 Q${cx - cheekW * 0.2} 9 ${cx - cheekW * 0.62} 14 Q${cx - cheekW * 0.92} ${chinY - 22} ${cx - cheekW * 1.14} ${chinY - 4} Z`;
+
+  const hairFill = active ? "rgba(149,191,71,0.30)" : "rgba(255,255,255,0.15)";
+
   return (
     <svg viewBox="0 0 60 76" className="h-full w-full" aria-hidden>
       <path
@@ -67,6 +84,7 @@ function FaceGlyph({ t, active }: { t: number; active: boolean }) {
         strokeWidth={1.7}
         strokeLinejoin="round"
       />
+      <path d={hair} fill={hairFill} stroke={stroke} strokeWidth={1.3} strokeLinejoin="round" />
 
       {/* Cheekbone contour — only appears once the taper is pronounced */}
       {cheekbone > 0.02 ? (
