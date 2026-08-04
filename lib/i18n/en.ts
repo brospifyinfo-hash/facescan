@@ -145,25 +145,36 @@ export const en: Dict = {
     ],
   },
   plans: {
-    standard: {
-      name: "Analysis",
-      tagline: "Your full measurement set",
+    raw: {
+      name: "Raw Data",
+      tagline: "The numbers, nothing else",
       features: [
-        "All 15 biometric measurements with reference ranges",
-        "Category scores and your tier placement",
-        "Personalized action plan, ordered by impact",
-        "Complete data table for every figure",
+        "All 15 biometric measurements",
+        "Canthal tilt, symmetry %, jaw angle in exact figures",
+        "Reference range for every measurement",
       ],
-      excluded: ["4-week programme", "AI deep-dive report"],
+      excluded: ["Action plan", "4-week programme", "History & tracking"],
     },
-    complete: {
-      name: "Programme",
-      tagline: "Analysis plus a 4-week plan",
+    pro: {
+      name: "Pro Action Plan",
+      tagline: "The numbers, plus what to do about them",
       features: [
-        "Everything in Analysis",
+        "Everything in Raw Data",
+        "Step-by-step glow-up plan, ordered by impact",
         "4-week programme, structured week by week",
+        "History & tracking — compare scans over time",
+      ],
+      excluded: ["Glow-up projections", "Hairstyle & product recommendations"],
+    },
+    blueprint: {
+      name: "The Blueprint",
+      tagline: "Everything, plus the visual plan",
+      features: [
+        "Everything in Pro",
+        "Glow-up projections for your target state",
+        "Hairstyle recommendations for your face shape",
+        "Concrete product picks with links",
         "AI deep-dive report written from your photos",
-        "Everything stays yours — one-time payment",
       ],
       excluded: [],
     },
@@ -306,6 +317,32 @@ export const en: Dict = {
     errNoPhotos:
       "Your photos are no longer in this browser session (they are never stored). Run a new scan to generate the report.",
     errNetwork: "Network error — please try again.",
+  },
+  auth: {
+    title: "Save your analysis",
+    sub: "Enter your email and we'll send a six-digit code. No password to remember, and nothing else is collected.",
+    emailPlaceholder: "you@example.com",
+    sendCode: "Send code",
+    sending: "Sending…",
+    codeTitle: "Check your inbox",
+    codeSub: "We sent a six-digit code to {email}. It expires in 10 minutes.",
+    verify: "Verify",
+    verifying: "Verifying…",
+    resend: "Send a new code",
+    resendIn: "New code in {s}s",
+    changeEmail: "Use a different address",
+    devHint: "Development mode: no mail provider configured, the code is in the server console.",
+    privacy: "Your email is used to sign you in and send your receipt. Nothing else.",
+    errors: {
+      invalidEmail: "That doesn't look like an email address.",
+      cooldown: "Give it a moment before requesting another code.",
+      rateLimited: "Too many codes requested. Try again in a few minutes.",
+      unconfigured: "Sign-in email isn't configured yet. Set RESEND_API_KEY.",
+      failed: "We couldn't send the code. Please try again.",
+      wrongCode: "That code isn't right. {n} attempts left.",
+      expired: "That code expired. Request a new one.",
+      locked: "Too many wrong attempts. Request a new code.",
+    },
   },
   session: {
     notice:

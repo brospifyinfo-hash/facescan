@@ -155,7 +155,7 @@ export const useFunnel = create<FunnelState>((set) => ({
 
   // Paying stops the auto-purge: the photos must stay in memory so the
   // (consented) full-report generation can still access them.
-  unlock: (email, plan = "complete") =>
+  unlock: (email, plan = "pro") =>
     set({ unlocked: true, plan, email, expiresAt: undefined }),
 
   // The session timer really does what the UI claims.

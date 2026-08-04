@@ -146,25 +146,36 @@ export const de: Dict = {
     ],
   },
   plans: {
-    standard: {
-      name: "Analyse",
-      tagline: "Dein vollständiger Messsatz",
+    raw: {
+      name: "Raw Data",
+      tagline: "Die Zahlen, sonst nichts",
       features: [
-        "Alle 15 biometrischen Messwerte mit Referenzbereichen",
-        "Kategorie-Scores und deine Stufe auf der Skala",
-        "Personalisierter Aktionsplan, nach Wirkung sortiert",
-        "Vollständige Datentabelle zu jedem Wert",
+        "Alle 15 biometrischen Messwerte",
+        "Lidachse, Symmetrie in %, Kieferwinkel in exakten Zahlen",
+        "Referenzbereich zu jedem Messwert",
       ],
-      excluded: ["4-Wochen-Programm", "KI-Tiefenanalyse"],
+      excluded: ["Aktionsplan", "4-Wochen-Programm", "Verlauf & Tracking"],
     },
-    complete: {
-      name: "Programm",
-      tagline: "Analyse plus 4-Wochen-Plan",
+    pro: {
+      name: "Pro Action Plan",
+      tagline: "Die Zahlen — und was du damit machst",
       features: [
-        "Alles aus der Analyse",
+        "Alles aus Raw Data",
+        "Schritt-für-Schritt-Glow-Up-Plan, nach Wirkung sortiert",
         "4-Wochen-Programm, Woche für Woche strukturiert",
+        "Verlauf & Tracking — Scans über die Zeit vergleichen",
+      ],
+      excluded: ["Glow-Up-Projektionen", "Frisur- & Produktempfehlungen"],
+    },
+    blueprint: {
+      name: "The Blueprint",
+      tagline: "Alles, plus der visuelle Plan",
+      features: [
+        "Alles aus Pro",
+        "Glow-Up-Projektionen für deinen Zielzustand",
+        "Frisurempfehlungen für deine Gesichtsform",
+        "Konkrete Produktempfehlungen mit Links",
         "KI-Tiefenanalyse, aus deinen Fotos geschrieben",
-        "Alles bleibt deins — Einmalzahlung",
       ],
       excluded: [],
     },
@@ -307,6 +318,32 @@ export const de: Dict = {
     errNoPhotos:
       "Deine Fotos sind nicht mehr in dieser Browser-Sitzung (sie werden nie gespeichert). Starte einen neuen Scan, um den Report zu erstellen.",
     errNetwork: "Netzwerkfehler — bitte versuch es erneut.",
+  },
+  auth: {
+    title: "Analyse sichern",
+    sub: "Gib deine E-Mail ein, wir schicken dir einen sechsstelligen Code. Kein Passwort zu merken, und mehr erfassen wir nicht.",
+    emailPlaceholder: "du@beispiel.de",
+    sendCode: "Code senden",
+    sending: "Wird gesendet…",
+    codeTitle: "Schau in dein Postfach",
+    codeSub: "Wir haben einen sechsstelligen Code an {email} geschickt. Er läuft in 10 Minuten ab.",
+    verify: "Bestätigen",
+    verifying: "Wird geprüft…",
+    resend: "Neuen Code senden",
+    resendIn: "Neuer Code in {s} s",
+    changeEmail: "Andere Adresse verwenden",
+    devHint: "Entwicklungsmodus: kein Mail-Anbieter konfiguriert, der Code steht in der Server-Konsole.",
+    privacy: "Deine E-Mail dient der Anmeldung und dem Beleg. Mehr nicht.",
+    errors: {
+      invalidEmail: "Das sieht nicht nach einer E-Mail-Adresse aus.",
+      cooldown: "Kurz warten, bevor du einen neuen Code anforderst.",
+      rateLimited: "Zu viele Codes angefordert. Versuch es in ein paar Minuten erneut.",
+      unconfigured: "Der Mail-Versand ist noch nicht eingerichtet. RESEND_API_KEY setzen.",
+      failed: "Der Code konnte nicht gesendet werden. Bitte erneut versuchen.",
+      wrongCode: "Der Code stimmt nicht. Noch {n} Versuche.",
+      expired: "Der Code ist abgelaufen. Fordere einen neuen an.",
+      locked: "Zu viele Fehlversuche. Fordere einen neuen Code an.",
+    },
   },
   session: {
     notice:

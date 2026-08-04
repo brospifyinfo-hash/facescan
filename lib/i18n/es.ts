@@ -146,25 +146,36 @@ export const es: Dict = {
     ],
   },
   plans: {
-    standard: {
-      name: "Análisis",
-      tagline: "Tu conjunto completo de medidas",
+    raw: {
+      name: "Raw Data",
+      tagline: "Las cifras, nada más",
       features: [
-        "Las 15 medidas biométricas con sus rangos de referencia",
-        "Puntuaciones por categoría y tu nivel en la escala",
-        "Plan de acción personalizado, ordenado por impacto",
-        "Tabla de datos completa de cada cifra",
+        "Las 15 medidas biométricas",
+        "Inclinación cantal, simetría en %, ángulo mandibular en cifras exactas",
+        "Rango de referencia de cada medida",
       ],
-      excluded: ["Programa de 4 semanas", "Informe detallado de IA"],
+      excluded: ["Plan de acción", "Programa de 4 semanas", "Historial y seguimiento"],
     },
-    complete: {
-      name: "Programa",
-      tagline: "Análisis más un plan de 4 semanas",
+    pro: {
+      name: "Pro Action Plan",
+      tagline: "Las cifras y qué hacer con ellas",
       features: [
-        "Todo lo del Análisis",
+        "Todo lo de Raw Data",
+        "Plan paso a paso, ordenado por impacto",
         "Programa de 4 semanas, estructurado semana a semana",
+        "Historial y seguimiento — compara escaneos en el tiempo",
+      ],
+      excluded: ["Proyecciones de mejora", "Recomendaciones de peinado y productos"],
+    },
+    blueprint: {
+      name: "The Blueprint",
+      tagline: "Todo, más el plan visual",
+      features: [
+        "Todo lo de Pro",
+        "Proyecciones hacia tu estado objetivo",
+        "Recomendaciones de peinado para tu forma de cara",
+        "Productos concretos con enlaces",
         "Informe detallado de IA escrito a partir de tus fotos",
-        "Todo queda tuyo — pago único",
       ],
       excluded: [],
     },
@@ -307,6 +318,32 @@ export const es: Dict = {
     errNoPhotos:
       "Tus fotos ya no están en esta sesión del navegador (nunca se almacenan). Haz un nuevo escaneo para generar el informe.",
     errNetwork: "Error de red — inténtalo de nuevo.",
+  },
+  auth: {
+    title: "Guarda tu análisis",
+    sub: "Introduce tu email y te enviamos un código de seis dígitos. Sin contraseña que recordar, y no recogemos nada más.",
+    emailPlaceholder: "tu@ejemplo.com",
+    sendCode: "Enviar código",
+    sending: "Enviando…",
+    codeTitle: "Mira tu bandeja",
+    codeSub: "Hemos enviado un código de seis dígitos a {email}. Caduca en 10 minutos.",
+    verify: "Verificar",
+    verifying: "Verificando…",
+    resend: "Enviar un código nuevo",
+    resendIn: "Nuevo código en {s} s",
+    changeEmail: "Usar otra dirección",
+    devHint: "Modo desarrollo: sin proveedor de correo configurado, el código está en la consola del servidor.",
+    privacy: "Tu email sirve para iniciar sesión y enviarte el recibo. Nada más.",
+    errors: {
+      invalidEmail: "Eso no parece una dirección de correo.",
+      cooldown: "Espera un momento antes de pedir otro código.",
+      rateLimited: "Demasiados códigos solicitados. Inténtalo en unos minutos.",
+      unconfigured: "El envío de correo aún no está configurado. Define RESEND_API_KEY.",
+      failed: "No hemos podido enviar el código. Inténtalo de nuevo.",
+      wrongCode: "Ese código no es correcto. Te quedan {n} intentos.",
+      expired: "Ese código ha caducado. Pide uno nuevo.",
+      locked: "Demasiados intentos fallidos. Pide un código nuevo.",
+    },
   },
   session: {
     notice:

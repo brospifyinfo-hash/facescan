@@ -146,25 +146,36 @@ export const fr: Dict = {
     ],
   },
   plans: {
-    standard: {
-      name: "Analyse",
-      tagline: "Votre jeu de mesures complet",
+    raw: {
+      name: "Raw Data",
+      tagline: "Les chiffres, rien d'autre",
       features: [
-        "Les 15 mesures biométriques avec leurs plages de référence",
-        "Scores par catégorie et votre palier sur l'échelle",
-        "Plan d'action personnalisé, classé par impact",
-        "Tableau de données complet pour chaque chiffre",
+        "Les 15 mesures biométriques",
+        "Inclinaison canthale, symétrie en %, angle mandibulaire en chiffres exacts",
+        "Plage de référence pour chaque mesure",
       ],
-      excluded: ["Programme de 4 semaines", "Rapport IA approfondi"],
+      excluded: ["Plan d'action", "Programme de 4 semaines", "Historique et suivi"],
     },
-    complete: {
-      name: "Programme",
-      tagline: "L'analyse plus un plan de 4 semaines",
+    pro: {
+      name: "Pro Action Plan",
+      tagline: "Les chiffres, et quoi en faire",
       features: [
-        "Tout ce que contient l'Analyse",
+        "Tout ce que contient Raw Data",
+        "Plan pas à pas, classé par impact",
         "Programme de 4 semaines, structuré semaine par semaine",
+        "Historique et suivi — comparez vos scans dans le temps",
+      ],
+      excluded: ["Projections d'évolution", "Recommandations coiffure et produits"],
+    },
+    blueprint: {
+      name: "The Blueprint",
+      tagline: "Tout, plus le plan visuel",
+      features: [
+        "Tout ce que contient Pro",
+        "Projections vers votre état cible",
+        "Coiffures adaptées à la forme de votre visage",
+        "Produits concrets avec liens",
         "Rapport IA approfondi rédigé à partir de vos photos",
-        "Tout vous reste — paiement unique",
       ],
       excluded: [],
     },
@@ -307,6 +318,32 @@ export const fr: Dict = {
     errNoPhotos:
       "Vos photos ne sont plus dans cette session (elles ne sont jamais stockées). Relancez un scan pour générer le rapport.",
     errNetwork: "Erreur réseau — veuillez réessayer.",
+  },
+  auth: {
+    title: "Sauvegardez votre analyse",
+    sub: "Saisissez votre e-mail et nous envoyons un code à six chiffres. Aucun mot de passe à retenir, et rien d'autre n'est collecté.",
+    emailPlaceholder: "vous@exemple.fr",
+    sendCode: "Envoyer le code",
+    sending: "Envoi…",
+    codeTitle: "Consultez votre boîte",
+    codeSub: "Nous avons envoyé un code à six chiffres à {email}. Il expire dans 10 minutes.",
+    verify: "Vérifier",
+    verifying: "Vérification…",
+    resend: "Envoyer un nouveau code",
+    resendIn: "Nouveau code dans {s} s",
+    changeEmail: "Utiliser une autre adresse",
+    devHint: "Mode développement : aucun fournisseur d'e-mail configuré, le code est dans la console du serveur.",
+    privacy: "Votre e-mail sert à vous connecter et à envoyer votre reçu. Rien d'autre.",
+    errors: {
+      invalidEmail: "Cela ne ressemble pas à une adresse e-mail.",
+      cooldown: "Patientez un instant avant de demander un autre code.",
+      rateLimited: "Trop de codes demandés. Réessayez dans quelques minutes.",
+      unconfigured: "L'envoi d'e-mail n'est pas encore configuré. Définissez RESEND_API_KEY.",
+      failed: "Nous n'avons pas pu envoyer le code. Réessayez.",
+      wrongCode: "Ce code n'est pas correct. Il vous reste {n} tentatives.",
+      expired: "Ce code a expiré. Demandez-en un nouveau.",
+      locked: "Trop de tentatives échouées. Demandez un nouveau code.",
+    },
   },
   session: {
     notice:

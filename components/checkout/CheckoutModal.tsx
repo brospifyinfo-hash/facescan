@@ -21,7 +21,7 @@ export function CheckoutModal({
   open,
   onClose,
   onSuccess,
-  initialPlan = "complete",
+  initialPlan = "pro",
 }: {
   open: boolean;
   onClose: () => void;
@@ -113,7 +113,7 @@ export function CheckoutModal({
                     : "border-white/[0.08] bg-white/[0.02] hover:border-white/20",
                 )}
               >
-                {id === "complete" ? (
+                {id === "pro" ? (
                   <span className="absolute -top-2 right-4 rounded-full bg-accent px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-zinc-950">
                     {t.checkout.popular}
                   </span>

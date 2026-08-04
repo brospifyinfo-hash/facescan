@@ -22,7 +22,9 @@ import { FullReport } from "@/components/dashboard/FullReport";
 import { CheckoutModal } from "@/components/checkout/CheckoutModal";
 import { SessionTimer } from "@/components/checkout/SessionTimer";
 import { PercentileBadge } from "@/components/dashboard/PercentileBadge";
-import { formatPrice } from "@/lib/pricing";
+import { can, formatPrice } from "@/lib/pricing";
+import { AuthModal } from "@/components/auth/AuthModal";
+import { fetchSession } from "@/lib/auth/client";
 import { bandFor } from "@/lib/tiers";
 import { fill, useI18n, useT } from "@/lib/i18n";
 import { useFunnel } from "@/lib/store";
@@ -33,11 +35,25 @@ export default function ResultsPage() {
   const { locale } = useI18n();
   const { metrics, quiz, photos, unlocked, plan, unlock } = useFunnel();
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [signedInAs, setSignedInAs] = useState<string | null>(null);
   const [showRaw, setShowRaw] = useState(false);
+
+  // Sign in first, then pay: the address is what the receipt and the scan
+  // history hang off, so collecting it before checkout keeps the purchase
+  // attached to an account that already exists.
+  const startUnlock = () => {
+    if (signedInAs) setCheckoutOpen(true);
+    else setAuthOpen(true);
+  };
 
   useEffect(() => {
     if (!metrics) router.replace("/upload");
   }, [metrics, router]);
+
+  useEffect(() => {
+    fetchSession().then(setSignedInAs);
+  }, []);
 
   // Calibration aid, opened with ?raw=1 on ANY page of the funnel — the flag
   // rides in sessionStorage because reloading /results would drop the scan
@@ -247,20 +263,25 @@ export default function ResultsPage() {
             </Collapsible>
           </LockedSection>
 
-          <LockedSection locked={locked}>
-            <ActionPlan quiz={quiz} metrics={metrics} interactive={!locked} />
+          {/* Raw Data explicitly excludes the action plan, so it stays
+              blurred for that tier — the card would otherwise be lying. */}
+          <LockedSection locked={locked || !can(plan, "actionPlan")}>
+            <ActionPlan
+              quiz={quiz}
+              metrics={metrics}
+              interactive={!locked && can(plan, "actionPlan")}
+            />
           </LockedSection>
 
-          {/* The 4-week programme and the AI report belong to the higher
-              plan; Analysis buyers see an offer to add them instead. */}
-          {unlocked && plan === "complete" ? (
-            <>
-              <MonthlyProgram quiz={quiz} metrics={metrics} />
-              <FullReport />
-            </>
+          {/* Gated by capability, never by plan id — adding a tier later
+              means touching lib/pricing.ts and nothing else. */}
+          {unlocked && can(plan, "actionPlan") ? (
+            <MonthlyProgram quiz={quiz} metrics={metrics} />
           ) : null}
 
-          {unlocked && plan === "standard" ? (
+          {unlocked && can(plan, "blueprint") ? <FullReport /> : null}
+
+          {unlocked && !can(plan, "actionPlan") ? (
             <section className="rounded-3xl border border-accent/25 bg-accent/[0.05] p-5 sm:p-6">
               <h2 className="text-base font-semibold tracking-tight">
                 {t.monthly.upsellTitle}
@@ -268,8 +289,8 @@ export default function ResultsPage() {
               <p className="mt-1.5 max-w-lg text-[12px] leading-relaxed text-zinc-400">
                 {t.monthly.upsellBody}
               </p>
-              <Button className="mt-4" onClick={() => setCheckoutOpen(true)}>
-                {t.monthly.upsellCta} — {formatPrice(locale, "complete")}
+              <Button className="mt-4" onClick={() => startUnlock()}>
+                {t.monthly.upsellCta} — {formatPrice(locale, "pro")}
               </Button>
             </section>
           ) : null}
@@ -310,7 +331,7 @@ export default function ResultsPage() {
                   ))}
                 </ul>
 
-                <Button size="lg" className="mt-5 w-full" onClick={() => setCheckoutOpen(true)}>
+                <Button size="lg" className="mt-5 w-full" onClick={() => startUnlock()}>
                   <Lock className="h-4 w-4" />
                   {t.results.unlockCta}
                 </Button>
@@ -334,10 +355,20 @@ export default function ResultsPage() {
         {t.results.disclaimer}
       </p>
 
+      <AuthModal
+        open={authOpen}
+        onClose={() => setAuthOpen(false)}
+        onSignedIn={(mail) => {
+          setSignedInAs(mail);
+          setAuthOpen(false);
+          setCheckoutOpen(true);
+        }}
+      />
+
       <CheckoutModal
         open={checkoutOpen}
         onClose={() => setCheckoutOpen(false)}
-        initialPlan={plan === "standard" ? "complete" : "complete"}
+        initialPlan="pro"
         onSuccess={(email, chosen) => {
           // TODO: unlock only after a Stripe webhook confirms payment.
           unlock(email, chosen);

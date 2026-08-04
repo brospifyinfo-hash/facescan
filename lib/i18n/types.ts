@@ -137,7 +137,7 @@ export interface Dict {
     tierNote: string;
   };
   plans: Record<
-    "standard" | "complete",
+    "raw" | "pro" | "blueprint",
     {
       name: string;
       tagline: string;
@@ -179,6 +179,32 @@ export interface Dict {
     oneTime: string;
     errNoPhotos: string;
     errNetwork: string;
+  };
+  auth: {
+    title: string;
+    sub: string;
+    emailPlaceholder: string;
+    sendCode: string;
+    sending: string;
+    codeTitle: string;
+    codeSub: string; // contains {email}
+    verify: string;
+    verifying: string;
+    resend: string;
+    resendIn: string; // contains {s}
+    changeEmail: string;
+    devHint: string;
+    privacy: string;
+    errors: {
+      invalidEmail: string;
+      cooldown: string;
+      rateLimited: string;
+      unconfigured: string;
+      failed: string;
+      wrongCode: string; // contains {n}
+      expired: string;
+      locked: string;
+    };
   };
   session: { notice: string };
   status: Record<"in" | "below" | "above", string>;
