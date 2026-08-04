@@ -369,9 +369,10 @@ export default function ResultsPage() {
         open={checkoutOpen}
         onClose={() => setCheckoutOpen(false)}
         initialPlan="pro"
-        onSuccess={(email, chosen) => {
-          // TODO: unlock only after a Stripe webhook confirms payment.
-          unlock(email, chosen);
+        onSuccess={(granted) => {
+          // `granted` comes from /api/stripe/entitlement, i.e. from what the
+          // verified webhook actually wrote — not from the client.
+          unlock(signedInAs ?? "", granted);
           setCheckoutOpen(false);
           window.scrollTo({ top: 0, behavior: "smooth" });
         }}

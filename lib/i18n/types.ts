@@ -157,6 +157,7 @@ export interface Dict {
   checkout: {
     eyebrow: string;
     choosePlan: string;
+    continueToPayment: string;
     popular: string;
     product: string;
     once: string;
@@ -204,6 +205,39 @@ export interface Dict {
       wrongCode: string; // contains {n}
       expired: string;
       locked: string;
+    };
+  };
+  pay: {
+    summaryTitle: string;
+    net: string;
+    vat: string; // contains {rate}
+    shipping: string;
+    shippingFree: string;
+    total: string;
+    inclVat: string; // contains {rate}
+    terms: string; // contains {terms} and {privacy} link markers
+    termsLink: string;
+    privacyLink: string;
+    withdrawal: string;
+    withdrawalLink: string;
+    mustAccept: string;
+    orderButton: string;
+    processing: string;
+    confirming: string;
+    succeeded: string;
+    expressOr: string;
+    securedBy: string;
+    unconfigured: string;
+    errors: {
+      declined: string;
+      insufficientFunds: string;
+      expiredCard: string;
+      incorrectCvc: string;
+      processingError: string;
+      authRequired: string;
+      network: string;
+      generic: string;
+      timeout: string;
     };
   };
   session: { notice: string };
