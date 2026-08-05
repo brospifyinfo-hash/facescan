@@ -111,6 +111,14 @@ export interface ScanMetrics {
    *  there (common on a true 90° profile); the UI then shows the grid. */
   sideMesh: MeshPaths | null;
   sideAspect: number | null;
+  /**
+   * How much to trust this result, 0–1. Driven by capture quality and
+   * embedding stability — never by the face itself, so a bad photo lowers
+   * certainty, not the score.
+   */
+  confidence: number;
+  /** Capture problems worth telling the user about. */
+  qualityIssues: string[];
   demo?: boolean;
 }
 

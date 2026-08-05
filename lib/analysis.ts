@@ -11,6 +11,7 @@
 
 import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 import { measure, type Point } from "./measure";
+import { runPipeline } from "./analysis/pipeline";
 import type { MeshPaths } from "./store";
 import { makeMetric, METRIC_ORDER, SPECS } from "./specs";
 import { clamp, toOverall, type CategoryId, type Metric } from "./metrics";
@@ -173,10 +174,23 @@ export async function analyzeFront(
   if (!raw || raw.length < 468) return null;
 
   const flat: Point[] = raw.map((pt) => ({ x: pt.x, y: pt.y }));
-  const { intercanthal, ...scores } = measure(flat);
+
+  // Stages 4–7 run through the hybrid pipeline: geometry, embedding,
+  // capture quality and the score engine. MediaPipe (stages 1–3) stays as
+  // the landmark source; the pipeline is built around it, not instead of it.
+  const pipeline = await runPipeline(image, flat);
+  const { intercanthal, aligned, roll, ...scores } = measure(flat);
+  void aligned;
+  void roll;
 
   return {
     ...scores,
+    // The engine's figures win over measure()'s, since it is the component
+    // that owns scoring and can be swapped for a trained model.
+    overall: pipeline.score.overall,
+    harmony: pipeline.score.harmony,
+    confidence: pipeline.score.confidence,
+    qualityIssues: pipeline.quality.issues,
     interocularPx: Math.round(intercanthal * image.naturalWidth),
     landmarkCount: raw.length,
     aspect: image.naturalWidth / image.naturalHeight,
@@ -247,6 +261,10 @@ export function demoMetrics(seed = "demo"): ScanMetrics {
     mesh: null,
     sideMesh: null,
     sideAspect: null,
+    // The demo path has no pixels to measure, so it reports a nominal
+    // confidence rather than pretending a capture was assessed.
+    confidence: 0.9,
+    qualityIssues: [],
     demo: true,
   };
 }

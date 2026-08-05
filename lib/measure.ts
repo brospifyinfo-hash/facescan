@@ -4,6 +4,7 @@
 
 import { clamp, toOverall, type CategoryId, type Metric } from "./metrics";
 import { makeMetric } from "./specs";
+import { DEFAULT_WEIGHTS } from "./analysis/weights";
 
 export type Point = { x: number; y: number };
 
@@ -61,9 +62,19 @@ export interface Measured {
   overall: number;
   weakest: Metric["id"][];
   intercanthal: number;
+  /** Landmarks after roll correction — what every measurement ran on. */
+  aligned: Point[];
+  /** Roll removed during alignment, radians. */
+  roll: number;
 }
 
-/** Composite the per-category and overall scores from a metric set. */
+/**
+ * Composite the per-category and overall scores from a metric set.
+ *
+ * The weights come from lib/analysis/weights.ts rather than living here as
+ * literals — that is what lets them be swept, fitted, or replaced by a
+ * trained model without editing this maths.
+ */
 function composite(metrics: Metric[], symmetry: number) {
   const avg = (cat: CategoryId) => {
     const picked = metrics.filter((m) => m.category === cat);
@@ -75,13 +86,15 @@ function composite(metrics: Metric[], symmetry: number) {
   const jawScore = avg("jaw");
   const proportionsScore = avg("proportions");
   const midfaceScore = avg("midface");
+
+  const c = DEFAULT_WEIGHTS.categories;
   const harmony = Math.round(
     clamp(
-      0.26 * symmetry +
-        0.22 * eyesScore +
-        0.2 * jawScore +
-        0.2 * proportionsScore +
-        0.12 * midfaceScore,
+      c.symmetry * symmetry +
+        c.eyes * eyesScore +
+        c.jaw * jawScore +
+        c.proportions * proportionsScore +
+        c.midface * midfaceScore,
       30,
       99,
     ),
@@ -194,7 +207,17 @@ export function measure(flat: Point[]): Measured {
     err += (Math.abs(dL - dR) + 0.5 * Math.abs(p[li].y - p[ri].y)) / bizygomatic;
   }
   err /= SYMMETRY_PAIRS.length;
-  const symmetry = Math.round(clamp(100 - err * 340, 40, 99));
+  const s = DEFAULT_WEIGHTS.symmetry;
+  const symmetry = Math.round(clamp(100 - err * s.gain, s.min, s.max));
 
-  return { ...composite(metrics, symmetry), symmetry, metrics, intercanthal };
+  // `aligned` and `roll` are exported so the quality stage can reason about
+  // head pose without redoing the alignment.
+  return {
+    ...composite(metrics, symmetry),
+    symmetry,
+    metrics,
+    intercanthal,
+    aligned: p,
+    roll,
+  };
 }
