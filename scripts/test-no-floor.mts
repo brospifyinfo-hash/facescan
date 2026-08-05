@@ -75,6 +75,61 @@ check(
   shifted.every((v) => v > 1.0),
 );
 
+// ---------------------------------------------------------------------------
+// Typicality vs attractiveness.
+//
+// A symmetric kernel scores "how far from the population mean". Both a lean,
+// tapered face and a heavy, soft one are far from the mean — in opposite
+// directions — so both got the same number. Measured on real photographs: a
+// face rated 10/10 scored 5.9 and one rated 1/10 scored 5.8.
+//
+// This asserts the two are now separated, which is what the direction fields
+// and the asymmetric kernel exist for.
+
+/** A face `z` SD toward the favoured side of every directional measurement. */
+function faceAlongDirection(z: number) {
+  const values = {} as Record<MeasurementId, number>;
+  for (const id of MEASUREMENT_IDS) {
+    const n = NORMS[id];
+    const sign = n.direction === "up" ? 1 : n.direction === "down" ? -1 : 0;
+    values[id] = n.mean + n.shift * n.sd + sign * z * n.sd;
+  }
+  return scorer.score(
+    { features: values, implausible: [], external: {}, qualityOverall: 1,
+      embeddingStability: null, poseCompensated: true },
+    DEFAULT_WEIGHTS,
+  );
+}
+
+console.log("\nSchlank/definiert vs. weich/voll — gleiche |z|, andere Richtung\n" + "-".repeat(62));
+const lean = faceAlongDirection(2);
+const full = faceAlongDirection(-2);
+const neutral = faceAlongDirection(0);
+console.log(`  2 SD in die günstige Richtung   Score ${lean.overall.toFixed(1)}`);
+console.log(`  genau auf der Referenz          Score ${neutral.overall.toFixed(1)}`);
+console.log(`  2 SD in die ungünstige Richtung Score ${full.overall.toFixed(1)}`);
+
+check(
+  "günstige und ungünstige Richtung werden getrennt",
+  lean.overall - full.overall >= 2.0,
+  `Differenz ${(lean.overall - full.overall).toFixed(1)} Punkte`,
+);
+// The property that matters is RELATIVE, not absolute: deviating the
+// favoured way must cost markedly less than deviating the other way. An
+// absolute bound would just be a threshold picked to pass.
+const costFavoured = neutral.overall - lean.overall;
+const costUnfavoured = neutral.overall - full.overall;
+check(
+  "günstige Abweichung kostet weniger als die Hälfte der ungünstigen",
+  costFavoured < costUnfavoured / 2,
+  `${costFavoured.toFixed(1)} vs ${costUnfavoured.toFixed(1)} Punkte`,
+);
+check(
+  "kein Extrem schlägt die Referenz",
+  lean.overall <= neutral.overall,
+  `Referenz ${neutral.overall.toFixed(1)}, Extrem ${lean.overall.toFixed(1)}`,
+);
+
 console.log(
   `\n${failures === 0 ? "BESTANDEN" : "FEHLGESCHLAGEN"}\n`,
 );

@@ -82,14 +82,19 @@ export const DEFAULT_WEIGHTS: ScoringWeights = {
     // Symmetry is the most reproducible thing a frontal photo can measure
     // and the one direction the attractiveness literature agrees on across
     // sexes and populations — a large share, still short of dominating.
-    symmetry: 0.22,
+    symmetry: 0.18,
     // The largest group of well-sourced measurements (8), most graded
     // "derived" from Farkas norms.
-    proportions: 0.24,
-    jaw: 0.16,
-    eyes: 0.18,
-    nose: 0.08,
-    lips: 0.08,
+    proportions: 0.26,
+    // Raised: the jaw carries three of the four measurements on the facial
+    // adiposity/taper axis, which Coetzee et al. (2009) report as the
+    // strongest single geometric predictor of male attractiveness ratings.
+    // That axis is also what separates a lean face from a soft one, and it
+    // was being diluted by measurements that carry no direction at all.
+    jaw: 0.22,
+    eyes: 0.14,
+    nose: 0.06,
+    lips: 0.10,
     // Real pixel statistics, but heavily confounded by lighting and
     // make-up. Small weight, and its own confidence gates it further.
     skin: 0.04,

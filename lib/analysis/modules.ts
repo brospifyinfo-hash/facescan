@@ -42,6 +42,30 @@ import { offsetOf } from "./calibration";
 export const TOLERANCE_SD = 1.75;
 
 /**
+ * How much wider the kernel is on a measurement's favoured side.
+ *
+ * THE REASON THIS EXISTS. A symmetric kernel measures TYPICALITY, and
+ * typicality cannot rank attractiveness — it is a mathematical property,
+ * not a tuning problem. A lean, tapered face sits far below the population
+ * mean on every width measurement. A heavy, soft one sits far above. |z| is
+ * the same for both, so both score the same. Measured on real photographs:
+ * a face rated 10/10 scored 5.9 and one rated 1/10 scored 5.8.
+ *
+ * With FAVOURED_RATIO = 3.0 the kernel on the favoured side is three times
+ * wider, so at 2 SD out:
+ *
+ *   favoured side    → 95 points
+ *   unfavoured side  → 60 points
+ *
+ * There is no plateau and no free ceiling. The previous directional scorer
+ * granted a flat 100 for any deviation up to 0.75 tolerances, which let an
+ * extreme value outrank a normal one; here the score still falls in both
+ * directions, just at different rates. Monotone either way, one constant,
+ * and every direction it applies to carries a citation in norms.ts.
+ */
+export const FAVOURED_RATIO = 3.0;
+
+/**
  * How far a measurement's source grade is trusted, 0–1.
  *
  * A ratio with a published mean and SD deserves more say than one estimated
@@ -91,7 +115,13 @@ export function scoreMeasurement(id: MeasurementId, value: number): MeasurementS
   const ref = referenceOf(norm, id);
   let z = (value - ref) / norm.sd;
   if (norm.oneSided === "lower" && z < 0) z = 0;
-  const score = 100 * Math.exp(-0.5 * (z / TOLERANCE_SD) ** 2);
+
+  // Asymmetric kernel: wider on the side the rating literature favours.
+  const favoured =
+    (norm.direction === "up" && z > 0) || (norm.direction === "down" && z < 0);
+  const kappa = TOLERANCE_SD * (favoured ? FAVOURED_RATIO : 1);
+
+  const score = 100 * Math.exp(-0.5 * (z / kappa) ** 2);
   return { id, value, z, score, used: true };
 }
 
