@@ -16,7 +16,7 @@ import type { MeshPaths } from "./store";
 import { makeMetric, METRIC_ORDER, SPECS } from "./specs";
 import { clamp, type CategoryId, type Metric } from "./metrics";
 import { DEFAULT_WEIGHTS } from "./analysis/weights";
-import { percentileOfComposite } from "./analysis/composite-cdf";
+import { meanAbsZFromComposite } from "./analysis/modules";
 import type { ScanMetrics } from "./store";
 
 const WASM_BASE =
@@ -255,9 +255,9 @@ export function demoMetrics(seed = "demo"): ScanMetrics {
       100,
     ),
   );
-  const { outLow, outHigh } = DEFAULT_WEIGHTS.display;
+  const { outLow, outHigh, perSd } = DEFAULT_WEIGHTS.display;
   const overall = Number(
-    (outLow + (percentileOfComposite(harmony) / 100) * (outHigh - outLow)).toFixed(1),
+    clamp(outHigh - perSd * meanAbsZFromComposite(harmony), outLow, outHigh).toFixed(1),
   );
 
   return {

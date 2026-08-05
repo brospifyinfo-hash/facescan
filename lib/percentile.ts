@@ -24,12 +24,22 @@
 // stretch exactly — no table, nothing to keep in sync.
 
 import { DEFAULT_WEIGHTS } from "./analysis/weights";
+import { TOLERANCE_SD } from "./analysis/modules";
+import { percentileOfComposite } from "./analysis/composite-cdf";
 
-/** Share of the modelled population scoring below `overall` (0–100). */
+/**
+ * Share of the modelled population scoring below `overall` (0–100).
+ *
+ * Inverts the display mapping back to a composite, then looks it up in the
+ * modelled CDF. Doing it in that order matters: the headline is anchored on
+ * SD-distance and the percentile on the modelled population, and inverting
+ * exactly is what keeps the two from telling different stories.
+ */
 export function percentileFor(overall: number): number {
-  const { outLow, outHigh } = DEFAULT_WEIGHTS.display;
-  const p = ((overall - outLow) / (outHigh - outLow)) * 100;
-  return Math.round(Math.max(0, Math.min(100, p)));
+  const { outHigh, perSd } = DEFAULT_WEIGHTS.display;
+  const meanAbsZ = Math.max(0, (outHigh - overall) / perSd);
+  const composite = 100 * Math.exp(-0.5 * (meanAbsZ / TOLERANCE_SD) ** 2);
+  return Math.round(percentileOfComposite(composite));
 }
 
 /**

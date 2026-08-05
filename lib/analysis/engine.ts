@@ -25,7 +25,7 @@
 
 import type { MeasurementId } from "./norms";
 import {
-  MODULE_IDS, evaluateGeometryModules,
+  MODULE_IDS, evaluateGeometryModules, meanAbsZFromComposite,
   type ModuleId, type ModuleResult,
 } from "./modules";
 import { DEFAULT_WEIGHTS, type ScoringWeights } from "./weights";
@@ -136,15 +136,24 @@ export class WeightedScorer implements Scorer {
     // rather than a number that looks like a verdict.
     const composite = den > 0 ? num / den : 50;
 
-    // The headline is a POPULATION PERCENTILE, not a linear rescale of the
-    // composite. The composite saturates near 100 and has a long left tail,
-    // so a linear window compresses the top of the scale into a few points
-    // and leaves the bottom half reachable only by landmark failures.
-    const { outLow, outHigh } = w.display;
-    const percentile = percentileOfComposite(composite);
+    // The headline is anchored on MEAN SD-DISTANCE, not on a percentile of
+    // the simulated population. That anchoring was the defect that made the
+    // product useless: the population is simulated from the same norms that
+    // score, so it contains no face carrying a systematic measurement
+    // offset — and every real photo, of any face, fell below its first
+    // percentile and was clamped to exactly 1.0.
+    //
+    // SD-distance cannot floor out. A face two SD off the reference scores
+    // 5.0 whether or not the reference itself is well calibrated, and two
+    // different faces still get two different numbers.
+    const { outLow, outHigh, perSd } = w.display;
+    const meanAbsZ = meanAbsZFromComposite(composite);
     const overall = Number(
-      clamp(outLow + (percentile / 100) * (outHigh - outLow), 1, 10).toFixed(1),
+      clamp(outHigh - perSd * meanAbsZ, outLow, outHigh).toFixed(1),
     );
+
+    // Kept for the badge, and labelled there as modelled rather than real.
+    const percentile = percentileOfComposite(composite);
 
     // ---- Confidence --------------------------------------------------------
     // Three independent sources, and only these move it. Capture quality

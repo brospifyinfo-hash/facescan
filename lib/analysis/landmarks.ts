@@ -221,7 +221,22 @@ export function align(raw: Point3[]): Aligned {
   const spread = (a: number[]) => Math.max(...a) - Math.min(...a);
   const zSpread = spread(zs);
   const xSpread = spread(xs) || 1e-6;
-  const poseCompensated = zSpread / xSpread > 0.05;
+  // Two conditions, both necessary.
+  //
+  // Depth must be usable: with a flat z the de-rotation would amplify noise
+  // instead of removing pose.
+  //
+  // And the estimated angle must be physically plausible. MediaPipe's z is
+  // an uncalibrated relative depth, so a bad frame can produce an absurd
+  // arctangent; de-rotating by 70° would then destroy geometry that was
+  // fine. Past MAX_RELIABLE_ANGLE the far side of the face is inferred
+  // rather than observed anyway, so the correction is declined and
+  // confidence drops instead.
+  const hasDepth = zSpread / xSpread > 0.05;
+  const anglesPlausible =
+    Math.abs(pose.yaw) < MAX_RELIABLE_ANGLE * 2 &&
+    Math.abs(pose.pitch) < MAX_RELIABLE_ANGLE * 2;
+  const poseCompensated = hasDepth && anglesPlausible;
 
   if (poseCompensated) {
     const centre: Point3 = {

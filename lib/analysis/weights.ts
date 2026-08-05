@@ -33,13 +33,21 @@ export interface ScoringWeights {
   modules: Record<ModuleId, number>;
 
   /**
-   * Maps the population percentile onto the 0–10 headline. The
-   * composite→percentile step is COMPOSITE_CDF (generated from the norms),
-   * so these two numbers are the whole of the display policy.
+   * Maps mean SD-distance onto the 0–10 headline.
+   *
+   *   score = outHigh − perSd · meanAbsZ,  clamped to [outLow, outHigh]
+   *
+   * Anchored on standard deviations rather than on a simulated population
+   * percentile. The percentile version had a hard floor — every real face
+   * fell below the modelled 1st percentile and got the same 1.0 — because
+   * the population was simulated from the same norms that do the scoring
+   * and so could not contain a face with a systematic measurement offset.
    */
   display: {
     outLow: number;
     outHigh: number;
+    /** Points lost per standard deviation of mean deviation. */
+    perSd: number;
   };
 
   /** How capture quality rolls up into a single 0–1 figure. */
@@ -94,12 +102,14 @@ export const DEFAULT_WEIGHTS: ScoringWeights = {
     embedding: 0,
   },
 
-  // The headline is the population percentile stretched onto 1.0-10.0, so
-  // the median face scores 5.5 by construction and one point of difference
-  // means the same amount of rarity everywhere on the scale.
+  // 2.5 points per SD: a face sitting exactly on the reference proportions
+  // scores 10, one SD off scores 7.5, two SD off 5.0, three SD off 2.5.
+  // Those anchors come from the normal distribution, not from taste — 68%
+  // of people are inside one SD, 95% inside two.
   display: {
     outLow: 1.0,
     outHigh: 10.0,
+    perSd: 2.5,
   },
 
   quality: {

@@ -85,6 +85,32 @@ export function scoreMeasurement(id: MeasurementId, value: number): MeasurementS
   return { id, value, z, score, used: true };
 }
 
+/**
+ * Recover the mean SD-distance that produced a composite.
+ *
+ * The composite is a mean of `100·exp(−½(z/κ)²)`, so inverting the kernel
+ * gives the z that a single measurement would need to produce that value —
+ * an interpretable "this face sits N standard deviations from the reference
+ * proportions, on average".
+ *
+ * This is the anchor the headline uses, and it replaces anchoring on a
+ * simulated population percentile. The reason is a defect that made the
+ * product useless: the population was simulated from the SAME norms that do
+ * the scoring, so it could only ever contain faces that already conform.
+ * Real measurements carry a systematic offset from caliper anthropometry,
+ * landed below the modelled 1st percentile, and every single one of them —
+ * from any face — was clamped to the same floor. The score carried no
+ * information at all.
+ *
+ * SD-distance has no such floor. It is defined for any input, degrades
+ * smoothly, and preserves ordering even while the norms' absolute
+ * calibration is still wrong.
+ */
+export function meanAbsZFromComposite(composite: number): number {
+  const c = Math.max(1e-6, Math.min(100, composite));
+  return TOLERANCE_SD * Math.sqrt(Math.max(0, -2 * Math.log(c / 100)));
+}
+
 export type ModuleId =
   | "symmetry" | "proportions" | "jaw" | "eyes" | "nose" | "lips"
   | "faceShape" | "skin" | "embedding";
