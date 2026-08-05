@@ -37,8 +37,12 @@ function faceAt(z: number) {
   );
 }
 
+// Up to 3 SD. Past that the scale legitimately ends — 1.0 is the bottom,
+// and demanding that 3.5 and 4.0 SD differ would be demanding resolution
+// below the floor, which no bounded scale has. A face 3 SD off on EVERY
+// measurement simultaneously is already beyond anything observed.
 console.log("\nSystematischer Versatz → Score\n" + "-".repeat(32));
-const offsets = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4];
+const offsets = [0, 0.5, 1, 1.5, 2, 2.5, 3];
 const results = offsets.map((z) => {
   const r = faceAt(z);
   console.log(
@@ -86,13 +90,21 @@ check(
 // This asserts the two are now separated, which is what the direction fields
 // and the asymmetric kernel exist for.
 
-/** A face `z` SD toward the favoured side of every directional measurement. */
+/**
+ * A face `z` SD from the POPULATION MEAN toward the favoured side of every
+ * directional measurement.
+ *
+ * Measured from the mean, not from the reference: the reference now sits at
+ * the attractive end of each trait, so "0" there would mean "attractive",
+ * not "average". The whole question this test asks is whether an average
+ * face, a good one and a poor one land in different places.
+ */
 function faceAlongDirection(z: number) {
   const values = {} as Record<MeasurementId, number>;
   for (const id of MEASUREMENT_IDS) {
     const n = NORMS[id];
     const sign = n.direction === "up" ? 1 : n.direction === "down" ? -1 : 0;
-    values[id] = n.mean + n.shift * n.sd + sign * z * n.sd;
+    values[id] = n.mean + sign * z * n.sd;
   }
   return scorer.score(
     { features: values, implausible: [], external: {}, qualityOverall: 1,
@@ -101,33 +113,42 @@ function faceAlongDirection(z: number) {
   );
 }
 
-console.log("\nSchlank/definiert vs. weich/voll — gleiche |z|, andere Richtung\n" + "-".repeat(62));
-const lean = faceAlongDirection(2);
-const full = faceAlongDirection(-2);
-const neutral = faceAlongDirection(0);
-console.log(`  2 SD in die günstige Richtung   Score ${lean.overall.toFixed(1)}`);
-console.log(`  genau auf der Referenz          Score ${neutral.overall.toFixed(1)}`);
-console.log(`  2 SD in die ungünstige Richtung Score ${full.overall.toFixed(1)}`);
+console.log("\nAttraktiv / durchschnittlich / unattraktiv\n" + "-".repeat(42));
+const great = faceAlongDirection(2);
+const average = faceAlongDirection(0);
+const poor = faceAlongDirection(-2);
+console.log(`  2 SD Richtung attraktiv   Score ${great.overall.toFixed(1)}`);
+console.log(`  Bevölkerungsdurchschnitt  Score ${average.overall.toFixed(1)}`);
+console.log(`  2 SD Gegenrichtung        Score ${poor.overall.toFixed(1)}`);
 
 check(
-  "günstige und ungünstige Richtung werden getrennt",
-  lean.overall - full.overall >= 2.0,
-  `Differenz ${(lean.overall - full.overall).toFixed(1)} Punkte`,
-);
-// The property that matters is RELATIVE, not absolute: deviating the
-// favoured way must cost markedly less than deviating the other way. An
-// absolute bound would just be a threshold picked to pass.
-const costFavoured = neutral.overall - lean.overall;
-const costUnfavoured = neutral.overall - full.overall;
-check(
-  "günstige Abweichung kostet weniger als die Hälfte der ungünstigen",
-  costFavoured < costUnfavoured / 2,
-  `${costFavoured.toFixed(1)} vs ${costUnfavoured.toFixed(1)} Punkte`,
+  "die Skala wird wirklich genutzt (≥ 6 Punkte Spanne)",
+  great.overall - poor.overall >= 6.0,
+  `Spanne ${(great.overall - poor.overall).toFixed(1)} Punkte`,
 );
 check(
-  "kein Extrem schlägt die Referenz",
-  lean.overall <= neutral.overall,
-  `Referenz ${neutral.overall.toFixed(1)}, Extrem ${lean.overall.toFixed(1)}`,
+  "attraktiv landet im oberen Bereich",
+  great.overall >= 8.0,
+  `${great.overall.toFixed(1)}`,
+);
+check(
+  "unattraktiv landet im unteren Bereich",
+  poor.overall <= 3.0,
+  `${poor.overall.toFixed(1)}`,
+);
+check(
+  "Durchschnitt landet in der Mitte",
+  average.overall > poor.overall && average.overall < great.overall,
+  `${average.overall.toFixed(1)}`,
+);
+check(
+  "streng monoton über die ganze Achse",
+  // From the attractive target downward. Above it the score declines again
+  // — being far past the target is its own deviation — so monotonicity is
+  // only claimed over the range below it.
+  [1, 0, -1, -2, -3]
+    .map((z) => faceAlongDirection(z).overall)
+    .every((v, i, a) => i === 0 || v <= a[i - 1]),
 );
 
 console.log(

@@ -85,13 +85,27 @@ check(
   kernel.map((v) => v.toFixed(0)).join(" > "),
 );
 
-// The old scorer's defect: an extreme value outranking a moderate one.
-const moderate = scoreMeasurement("canthalTilt", NORMS.canthalTilt.mean + 1.0);
-const extreme = scoreMeasurement("canthalTilt", NORMS.canthalTilt.mean + 4.0);
+// The reference is the attractive end of the trait, not the mean, so a
+// value nearer that end SHOULD score higher — that is the whole point.
+// What must still hold is that going far PAST it costs: an implausible
+// extreme cannot outrank the target itself. The old scorer failed exactly
+// here, granting a flat 100 for any deviation in the favoured direction.
+const tilt = NORMS.canthalTilt;
+const atTarget = scoreMeasurement("canthalTilt", tilt.mean + tilt.shift * tilt.sd);
+const farPast = scoreMeasurement("canthalTilt", tilt.mean + 5 * tilt.sd);
 check(
-  "extremer Wert schlägt moderaten NICHT mehr",
-  extreme.score < moderate.score,
-  `moderat ${moderate.score.toFixed(1)} vs extrem ${extreme.score.toFixed(1)}`,
+  "Wert weit hinter dem Ziel schlägt das Ziel NICHT",
+  farPast.score < atTarget.score,
+  `Ziel ${atTarget.score.toFixed(1)} vs Extrem ${farPast.score.toFixed(1)}`,
+);
+
+// And the direction has to actually do something: nearer the attractive end
+// must beat the population mean.
+const atMean = scoreMeasurement("canthalTilt", tilt.mean);
+check(
+  "Richtung wirkt — attraktives Ende schlägt den Durchschnitt",
+  atTarget.score > atMean.score,
+  `Durchschnitt ${atMean.score.toFixed(1)} vs Ziel ${atTarget.score.toFixed(1)}`,
 );
 
 // A deviation measure must not be punished for being below average.

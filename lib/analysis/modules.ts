@@ -51,11 +51,12 @@ export const TOLERANCE_SD = 1.75;
  * the same for both, so both score the same. Measured on real photographs:
  * a face rated 10/10 scored 5.9 and one rated 1/10 scored 5.8.
  *
- * With FAVOURED_RATIO = 3.0 the kernel on the favoured side is three times
- * wider, so at 2 SD out:
- *
- *   favoured side    → 95 points
- *   unfavoured side  → 60 points
+ * At 1.6 this is now a secondary effect: the reference itself sits at the
+ * attractive end of each trait (see norms.ts), so most of the separation
+ * comes from where the target is rather than from how the penalty leans.
+ * What the asymmetry still does is keep the far side of the target from
+ * costing as much as falling short of it — being leaner than the target is
+ * a smaller problem than being heavier.
  *
  * There is no plateau and no free ceiling. The previous directional scorer
  * granted a flat 100 for any deviation up to 0.75 tolerances, which let an
@@ -163,20 +164,26 @@ export const MODULE_IDS: ModuleId[] = [
 /**
  * Which measurements feed which module.
  *
- * `goldenRatio` and `chinProjection` appear in no module on purpose:
- * goldenRatio duplicates facialIndex and would double-count it, and
- * chinProjection has no calibrated scale. Both are still measured and
- * reported — reporting a number and scoring it are different decisions.
+ * ONLY MEASUREMENTS THAT CARRY A DIRECTION ARE SCORED. A measurement with
+ * no defensible direction cannot say whether a face is more or less
+ * attractive — it can only say how unusual the face is. Averaging nine such
+ * measurements in alongside the sixteen that do carry direction diluted the
+ * signal by more than a third and was a large part of why two very
+ * different faces landed within 0.1 of each other.
+ *
+ * The directionless ones (esr, eyeSpacing, fifths, lowerThird, noseLength,
+ * chinRatio, browPosition, goldenRatio, chinProjection) are still measured
+ * and still reported in full. Reporting a number and scoring it are
+ * different decisions, and the raw view shows all of them.
  */
 export const MODULE_MEASUREMENTS: Record<ModuleId, MeasurementId[]> = {
   symmetry: ["symmetryDeviation"],
   proportions: [
-    "thirds", "fifths", "fwhr", "facialIndex", "faceLength",
-    "bizygomaticRatio", "lowerThird", "midface",
+    "thirds", "fwhr", "facialIndex", "faceLength", "bizygomaticRatio", "midface",
   ],
-  jaw: ["gonialAngle", "jawWidth", "chinRatio", "bigonialRatio"],
-  eyes: ["canthalTilt", "esr", "eyeSpacing", "eyeAspect", "browPosition"],
-  nose: ["noseWidth", "noseLength"],
+  jaw: ["gonialAngle", "jawWidth", "bigonialRatio"],
+  eyes: ["canthalTilt", "eyeAspect"],
+  nose: ["noseWidth"],
   lips: ["lipRatio", "mouthNose", "philtrumRatio"],
   // Supplied by other analyzers, not by geometry.
   faceShape: [],

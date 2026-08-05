@@ -27,13 +27,30 @@
 // unit of "how far off" is a real, measured unit of human variation rather
 // than a number chosen by hand.
 //
-// `reference` is the value a score is measured against. It defaults to the
-// population mean — a measured fact — and is only shifted where the
-// literature reports a reproducible association, in which case the shift is
-// given in SD units and its source is named. Shifts are bounded to ≤0.6 SD
-// so no measurement can drift into "extremes are always better", which is
-// what made the previous directional scorer rank striking-but-implausible
-// values above moderate ones.
+// WHAT THE REFERENCE IS, AND WHY IT MOVED
+// ---------------------------------------
+// `reference` is the value a measurement is scored against. It used to be
+// the population MEAN, which made this a typicality model — and typicality
+// cannot rank attractiveness. Both a striking face and a poor one sit far
+// from the mean, so both scored the same: measured on real photographs, a
+// face rated 10/10 got 5.9 and one rated 1/10 got 5.8.
+//
+// For a rating model the reference has to be the ATTRACTIVE END of each
+// trait, not its average. Then a good face sits near z = 0, an average face
+// around 1.3 SD out, and a poor one past 3 SD — and the 0-10 scale is
+// actually used.
+//
+// `shift` is that target, in SD from the population mean. Its magnitude
+// reflects how well evidenced the direction is: 1.4 on the facial adiposity
+// axis, which Coetzee et al. (2009) report as the strongest single
+// geometric predictor of male attractiveness ratings; 0.9-1.2 on
+// feature-level directions with smaller reported effects. Every non-zero
+// shift names its source in `note`, and validateNorms() rejects one that
+// does not.
+//
+// This is a judgement about what people find attractive, and it is stated
+// as one rather than hidden inside a "neutral" distance measure. It is also
+// the first thing a regression fitted on rated faces should replace.
 //
 // SOURCE GRADES
 // -------------
@@ -107,13 +124,22 @@ export const SOURCE_NOTE =
   "only widely published set carrying standard deviations. Applying them " +
   "across populations introduces a bias this model does not correct.";
 
-/** Largest permitted |shift|, in SD. Keeps preferences from becoming rules. */
-export const MAX_SHIFT_SD = 0.6;
+/**
+ * Largest permitted |shift|, in SD.
+ *
+ * Raised from 0.6 to 1.5 with the change of target below. A cap of 0.6 was
+ * right while the reference was the population mean and the shift was a
+ * nudge; it is wrong once the reference IS the attractive end, because the
+ * attractive end of a trait genuinely sits more than half a standard
+ * deviation from average. The cap still exists so no single measurement can
+ * demand a value almost nobody has.
+ */
+export const MAX_SHIFT_SD = 1.5;
 
 export const NORMS = {
   // ---- Eyes ---------------------------------------------------------------
   canthalTilt: {
-    mean: 4.1, sd: 2.6, shift: 0.4, grade: "anthropometric", direction: "up",
+    mean: 4.1, sd: 2.6, shift: 1.2, grade: "anthropometric", direction: "up",
     plausible: [-15, 20],
     note:
       "Intercanthal axis inclination, degrees. Mean/SD from Farkas. Positive " +
@@ -131,7 +157,7 @@ export const NORMS = {
       "did) shifts it by roughly -0.03 and floors the metric.",
   },
   eyeAspect: {
-    mean: 0.335, sd: 0.042, shift: 0.35, grade: "derived", direction: "up",
+    mean: 0.335, sd: 0.042, shift: 1, grade: "derived", direction: "up",
     plausible: [0.1, 0.62],
     note:
       "Palpebral fissure height / width. Derived from Farkas height 10.5±1.2mm, " +
@@ -176,7 +202,7 @@ export const NORMS = {
 
   // ---- Jaw ----------------------------------------------------------------
   gonialAngle: {
-    mean: 157, sd: 7.2, shift: 0.3, grade: "heuristic", direction: "up",
+    mean: 157, sd: 7.2, shift: 1.2, grade: "heuristic", direction: "up",
     plausible: [120, 195],
     note:
       "SURFACE contour angle cheek→jaw-corner→chin, NOT the cephalometric " +
@@ -186,7 +212,7 @@ export const NORMS = {
       "Positive shift follows the jaw-taper literature (Scheib 1999). Direction: a more tapered lower-face contour. Scheib et al. (1999); Penton-Voak et al. (2001).",
   },
   jawWidth: {
-    mean: 0.774, sd: 0.048, shift: -0.35, grade: "derived", direction: "down",
+    mean: 0.774, sd: 0.048, shift: -1.4, grade: "derived", direction: "down",
     plausible: [0.55, 1.05],
     note:
       "Bigonial / bizygomatic. Derived from Farkas bigonial 106±5.5mm and " +
@@ -225,7 +251,7 @@ export const NORMS = {
       "against 5.0 would put the average face at z=-2.",
   },
   fwhr: {
-    mean: 1.90, sd: 0.13, shift: 0, grade: "anthropometric", direction: "down",
+    mean: 1.90, sd: 0.13, shift: -1.2, grade: "anthropometric", direction: "down",
     plausible: [1.3, 2.6],
     note:
       "Facial width-to-height ratio, bizygomatic / (brow-to-upper-lip). " +
@@ -233,7 +259,7 @@ export const NORMS = {
       "is contradictory and sex-dependent, so no direction is defensible. Direction rests on the adiposity link, not on fWHR as a trait: fWHR correlates with BMI (Coetzee et al. 2010). The attractiveness literature on fWHR itself is contradictory and sex-dependent.",
   },
   facialIndex: {
-    mean: 1.36, sd: 0.075, shift: 0, grade: "derived", direction: "up",
+    mean: 1.36, sd: 0.075, shift: 1.4, grade: "derived", direction: "up",
     plausible: [1.0, 1.85],
     note:
       "Face height / bizygomatic width. Derived from Farkas 187±8mm over " +
@@ -251,17 +277,17 @@ export const NORMS = {
       "ratio. Kept as a reported measurement, weight 0 in scoring.",
   },
   faceLength: {
-    mean: 3.00, sd: 0.19, shift: 0, grade: "derived", direction: "up",
+    mean: 3.00, sd: 0.19, shift: 1.4, grade: "derived", direction: "up",
     plausible: [2.1, 4.2],
     note: "Face height / interpupillary distance. Derived from Farkas 187/62.3. Direction: face height relative to IPD, the vertical half of the adiposity axis. Coetzee et al. (2009).",
   },
   bizygomaticRatio: {
-    mean: 2.20, sd: 0.14, shift: 0, grade: "derived", direction: "down",
+    mean: 2.20, sd: 0.14, shift: -1.4, grade: "derived", direction: "down",
     plausible: [1.6, 3.0],
     note: "Bizygomatic width / interpupillary distance. Farkas 137/62.3. Direction: face width relative to IPD is an adiposity proxy — IPD does not change with weight, cheek soft tissue does. Coetzee et al. (2009).",
   },
   bigonialRatio: {
-    mean: 1.70, sd: 0.13, shift: 0, grade: "derived", direction: "down",
+    mean: 1.70, sd: 0.13, shift: -1.4, grade: "derived", direction: "down",
     plausible: [1.15, 2.4],
     note: "Bigonial width / interpupillary distance. Farkas 106/62.3. Direction: jaw width relative to IPD, the same adiposity proxy. Coetzee et al. (2009).",
   },
@@ -275,14 +301,14 @@ export const NORMS = {
 
   // ---- Midface / nose / lips ---------------------------------------------
   midface: {
-    mean: 0.95, sd: 0.072, shift: 0, grade: "derived", direction: "down",
+    mean: 0.95, sd: 0.072, shift: -1, grade: "derived", direction: "down",
     plausible: [0.6, 1.4],
     note:
       "Pupil-line→upper-lip / interpupillary distance. Defined pupil-to-pupil; " +
       "using the intercanthal distance instead shifts this by about +0.15. Direction: a shorter pupil-to-lip distance is reported as attractiveness-associated. Cunningham (1986).",
   },
   noseWidth: {
-    mean: 0.248, sd: 0.020, shift: -0.3, grade: "derived", direction: "down",
+    mean: 0.248, sd: 0.020, shift: -1, grade: "derived", direction: "down",
     plausible: [0.16, 0.40],
     note:
       "Alar width / bizygomatic. Farkas 34±2.2mm over 137±5mm. Negative shift " +
@@ -295,7 +321,7 @@ export const NORMS = {
     note: "Nasion→subnasale / face height. Farkas 52.5±3.3mm over 187±8mm.",
   },
   mouthNose: {
-    mean: 1.50, sd: 0.13, shift: 0.3, grade: "derived", direction: "up",
+    mean: 1.50, sd: 0.13, shift: 1, grade: "derived", direction: "up",
     plausible: [1.0, 2.3],
     note:
       "Mouth width / alar width. Farkas 51±3.3mm over 34±2.2mm. The canon " +
@@ -303,7 +329,7 @@ export const NORMS = {
       "Cunningham (1986). Direction: a wider mouth relative to the nose. Cunningham (1986).",
   },
   lipRatio: {
-    mean: 1.28, sd: 0.31, shift: 0.3, grade: "derived", direction: "up",
+    mean: 1.28, sd: 0.31, shift: 1, grade: "derived", direction: "up",
     plausible: [0.4, 3.0],
     note:
       "Lower vermilion height / upper. Farkas 9.4±1.9mm over 8.5±1.6mm. " +
@@ -311,7 +337,7 @@ export const NORMS = {
       "and with lip compression against the teeth. Direction: a fuller lower lip. Bisson & Grobbelaar (2004).",
   },
   philtrumRatio: {
-    mean: 0.222, sd: 0.028, shift: 0, grade: "derived", direction: "down",
+    mean: 0.222, sd: 0.028, shift: -0.9, grade: "derived", direction: "down",
     plausible: [0.10, 0.40],
     note: "Philtrum height / lower-third height. Farkas 16±2mm over 72±5mm. Direction: a shorter philtrum relative to the lower third; the philtrum lengthens with age (Farkas age series).",
   },

@@ -107,14 +107,15 @@ export const DEFAULT_WEIGHTS: ScoringWeights = {
     embedding: 0,
   },
 
-  // 2.5 points per SD: a face sitting exactly on the reference proportions
-  // scores 10, one SD off scores 7.5, two SD off 5.0, three SD off 2.5.
-  // Those anchors come from the normal distribution, not from taste — 68%
-  // of people are inside one SD, 95% inside two.
+  // 4.0 points per SD of mean deviation from the attractive reference.
+  // With the reference at the attractive end of each trait, a face sitting
+  // on it scores 10, an average face lands near 5.5 and one two SD the
+  // other way reaches the floor — so the scale is actually used end to end
+  // rather than everyone bunching in the middle.
   display: {
     outLow: 1.0,
     outHigh: 10.0,
-    perSd: 2.5,
+    perSd: 4.0,
   },
 
   quality: {
