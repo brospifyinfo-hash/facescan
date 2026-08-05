@@ -7,8 +7,6 @@
 //
 //   detect → align → landmarks → geometry → embedding → quality → score
 
-import type { Metric } from "@/lib/metrics";
-
 export type Point = { x: number; y: number };
 
 /** Stage 1–3: a detected, aligned face with its landmark mesh. */
@@ -21,20 +19,6 @@ export interface FaceStage {
   roll: number;
   imageWidth: number;
   imageHeight: number;
-}
-
-/** Stage 4: geometric features. */
-export interface GeometryStage {
-  metrics: Metric[];
-  symmetry: number;
-  categories: {
-    eyes: number;
-    jaw: number;
-    proportions: number;
-    midface: number;
-  };
-  /** Interocular distance in pixels — drives the resolution check. */
-  interocularPx: number;
 }
 
 /**
@@ -76,6 +60,8 @@ export interface EmbeddingStage {
 export interface QualityStage {
   /** All 0–1, higher is better. */
   sharpness: number;
+  /** Directional smear, separate from defocus. 1 = none. */
+  motionBlur: number;
   exposure: number;
   noise: number;
   whiteBalance: number;
@@ -92,6 +78,7 @@ export interface QualityStage {
 
 export type QualityIssue =
   | "blurry"
+  | "motionBlur"
   | "underexposed"
   | "overexposed"
   | "noisy"
@@ -100,26 +87,8 @@ export type QualityIssue =
   | "notFrontal"
   | "occluded";
 
-/** Stage 7: the final score. */
-export interface ScoreStage {
-  /** 0–10 headline figure. */
-  overall: number;
-  /** 0–100 composite before the display mapping. */
-  harmony: number;
-  /**
-   * 0–1. How much to trust this result, driven by capture quality and
-   * embedding stability. Never touches `overall` — a bad photo makes the
-   * result less certain, not less attractive.
-   */
-  confidence: number;
-  /** Per-contributor breakdown, for debugging and the raw view. */
-  contributions: Record<string, number>;
-}
-
-export interface PipelineResult {
-  face: FaceStage;
-  geometry: GeometryStage;
-  embedding: EmbeddingStage;
-  quality: QualityStage;
-  score: ScoreStage;
-}
+// Stages 4, 7 and 8 own their own result types now — GeometryResult in
+// ./geometry.ts, ScoreResult in ./engine.ts, PipelineResult and
+// AnalysisResponse in ./analyzer.ts and ./response.ts. Keeping duplicate
+// shapes here is what let the old GeometryStage drift out of step with what
+// measure() actually returned.

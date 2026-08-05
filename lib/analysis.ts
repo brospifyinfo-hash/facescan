@@ -10,11 +10,13 @@
 // MediaPipe WASM runtime is browser-only.
 
 import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
-import { measure, type Point } from "./measure";
-import { runPipeline } from "./analysis/pipeline";
+import { measure, type Point, type Point3 } from "./measure";
+import { faceAnalyzer } from "./analysis/analyzer";
 import type { MeshPaths } from "./store";
 import { makeMetric, METRIC_ORDER, SPECS } from "./specs";
-import { clamp, toOverall, type CategoryId, type Metric } from "./metrics";
+import { clamp, type CategoryId, type Metric } from "./metrics";
+import { DEFAULT_WEIGHTS } from "./analysis/weights";
+import { percentileOfComposite } from "./analysis/composite-cdf";
 import type { ScanMetrics } from "./store";
 
 const WASM_BASE =
@@ -173,30 +175,33 @@ export async function analyzeFront(
   const raw = result.faceLandmarks?.[0];
   if (!raw || raw.length < 468) return null;
 
-  const flat: Point[] = raw.map((pt) => ({ x: pt.x, y: pt.y }));
+  // The z channel is KEPT. It used to be dropped here, which made real pose
+  // estimation impossible and left yaw and pitch uncorrected — the single
+  // largest source of score drift between two photos of the same person.
+  const pts: Point3[] = raw.map((pt) => ({ x: pt.x, y: pt.y, z: pt.z ?? 0 }));
+  const flat: Point[] = pts.map((p) => ({ x: p.x, y: p.y }));
 
-  // Stages 4–7 run through the hybrid pipeline: geometry, embedding,
-  // capture quality and the score engine. MediaPipe (stages 1–3) stays as
-  // the landmark source; the pipeline is built around it, not instead of it.
-  const pipeline = await runPipeline(image, flat);
-  const { intercanthal, aligned, roll, ...scores } = measure(flat);
-  void aligned;
-  void roll;
+  // Stages 2-8. MediaPipe (stages 1 and 3) stays as the landmark source;
+  // the analyzer is built around it, not instead of it.
+  const run = await faceAnalyzer.run(image, pts);
+  const display = measure(pts);
 
   return {
-    ...scores,
-    // The engine's figures win over measure()'s, since it is the component
-    // that owns scoring and can be swapped for a trained model.
-    overall: pipeline.score.overall,
-    harmony: pipeline.score.harmony,
-    confidence: pipeline.score.confidence,
-    qualityIssues: pipeline.quality.issues,
-    interocularPx: Math.round(intercanthal * image.naturalWidth),
+    ...display,
+    // The engine owns scoring, so its figures win over the display adapter's.
+    overall: run.score.overall,
+    harmony: Math.round(run.score.composite),
+    confidence: run.score.confidence,
+    qualityIssues: run.quality.issues,
+    interocularPx: Math.round(run.geometry.ipd * image.naturalWidth),
     landmarkCount: raw.length,
     aspect: image.naturalWidth / image.naturalHeight,
     mesh: meshFrom(flat),
     sideMesh: null,
     sideAspect: null,
+    // Full explainability payload — modules, strengths, weaknesses,
+    // recommendations, provenance and caveats.
+    report: run.response,
   };
 }
 
@@ -233,20 +238,30 @@ export function demoMetrics(seed = "demo"): ScanMetrics {
   const jawScore = avg("jaw");
   const proportionsScore = avg("proportions");
   const midfaceScore = avg("midface");
+  // Composited with the real module weights and mapped through the real
+  // CDF, so the demo lands on the same scale as a real scan instead of
+  // needing its own arithmetic that could drift from it.
+  const w = DEFAULT_WEIGHTS.modules;
+  const den = w.symmetry + w.eyes + w.jaw + w.proportions + w.nose + w.lips;
   const harmony = Math.round(
     clamp(
-      0.26 * symmetry +
-        0.22 * eyesScore +
-        0.2 * jawScore +
-        0.2 * proportionsScore +
-        0.12 * midfaceScore,
-      30,
-      99,
+      (w.symmetry * symmetry +
+        w.eyes * eyesScore +
+        w.jaw * jawScore +
+        w.proportions * proportionsScore +
+        (w.nose + w.lips) * midfaceScore) /
+        den,
+      0,
+      100,
     ),
+  );
+  const { outLow, outHigh } = DEFAULT_WEIGHTS.display;
+  const overall = Number(
+    (outLow + (percentileOfComposite(harmony) / 100) * (outHigh - outLow)).toFixed(1),
   );
 
   return {
-    overall: toOverall(harmony),
+    overall,
     harmony,
     symmetry,
     eyesScore,

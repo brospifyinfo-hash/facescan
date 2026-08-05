@@ -245,6 +245,7 @@ export interface Dict {
     low: string;
     issues: Record<
       | "blurry"
+      | "motionBlur"
       | "underexposed"
       | "overexposed"
       | "noisy"

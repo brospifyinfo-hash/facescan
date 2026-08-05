@@ -8,7 +8,7 @@
 // All of it is computed from the pixels and the landmark mesh. Nothing is
 // estimated by a model, so nothing here needs a download or a server.
 
-import { P } from "@/lib/measure";
+import { P, toDeg } from "./landmarks";
 import type { Point, QualityIssue, QualityStage } from "./types";
 import type { ScoringWeights } from "./weights";
 
@@ -146,26 +146,35 @@ function noiseSigma(s: Sampled): number {
   return (median / 0.6745) / 4;
 }
 
-/** Head pose from the landmark mesh. Degrees. */
-function estimatePose(p: Point[], roll: number) {
-  const noseX = p[P.noseTip].x;
-  const left = p[P.zygoL].x;
-  const right = p[P.zygoR].x;
-  // Yaw: the nose sits mid-way between the cheek edges head-on, and drifts
-  // toward one side as the head turns.
-  const half = (left - right) / 2 || 1e-6;
-  const offset = (noseX - (right + left) / 2) / half;
-  const yaw = Math.max(-90, Math.min(90, offset * 75));
-
-  // Pitch: where the nose tip falls between the eye line and the chin.
-  const eyeY = (p[P.eyeInnerR].y + p[P.eyeInnerL].y) / 2;
-  const chinY = p[P.menton].y;
-  const span = chinY - eyeY || 1e-6;
-  const noseRatio = (p[P.noseTip].y - eyeY) / span;
-  // ~0.42 is level for a canonical face; deviation reads as tilt.
-  const pitch = Math.max(-60, Math.min(60, (noseRatio - 0.42) * 190));
-
-  return { yaw, pitch, roll: (roll * 180) / Math.PI };
+/**
+ * Motion blur, as gradient anisotropy.
+ *
+ * Defocus blur attenuates detail equally in every direction; motion blur
+ * attenuates it along the direction of travel only. So the ratio of
+ * horizontal to vertical gradient energy separates the two: near 1 means
+ * isotropic (sharp or defocused), far from 1 means directional smear.
+ *
+ * HEURISTIC. Real faces are not isotropic to begin with — eyes and lips are
+ * horizontal structures — so the measure is calibrated to flag only strong
+ * anisotropy and the returned value is deliberately forgiving. It exists to
+ * catch a visibly smeared capture, not to grade sharpness twice.
+ */
+function motionBlurScore(s: Sampled): number {
+  const { gray, width: w, height: h } = s;
+  let gx = 0;
+  let gy = 0;
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const i = y * w + x;
+      gx += (gray[i + 1] - gray[i - 1]) ** 2;
+      gy += (gray[i + w] - gray[i - w]) ** 2;
+    }
+  }
+  if (gx <= 0 || gy <= 0) return 1;
+  // Log ratio so smearing either way is treated the same.
+  const anisotropy = Math.abs(Math.log(gx / gy));
+  // A normal face sits around 0.35; beyond ~1.2 the smear is obvious.
+  return clamp01(1 - Math.max(0, anisotropy - 0.45) / 0.9);
 }
 
 /**
@@ -197,17 +206,32 @@ function occlusionScore(p: Point[]): number {
 
 export function analyzeQuality(
   image: HTMLImageElement,
-  face: { raw: Point[]; aligned: Point[]; roll: number },
+  face: {
+    raw: Point[];
+    aligned: Point[];
+    roll: number;
+    /** Pose in radians, from landmarks.estimatePose. */
+    pose: { yaw: number; pitch: number; roll: number };
+  },
   interocularPx: number,
   weights: ScoringWeights,
 ): QualityStage {
-  const pose = estimatePose(face.raw, face.roll);
+  // Pose is no longer re-derived here. It used to be estimated a second
+  // time, from the nose's drift between the cheek points — a proxy that is
+  // itself distorted by the rotation it is trying to measure, and which
+  // could disagree with the alignment stage. One estimator, one answer.
+  const pose = {
+    yaw: toDeg(face.pose.yaw),
+    pitch: toDeg(face.pose.pitch),
+    roll: toDeg(face.pose.roll),
+  };
   const sampled = sampleFace(image, face.raw);
 
   // Sharpness/exposure/noise need pixels. If the crop failed, report the
   // neutral midpoint rather than inventing a verdict.
   const sharpness = sampled ? band(Math.sqrt(laplacianVariance(sampled)), 2.5, 12) : 0.5;
   const noise = sampled ? 1 - band(noiseSigma(sampled), 0.4, 4.5) : 0.5;
+  const motionBlur = sampled ? motionBlurScore(sampled) : 1;
 
   let exposure = 0.5;
   let whiteBalance = 0.5;
@@ -234,8 +258,11 @@ export function analyzeQuality(
   const occlusion = occlusionScore(face.raw);
 
   const q = weights.quality;
+  // Motion blur folds into the sharpness term rather than carrying its own
+  // weight: both describe "detail is missing", and giving each a full share
+  // would count one smeared photo twice.
   const overall = clamp01(
-    sharpness * q.sharpness +
+    Math.min(sharpness, motionBlur) * q.sharpness +
       exposure * q.exposure +
       noise * q.noise +
       whiteBalance * q.whiteBalance +
@@ -246,6 +273,7 @@ export function analyzeQuality(
 
   const issues: QualityIssue[] = [];
   if (sharpness < 0.4) issues.push("blurry");
+  if (motionBlur < 0.55) issues.push("motionBlur");
   if (sampled && sampled.meanLuma < 70) issues.push("underexposed");
   if (sampled && (sampled.meanLuma > 185 || sampled.clippedHigh > 0.04)) {
     issues.push("overexposed");
@@ -258,6 +286,7 @@ export function analyzeQuality(
 
   return {
     sharpness,
+    motionBlur,
     exposure,
     noise,
     whiteBalance,

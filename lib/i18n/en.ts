@@ -383,6 +383,7 @@ export const en: Dict = {
     label: "Capture quality",
     low: "Low capture quality — the score is less certain than usual. A sharper, front-on photo in even light will tighten it.",
     issues: {
+      motionBlur: "Motion blur",
       blurry: "blurry",
       underexposed: "too dark",
       overexposed: "too bright",

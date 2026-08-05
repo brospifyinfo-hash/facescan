@@ -384,6 +384,7 @@ export const de: Dict = {
     label: "Messgüte",
     low: "Geringe Aufnahmequalität — das Ergebnis ist unsicherer als üblich. Ein schärferes, frontales Foto bei gleichmäßigem Licht schärft es nach.",
     issues: {
+      motionBlur: "Bewegungsunschärfe",
       blurry: "unscharf",
       underexposed: "zu dunkel",
       overexposed: "zu hell",

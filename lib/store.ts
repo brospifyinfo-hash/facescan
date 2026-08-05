@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import type { Metric, MetricId } from "./metrics";
 import type { PlanId } from "./pricing";
+import type { AnalysisResponse } from "./analysis/response";
 
 // Quiz answers are stored as STABLE KEYS, never as display strings. The
 // plan rules below compare against them, so translating the visible option
@@ -119,6 +120,13 @@ export interface ScanMetrics {
   confidence: number;
   /** Capture problems worth telling the user about. */
   qualityIssues: string[];
+  /**
+   * Full explainability payload from the analyzer: per-module score,
+   * weight and confidence, every measurement with its z-distance and
+   * source grade, strengths, weaknesses, recommendations and the caveats
+   * that bound the reading. Absent on the demo path, which has no pixels.
+   */
+  report?: AnalysisResponse;
   demo?: boolean;
 }
 

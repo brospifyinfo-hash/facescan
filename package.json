@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test": "tsx scripts/test-engine.mts",
+    "derive:cdf": "tsx scripts/derive-display-window.mts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.110.0",
@@ -28,6 +30,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "tailwindcss": "^4.1.0",
+    "tsx": "^4.23.8",
     "typescript": "^5.5.0"
   }
 }

@@ -83,90 +83,12 @@ export interface Metric {
 export const clamp = (v: number, lo: number, hi: number) =>
   Math.max(lo, Math.min(hi, v));
 
-/**
- * Score a measurement by distance from its reference band.
- *
- * Calibration matters more than it looks. A flat "100 for anything inside
- * the band" plus a shallow outside decay inflates every composite — the
- * dashboard then hands out top marks to almost everyone, which is both
- * useless as feedback and a quiet form of flattery-to-sell. So:
- *
- *   - inside the band: 100 dead-centre, tapering to 86 at the edges
- *   - outside: steep decay, bottoming out at 12
- *
- * Sitting inside a canon band on every one of 16 independent measurements
- * is genuinely rare, so realistic faces land in a realistic spread.
- */
-/**
- * Which direction of deviation is actually a problem.
- *
- * "band"  — both directions are worse (a true target ratio)
- * "up"    — above the band is fine; only falling short costs points
- * "down"  — below the band is fine; only overshooting costs points
- *
- * This exists because symmetric scoring measured AVERAGENESS, not aesthetics.
- * A model-tier face has a stronger canthal tilt, a larger eye aperture, a
- * narrower nose and more jaw taper than the population mean — and the
- * symmetric scorer docked it for every one of them, so the more striking the
- * face, the worse it scored. Measured: the plain anthropometric average hit
- * 9.6/10 while a model-tier face got 8.3 and a more pronounced one 7.6.
- */
-export type Direction = "band" | "up" | "down";
-
-/** How far past the band the preferred direction stays unpenalised. */
-const PLATEAU = 0.75;
-
-export function scoreBand(
-  value: number,
-  [lo, hi]: [number, number],
-  tolerance: number,
-  dir: Direction = "band",
-): { score: number; position: Metric["position"] } {
-  if (value >= lo && value <= hi) {
-    const mid = (lo + hi) / 2;
-    const halfWidth = (hi - lo) / 2 || 1e-6;
-    const off = Math.min(1, Math.abs(value - mid) / halfWidth);
-    return { score: Math.round(100 - off * 14), position: "in" };
-  }
-
-  const above = value > hi;
-  const d = above ? value - hi : lo - value;
-  const favoured = (above && dir === "up") || (!above && dir === "down");
-
-  if (favoured) {
-    const plateau = tolerance * PLATEAU;
-    // Full marks while the deviation runs the flattering way, then a gentle
-    // decline — an extreme is still an extreme.
-    if (d <= plateau) return { score: 100, position: "in" };
-    return {
-      score: Math.round(clamp(100 - ((d - plateau) / tolerance) * 37, 40, 100)),
-      position: "in",
-    };
-  }
-
-  return {
-    score: Math.round(clamp(86 - (d / tolerance) * 74, 12, 86)),
-    position: above ? "above" : "below",
-  };
-}
-
-/**
- * Map the 0–100 composite onto the 0–10 headline figure.
- *
- * A straight `harmony / 10` looks right but isn't: the composite of 16
- * band-scored measurements realistically lives in roughly [55, 95], so every
- * user would land between 5.5 and 9.5 and the bottom half of the scale would
- * never be used. Spreading that real window across [3.5, 9.5] makes a point
- * of difference actually mean something.
- */
-export function toOverall(harmony: number): number {
-  // Remapped after directional scoring: with the flattering direction no
-  // longer penalised, the realistic composite window moved up to roughly
-  // [72, 89] with a canonical face near 97. The old window would have put
-  // almost everyone above 9.
-  const spread = ((harmony - 70) / 28) * 6.5 + 3.0;
-  return Number(clamp(spread, 1, 10).toFixed(1));
-}
+// scoreBand(), Direction, PLATEAU and toOverall lived here. They were the
+// band-and-tolerance scorer: eleven hand-chosen constants with no source,
+// including a `dir` flag that awarded a flat 100 for any deviation in the
+// "flattering" direction — which is how an extreme measurement came to
+// outrank a normal one. Scoring is now z-distance against published means
+// and SDs; see lib/analysis/norms.ts and lib/analysis/modules.ts.
 
 // Status encoding always ships icon + label, never colour alone.
 export const POSITION_ICON: Record<Metric["position"], string> = {

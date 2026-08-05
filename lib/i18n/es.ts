@@ -384,6 +384,7 @@ export const es: Dict = {
     label: "Calidad de captura",
     low: "Calidad de captura baja: el resultado es menos fiable de lo normal. Una foto más nítida y frontal con luz uniforme lo afinará.",
     issues: {
+      motionBlur: "Movimiento borroso",
       blurry: "borrosa",
       underexposed: "demasiado oscura",
       overexposed: "demasiado clara",

@@ -384,6 +384,7 @@ export const fr: Dict = {
     label: "Qualité de prise",
     low: "Qualité de prise faible — le résultat est moins fiable que d'ordinaire. Une photo plus nette et de face en lumière uniforme l'affinera.",
     issues: {
+      motionBlur: "Flou de bougé",
       blurry: "floue",
       underexposed: "trop sombre",
       overexposed: "trop claire",

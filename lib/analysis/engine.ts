@@ -1,91 +1,189 @@
 // Stage 7: the score engine.
 //
-// One class, one entry point, zero magic numbers — every constant it uses
-// comes from the injected ScoringWeights. That is what makes it replaceable:
-// a trained regression model implements the same `Scorer` interface and gets
-// swapped in without any caller changing.
+// DECOUPLED FROM LANDMARKS, as required. The engine's input is a
+// FeatureVector — a flat map of named numbers — plus a set of already
+// evaluated modules. It never sees a landmark, never knows MediaPipe
+// exists, and cannot reach into geometry. That is what lets a trained
+// regression head replace it: implement `Scorer`, accept the same feature
+// vector, return the same shape.
 //
-// The engine deliberately keeps aesthetics and confidence apart. Capture
-// quality can say "trust this less"; it can never say "this face is worse".
-// Letting a blurry photo lower the score would mean the product punishes
-// people for their camera.
+// HOW THE COMPOSITE WORKS
+// -----------------------
+// Old: a fixed weighted sum of five category averages. If a category could
+// not be computed it still contributed — as a zero or as a floor value —
+// so a failed measurement silently dragged the whole score down.
+//
+// New: a CONFIDENCE-WEIGHTED mean.
+//
+//     composite = Σ(wᵢ · cᵢ · sᵢ) / Σ(wᵢ · cᵢ)
+//
+// A module that could not be evaluated has cᵢ = 0 and drops out of both
+// sums, so the composite becomes the honest average of what was actually
+// measurable rather than an average padded with guesses. This is also what
+// lets `hair` be declared and left unimplemented without corrupting the
+// score — see RESERVED_MODULES.
 
-import { clamp, type Metric } from "@/lib/metrics";
-import type {
-  EmbeddingStage,
-  GeometryStage,
-  QualityStage,
-  ScoreStage,
-} from "./types";
+import type { MeasurementId } from "./norms";
+import {
+  MODULE_IDS, evaluateGeometryModules,
+  type ModuleId, type ModuleResult,
+} from "./modules";
 import { DEFAULT_WEIGHTS, type ScoringWeights } from "./weights";
-
-export interface ScorerInput {
-  geometry: GeometryStage;
-  embedding: EmbeddingStage;
-  quality: QualityStage;
-}
+import { percentileOfComposite } from "./composite-cdf";
 
 /**
- * The seam a trained model plugs into.
+ * The engine's entire view of a face: named numbers.
  *
- * A regression head over [geometric features ‖ embedding] implements this
- * and replaces WeightedScorer entirely. Nothing else in the pipeline needs
- * to know which one is running.
+ * Anything that can produce these can be scored — landmarks today, a
+ * depth sensor or a CNN feature map tomorrow.
  */
-export interface Scorer {
-  readonly name: string;
-  score(input: ScorerInput, weights: ScoringWeights): ScoreStage;
+export type FeatureVector = Partial<Record<MeasurementId, number>> &
+  Record<string, number | undefined>;
+
+/**
+ * Modules named in the product spec that cannot be measured from a single
+ * RGB photo with the models available on-device.
+ *
+ * `hair` needs semantic segmentation to separate hairline, density and
+ * style from the background; nothing in the bundle does that, and
+ * estimating it from the face oval would be fabrication. It is declared
+ * here so the architecture is complete and so its absence is visible in the
+ * output rather than silently missing.
+ */
+export const RESERVED_MODULES: Partial<Record<string, string>> = {
+  hair: "requires hair segmentation; no on-device model is loaded",
+};
+
+export interface ScoreInput {
+  features: FeatureVector;
+  /** Measurements whose raw value was implausible; dropped, not scored. */
+  implausible: MeasurementId[];
+  /** Modules supplied by non-geometry analyzers (skin, embedding, …). */
+  external: Partial<Record<ModuleId, ModuleResult>>;
+  /** 0–1 capture quality. Feeds confidence only — never the score. */
+  qualityOverall: number;
+  /** 0–1 embedding stability, or null when no model is loaded. */
+  embeddingStability: number | null;
+  /** False when depth was unusable and pose could not be compensated. */
+  poseCompensated: boolean;
 }
 
-/** Current implementation: an explicit weighted sum. */
+export interface ScoreResult {
+  /** 0–10 headline. Linear in population percentile. */
+  overall: number;
+  /** 0–100 composite before the display mapping. */
+  composite: number;
+  /** Share of the modelled population scoring below this face, 0–100. */
+  percentile: number;
+  /** 0–1. How much the reading is worth trusting. */
+  confidence: number;
+  modules: ModuleResult[];
+  /** Share of the composite each module actually contributed. */
+  contributions: Record<string, number>;
+}
+
+export interface Scorer {
+  readonly name: string;
+  score(input: ScoreInput, weights: ScoringWeights): ScoreResult;
+}
+
+const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+
+/** Current implementation: confidence-weighted module aggregation. */
 export class WeightedScorer implements Scorer {
-  readonly name = "weighted-v1";
+  readonly name = "weighted-v2";
 
-  score(input: ScorerInput, w: ScoringWeights): ScoreStage {
-    const { geometry, embedding, quality } = input;
-    const c = w.categories;
-
-    const contributions: Record<string, number> = {
-      symmetry: geometry.symmetry * c.symmetry,
-      eyes: geometry.categories.eyes * c.eyes,
-      jaw: geometry.categories.jaw * c.jaw,
-      proportions: geometry.categories.proportions * c.proportions,
-      midface: geometry.categories.midface * c.midface,
-    };
-
-    let harmonyRaw = Object.values(contributions).reduce((a, b) => a + b, 0);
-
-    // Only applies once a regression head exists; the default weight is 0,
-    // so today this is a no-op rather than noise dressed up as signal.
-    if (embedding.attractivenessDelta !== null && w.embeddingContribution > 0) {
-      const delta = embedding.attractivenessDelta * w.embeddingContribution;
-      contributions.embedding = delta;
-      harmonyRaw += delta;
-    }
-
-    const harmony = Math.round(clamp(harmonyRaw, 30, 99));
-
-    const { windowLow, windowHigh, outLow, outHigh } = w.display;
-    const spread =
-      ((harmony - windowLow) / (windowHigh - windowLow)) * (outHigh - outLow) + outLow;
-    const overall = Number(clamp(spread, 1, 10).toFixed(1));
-
-    // Confidence, and only confidence, listens to capture quality.
-    const conf = w.confidence;
-    const embeddingTerm =
-      embedding.structuralStability ?? conf.embeddingAbsentBaseline;
-    const confidence = Number(
-      clamp(
-        quality.overall * conf.fromQuality + embeddingTerm * conf.fromEmbedding,
-        0,
-        1,
-      ).toFixed(3),
+  score(input: ScoreInput, w: ScoringWeights): ScoreResult {
+    const geometryModules = evaluateGeometryModules(
+      input.features as Record<MeasurementId, number>,
+      input.implausible,
+      w.modules,
     );
 
-    return { overall, harmony, confidence, contributions };
+    const modules: ModuleResult[] = MODULE_IDS.map((id) => {
+      const found = geometryModules[id] ?? input.external[id];
+      return (
+        found ?? {
+          id,
+          score: null,
+          confidence: 0,
+          weight: w.modules[id],
+          measurements: [],
+          unavailable: "no analyzer produced this module",
+        }
+      );
+    });
+
+    let num = 0;
+    let den = 0;
+    const contributions: Record<string, number> = {};
+    for (const m of modules) {
+      const effective = m.weight * m.confidence;
+      if (m.score === null || effective <= 0) {
+        contributions[m.id] = 0;
+        continue;
+      }
+      num += effective * m.score;
+      den += effective;
+      contributions[m.id] = effective;
+    }
+    // Normalise contributions to shares so they are readable.
+    if (den > 0) {
+      for (const k of Object.keys(contributions)) contributions[k] /= den;
+    }
+
+    // No module survived: report the neutral midpoint and zero confidence
+    // rather than a number that looks like a verdict.
+    const composite = den > 0 ? num / den : 50;
+
+    // The headline is a POPULATION PERCENTILE, not a linear rescale of the
+    // composite. The composite saturates near 100 and has a long left tail,
+    // so a linear window compresses the top of the scale into a few points
+    // and leaves the bottom half reachable only by landmark failures.
+    const { outLow, outHigh } = w.display;
+    const percentile = percentileOfComposite(composite);
+    const overall = Number(
+      clamp(outLow + (percentile / 100) * (outHigh - outLow), 1, 10).toFixed(1),
+    );
+
+    // ---- Confidence --------------------------------------------------------
+    // Three independent sources, and only these move it. Capture quality
+    // says how good the photo was; geometry coverage says how much of the
+    // face could actually be measured; embedding stability says whether the
+    // representation was consistent under small alignment changes.
+    const c = w.confidence;
+    const totalWeight = MODULE_IDS.reduce((s, id) => s + w.modules[id], 0) || 1;
+    const geometryCoverage = clamp(den / totalWeight, 0, 1);
+    const embeddingTerm = input.embeddingStability ?? c.embeddingAbsentBaseline;
+
+    let confidence =
+      input.qualityOverall * c.fromQuality +
+      geometryCoverage * c.fromGeometry +
+      embeddingTerm * c.fromEmbedding;
+
+    // Without depth the pose correction did not run, so the measurements
+    // carry whatever rotation the photo had. That is a real loss of
+    // certainty and is stated as one.
+    if (!input.poseCompensated) confidence *= 1 - c.posePenalty;
+
+    return {
+      overall,
+      composite,
+      percentile: Number(percentile.toFixed(1)),
+      confidence: Number(clamp(confidence, 0, 1).toFixed(3)),
+      modules,
+      contributions,
+    };
   }
 }
 
+/**
+ * Seam for a trained model.
+ *
+ * A regression head fitted on SCUT-FBP5500 implements `Scorer`, reads the
+ * same FeatureVector, and is swapped in with `engine.withScorer(...)`.
+ * Nothing upstream changes. See ./training.ts.
+ */
 export class ScoreEngine {
   constructor(
     private readonly weights: ScoringWeights = DEFAULT_WEIGHTS,
@@ -96,17 +194,12 @@ export class ScoreEngine {
     return this.scorer.name;
   }
 
-  run(input: ScorerInput): ScoreStage {
-    return this.scorer.score(input, this.weights);
+  get activeWeights() {
+    return this.weights;
   }
 
-  /** Roll up per-metric scores into a category composite. */
-  static categoryScore(metrics: Metric[], category: string): number {
-    const picked = metrics.filter((m) => m.category === category);
-    if (picked.length === 0) return 0;
-    return Math.round(
-      picked.reduce((s, m) => s + m.score, 0) / picked.length,
-    );
+  run(input: ScoreInput): ScoreResult {
+    return this.scorer.score(input, this.weights);
   }
 
   /** Same weights, different scorer — for A/B-ing a trained model. */
