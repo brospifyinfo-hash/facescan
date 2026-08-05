@@ -22,6 +22,7 @@ import { FullReport } from "@/components/dashboard/FullReport";
 import { CheckoutModal } from "@/components/checkout/CheckoutModal";
 import { SessionTimer } from "@/components/checkout/SessionTimer";
 import { PercentileBadge } from "@/components/dashboard/PercentileBadge";
+import { ConfidenceBadge } from "@/components/dashboard/ConfidenceBadge";
 import { can, formatPrice } from "@/lib/pricing";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { fetchSession } from "@/lib/auth/client";
@@ -177,6 +178,16 @@ export default function ResultsPage() {
               {/* Visible before payment — the hook is a real figure. */}
               <div className="mt-3">
                 <PercentileBadge overall={metrics.overall} />
+              </div>
+
+              {/* How good the photo was, kept apart from how good the face
+                  scored. A shaky reading should say so rather than hide
+                  behind a confident-looking number. */}
+              <div className="mt-3 text-left">
+                <ConfidenceBadge
+                  confidence={metrics.confidence}
+                  issues={metrics.qualityIssues}
+                />
               </div>
 
               <dl className="mt-4 grid grid-cols-3 gap-2 border-t border-white/[0.08] pt-3">

@@ -379,6 +379,20 @@ export const en: Dict = {
       timeout: "Payment went through; unlocking is taking a moment. Reload in a few seconds.",
     },
   },
+  quality: {
+    label: "Capture quality",
+    low: "Low capture quality — the score is less certain than usual. A sharper, front-on photo in even light will tighten it.",
+    issues: {
+      blurry: "blurry",
+      underexposed: "too dark",
+      overexposed: "too bright",
+      noisy: "grainy",
+      colorCast: "colour cast",
+      lowResolution: "low resolution",
+      notFrontal: "head turned",
+      occluded: "face partly covered",
+    },
+  },
   session: {
     notice:
       "Private session — your photos & scan are held in this browser only and will be discarded in",

@@ -380,6 +380,20 @@ export const es: Dict = {
       timeout: "El pago se ha realizado; el desbloqueo tarda un momento. Recarga en unos segundos.",
     },
   },
+  quality: {
+    label: "Calidad de captura",
+    low: "Calidad de captura baja: el resultado es menos fiable de lo normal. Una foto más nítida y frontal con luz uniforme lo afinará.",
+    issues: {
+      blurry: "borrosa",
+      underexposed: "demasiado oscura",
+      overexposed: "demasiado clara",
+      noisy: "con ruido",
+      colorCast: "dominante de color",
+      lowResolution: "resolución baja",
+      notFrontal: "cabeza girada",
+      occluded: "cara parcialmente tapada",
+    },
+  },
   session: {
     notice:
       "Sesión privada — tus fotos y tu escaneo solo están en este navegador y se descartarán en",

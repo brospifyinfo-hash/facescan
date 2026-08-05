@@ -240,6 +240,21 @@ export interface Dict {
       timeout: string;
     };
   };
+  quality: {
+    label: string;
+    low: string;
+    issues: Record<
+      | "blurry"
+      | "underexposed"
+      | "overexposed"
+      | "noisy"
+      | "colorCast"
+      | "lowResolution"
+      | "notFrontal"
+      | "occluded",
+      string
+    >;
+  };
   session: { notice: string };
   status: Record<"in" | "below" | "above", string>;
   statusShort: Record<"in" | "below" | "above", string>;

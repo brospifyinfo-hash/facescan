@@ -380,6 +380,20 @@ export const de: Dict = {
       timeout: "Die Zahlung ist durch, die Freischaltung dauert noch einen Moment. Lade die Seite in ein paar Sekunden neu.",
     },
   },
+  quality: {
+    label: "Messgüte",
+    low: "Geringe Aufnahmequalität — das Ergebnis ist unsicherer als üblich. Ein schärferes, frontales Foto bei gleichmäßigem Licht schärft es nach.",
+    issues: {
+      blurry: "unscharf",
+      underexposed: "zu dunkel",
+      overexposed: "zu hell",
+      noisy: "verrauscht",
+      colorCast: "Farbstich",
+      lowResolution: "zu geringe Auflösung",
+      notFrontal: "Kopf gedreht",
+      occluded: "Gesicht teils verdeckt",
+    },
+  },
   session: {
     notice:
       "Private Sitzung — deine Fotos und dein Scan liegen nur in diesem Browser und werden verworfen in",

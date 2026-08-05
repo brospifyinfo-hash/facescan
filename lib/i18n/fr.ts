@@ -380,6 +380,20 @@ export const fr: Dict = {
       timeout: "Le paiement est passé ; le déverrouillage prend un instant. Rechargez dans quelques secondes.",
     },
   },
+  quality: {
+    label: "Qualité de prise",
+    low: "Qualité de prise faible — le résultat est moins fiable que d'ordinaire. Une photo plus nette et de face en lumière uniforme l'affinera.",
+    issues: {
+      blurry: "floue",
+      underexposed: "trop sombre",
+      overexposed: "trop claire",
+      noisy: "bruitée",
+      colorCast: "dominante de couleur",
+      lowResolution: "résolution faible",
+      notFrontal: "tête tournée",
+      occluded: "visage partiellement masqué",
+    },
+  },
   session: {
     notice:
       "Session privée — vos photos et votre scan ne sont que dans ce navigateur et seront effacés dans",
