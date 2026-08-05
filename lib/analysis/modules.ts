@@ -23,6 +23,7 @@
 
 import type { MeasurementId, Norm } from "./norms";
 import { NORMS } from "./norms";
+import { offsetOf } from "./calibration";
 
 /**
  * Half-width of the scoring kernel, in population SD.
@@ -63,9 +64,18 @@ export interface MeasurementScore {
   used: boolean;
 }
 
-/** The reference value a measurement is scored against. */
-export function referenceOf(norm: Norm): number {
-  return norm.mean + norm.shift * norm.sd;
+/**
+ * The reference value a measurement is scored against.
+ *
+ * Three terms: the published population mean, the documented literature
+ * shift, and the mesh-vs-caliper calibration offset. The third is what
+ * stops a definitional difference between "measured with calipers" and
+ * "measured between mesh vertices" from being read as a property of the
+ * face. It is zero until /calibrate has produced real numbers.
+ */
+export function referenceOf(norm: Norm, id?: MeasurementId): number {
+  const calibration = id ? offsetOf(id) * norm.sd : 0;
+  return norm.mean + norm.shift * norm.sd + calibration;
 }
 
 /**
@@ -78,7 +88,7 @@ export function referenceOf(norm: Norm): number {
  */
 export function scoreMeasurement(id: MeasurementId, value: number): MeasurementScore {
   const norm = NORMS[id] as Norm;
-  const ref = referenceOf(norm);
+  const ref = referenceOf(norm, id);
   let z = (value - ref) / norm.sd;
   if (norm.oneSided === "lower" && z < 0) z = 0;
   const score = 100 * Math.exp(-0.5 * (z / TOLERANCE_SD) ** 2);

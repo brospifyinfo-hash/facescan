@@ -1,42 +1,47 @@
 "use client";
 
-// Calibration harness.
+// Calibration harness — rated faces in, measured offsets out.
 //
-// The scoring model is internally consistent — 60 000 synthetic faces built
-// from Farkas millimetre tables spread cleanly around a median of 5.8. Real
-// photos score ~3. That gap is a MEASUREMENT OFFSET, not a scoring bug:
-// what MediaPipe reads off a photograph sits systematically beside what
-// caliper anthropometry describes, and the scorer cannot tell a constant
-// offset apart from an unattractive face.
+// WHAT THIS SOLVES
+// ----------------
+// The scorer compares a landmark mesh against caliper anthropometry. Those
+// are different quantities, and the difference is a constant every user
+// shares. Uncorrected, the scorer reads it as "this person deviates" and
+// marks everyone down identically. It cannot be derived — only measured, by
+// running the real pipeline over real photographs.
 //
-// The offset cannot be derived from first principles, only measured. This
-// page measures it. Drop in a batch of photos, mark each one "average" or
-// "attractive", and it reports, per metric, where the mesh actually lands
-// against the band it is being judged by.
+// WHAT IT DOES WITH FIVE FACES, AND WHAT IT DOES NOT
+// --------------------------------------------------
+// With a handful of rated faces this can do two useful things:
 //
-//   bias      = median(average group) − band centre
-//   separation= median(attractive group) − median(average group)
+//   * estimate the mesh-vs-caliper OFFSET per measurement (one number per
+//     measurement, from the median across all faces), and
+//   * check whether the model's ORDERING agrees with the ratings, via
+//     Spearman's rank correlation.
 //
-// `bias` is what gets subtracted from the bands. `separation` is the
-// sanity check: if a metric does not separate the two groups, it carries no
-// aesthetic signal and its weight should go down.
+// What it cannot do is fit the 25-coefficient regression in training.ts.
+// Twenty-five coefficients from five samples is not a fit, it is
+// memorisation — it would reproduce these five perfectly and predict
+// nothing. The button for that stays disabled below thirty faces, and says
+// why.
 //
 // Everything runs on-device, exactly like the real scan. No upload.
 
 import { useCallback, useRef, useState } from "react";
 import { Check, ClipboardCopy, Loader2, Upload, X } from "lucide-react";
 import { analyzeFront, loadImage } from "@/lib/analysis";
-import { METRIC_ORDER, SPECS } from "@/lib/specs";
-import type { MetricId } from "@/lib/metrics";
-
-type Group = "average" | "attractive";
+import { NORMS, MEASUREMENT_IDS, type MeasurementId } from "@/lib/analysis/norms";
+import { referenceOf } from "@/lib/analysis/modules";
 
 interface Sample {
   name: string;
-  group: Group;
-  values: Partial<Record<MetricId, number>>;
-  overall: number;
-  symmetry: number;
+  /** The human rating, 1–10. */
+  rating: number;
+  /** Model score, for comparison. */
+  score: number;
+  confidence: number;
+  values: Partial<Record<MeasurementId, number>>;
+  issues: string[];
 }
 
 const median = (a: number[]) => {
@@ -46,137 +51,139 @@ const median = (a: number[]) => {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 };
 
+/** Spearman's rho — rank correlation, robust to the scale being nonlinear. */
+function spearman(a: number[], b: number[]): number {
+  const rank = (v: number[]) => {
+    const idx = v.map((x, i) => [x, i] as const).sort((p, q) => p[0] - q[0]);
+    const r = new Array(v.length).fill(0);
+    idx.forEach(([, i], k) => (r[i] = k + 1));
+    return r;
+  };
+  const ra = rank(a);
+  const rb = rank(b);
+  const n = a.length;
+  const ma = ra.reduce((s, v) => s + v, 0) / n;
+  const mb = rb.reduce((s, v) => s + v, 0) / n;
+  let num = 0;
+  let da = 0;
+  let db = 0;
+  for (let i = 0; i < n; i++) {
+    num += (ra[i] - ma) * (rb[i] - mb);
+    da += (ra[i] - ma) ** 2;
+    db += (rb[i] - mb) ** 2;
+  }
+  return num / (Math.sqrt(da * db) || 1e-12);
+}
+
+/** Faces needed before fitting coefficients is anything but memorisation. */
+const MIN_FOR_FIT = 30;
+
 export default function CalibratePage() {
   const [samples, setSamples] = useState<Sample[]>([]);
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState<string[]>([]);
-  const [group, setGroup] = useState<Group>("average");
+  const [rating, setRating] = useState(5);
   const [copied, setCopied] = useState(false);
   const input = useRef<HTMLInputElement>(null);
 
-  const ingest = useCallback(
-    async (files: FileList | null, g: Group) => {
-      if (!files?.length) return;
-      setBusy(true);
-      const bad: string[] = [];
-      const next: Sample[] = [];
+  const ingest = useCallback(async (files: FileList | null, r: number) => {
+    if (!files?.length) return;
+    setBusy(true);
+    const bad: string[] = [];
+    const next: Sample[] = [];
 
-      for (const file of Array.from(files)) {
-        try {
-          const dataUrl = await new Promise<string>((res, rej) => {
-            const r = new FileReader();
-            r.onload = () => res(r.result as string);
-            r.onerror = () => rej(r.error);
-            r.readAsDataURL(file);
-          });
-          const img = await loadImage(dataUrl);
-          const m = await analyzeFront(img);
-          if (!m) {
-            bad.push(file.name);
-            continue;
-          }
-          next.push({
-            name: file.name,
-            group: g,
-            overall: m.overall,
-            symmetry: m.symmetry,
-            values: Object.fromEntries(m.metrics.map((x) => [x.id, x.value])),
-          });
-        } catch {
+    for (const file of Array.from(files)) {
+      try {
+        const dataUrl = await new Promise<string>((res, rej) => {
+          const fr = new FileReader();
+          fr.onload = () => res(fr.result as string);
+          fr.onerror = () => rej(fr.error);
+          fr.readAsDataURL(file);
+        });
+        const img = await loadImage(dataUrl);
+        const m = await analyzeFront(img);
+        if (!m) {
           bad.push(file.name);
+          continue;
         }
+        next.push({
+          name: file.name,
+          rating: r,
+          score: m.overall,
+          confidence: m.confidence,
+          issues: m.qualityIssues,
+          values: Object.fromEntries(
+            (m.report?.measurements ?? []).map((x) => [x.id, x.value]),
+          ),
+        });
+      } catch {
+        bad.push(file.name);
       }
+    }
 
-      setSamples((s) => [...s, ...next]);
-      setFailed((f) => [...f, ...bad]);
-      setBusy(false);
-    },
-    [],
-  );
+    setSamples((s) => [...s, ...next]);
+    setFailed((f) => [...f, ...bad]);
+    setBusy(false);
+  }, []);
 
-  const avg = samples.filter((s) => s.group === "average");
-  const att = samples.filter((s) => s.group === "attractive");
-
-  const rows = METRIC_ORDER.map((id) => {
-    const spec = SPECS[id];
-    const centre = (spec.ideal[0] + spec.ideal[1]) / 2;
-    const half = (spec.ideal[1] - spec.ideal[0]) / 2 || 1e-6;
-    const mAvg = median(avg.map((s) => s.values[id]!).filter(Number.isFinite));
-    const mAtt = median(att.map((s) => s.values[id]!).filter(Number.isFinite));
-    return {
-      id,
-      centre,
-      half,
-      mAvg,
-      mAtt,
-      /** Offset of the average group from the band centre, in half-widths. */
-      bias: Number.isFinite(mAvg) ? (mAvg - centre) / half : NaN,
-      /** How far the attractive group sits from the average one, in half-widths. */
-      sep: Number.isFinite(mAtt) && Number.isFinite(mAvg) ? (mAtt - mAvg) / half : NaN,
-      dir: spec.dir,
-    };
+  // Per-measurement offset: the median z across all rated faces. If the mesh
+  // reads a measurement consistently high for everyone, that is the
+  // definitional difference, not a property of any of these faces.
+  const rows = MEASUREMENT_IDS.map((id) => {
+    const norm = NORMS[id];
+    const ref = referenceOf(norm, id);
+    const zs = samples
+      .map((s) => s.values[id])
+      .filter((v): v is number => typeof v === "number" && Number.isFinite(v))
+      .map((v) => (v - ref) / norm.sd);
+    return { id, grade: norm.grade, n: zs.length, offset: median(zs) };
   });
 
-  const payload = JSON.stringify(
-    {
-      n: { average: avg.length, attractive: att.length },
-      overall: {
-        average: avg.map((s) => s.overall),
-        attractive: att.map((s) => s.overall),
-      },
-      symmetry: {
-        average: median(avg.map((s) => s.symmetry)),
-        attractive: median(att.map((s) => s.symmetry)),
-      },
-      metrics: Object.fromEntries(
-        rows.map((r) => [
-          r.id,
-          {
-            band: SPECS[r.id].ideal,
-            dir: r.dir,
-            medianAverage: Number.isFinite(r.mAvg) ? Number(r.mAvg.toFixed(4)) : null,
-            medianAttractive: Number.isFinite(r.mAtt) ? Number(r.mAtt.toFixed(4)) : null,
-            biasHalfWidths: Number.isFinite(r.bias) ? Number(r.bias.toFixed(3)) : null,
-            separationHalfWidths: Number.isFinite(r.sep) ? Number(r.sep.toFixed(3)) : null,
-          },
-        ]),
-      ),
-      raw: samples,
-    },
-    null,
-    2,
+  const offsets = Object.fromEntries(
+    rows
+      .filter((r) => Number.isFinite(r.offset) && Math.abs(r.offset) > 0.05)
+      .map((r) => [r.id, Number(r.offset.toFixed(3))]),
   );
 
-  const fmt = (v: number, d = 3) => (Number.isFinite(v) ? v.toFixed(d) : "—");
+  const rho =
+    samples.length >= 3
+      ? spearman(samples.map((s) => s.rating), samples.map((s) => s.score))
+      : NaN;
+
+  const block = `export const CALIBRATION: CalibrationSet = {
+  offsets: ${JSON.stringify(offsets, null, 4).replace(/\n/g, "\n  ")},
+  n: ${samples.length},
+  provenance: "${samples.length} rated faces, ${new Date().toISOString().slice(0, 10)}",
+};`;
+
+  const fmt = (v: number, d = 2) => (Number.isFinite(v) ? v.toFixed(d) : "—");
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-8">
-      <h1 className="text-xl font-semibold tracking-tight">
-        🔧 Kalibrierung
-      </h1>
+      <h1 className="text-xl font-semibold tracking-tight">🔧 Kalibrierung</h1>
       <p className="mt-2 max-w-2xl text-[12px] leading-relaxed text-zinc-400">
-        Lade mehrere Fotos auf einmal hoch — erst eine Gruppe durchschnittlicher
-        Gesichter, dann eine Gruppe, die du als attraktiv einstufst. Alles läuft
-        lokal im Browser, nichts wird hochgeladen. Am Ende unten auf „Kopieren"
-        und mir den Block schicken.
+        Stell die Bewertung ein, die du dem Gesicht geben würdest, und lade dann
+        das Bild dazu hoch. Wiederhole das pro Bild. Alles läuft lokal im
+        Browser, nichts wird hochgeladen. Am Ende unten auf „Kopieren“.
       </p>
 
-      {/* Group switch + picker */}
-      <div className="mt-5 flex flex-wrap items-center gap-2">
-        {(["average", "attractive"] as Group[]).map((g) => (
-          <button
-            key={g}
-            type="button"
-            onClick={() => setGroup(g)}
-            className={`rounded-full px-3 py-1.5 text-[12px] transition ${
-              group === g
-                ? "bg-accent text-black"
-                : "glass-subtle text-zinc-300"
-            }`}
-          >
-            {g === "average" ? "Durchschnitt" : "Attraktiv"}
-          </button>
-        ))}
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        <label className="flex items-center gap-2 text-[12px] text-zinc-300">
+          Bewertung
+          <input
+            type="range"
+            min={1}
+            max={10}
+            step={1}
+            value={rating}
+            onChange={(e) => setRating(Number(e.target.value))}
+            className="w-40 accent-[#95BF47]"
+          />
+          <span className="w-10 text-center text-[15px] font-semibold tabular-nums text-zinc-100">
+            {rating}
+          </span>
+          <span className="text-zinc-600">/ 10</span>
+        </label>
 
         <button
           type="button"
@@ -189,7 +196,7 @@ export default function CalibratePage() {
           ) : (
             <Upload className="h-3.5 w-3.5" />
           )}
-          Fotos wählen ({group === "average" ? "Durchschnitt" : "Attraktiv"})
+          Bild(er) mit Bewertung {rating} hinzufügen
         </button>
         <input
           ref={input}
@@ -198,104 +205,139 @@ export default function CalibratePage() {
           multiple
           hidden
           onChange={(e) => {
-            void ingest(e.target.files, group);
+            void ingest(e.target.files, rating);
             e.target.value = "";
           }}
         />
       </div>
 
-      <p className="mt-3 text-[11px] text-zinc-500">
-        Erfasst: <strong className="text-zinc-300">{avg.length}</strong>{" "}
-        Durchschnitt · <strong className="text-zinc-300">{att.length}</strong>{" "}
-        attraktiv
-        {failed.length ? (
-          <span className="ml-2 text-amber-400">
-            <X className="inline h-3 w-3" /> kein Gesicht erkannt:{" "}
-            {failed.join(", ")}
-          </span>
-        ) : null}
-      </p>
+      {failed.length > 0 ? (
+        <p className="mt-3 text-[11px] text-amber-400">
+          <X className="inline h-3 w-3" /> kein Gesicht erkannt: {failed.join(", ")}
+        </p>
+      ) : null}
 
       {samples.length > 0 ? (
         <>
           <div className="glass mt-5 overflow-x-auto rounded-2xl p-4">
-            <table className="w-full min-w-[640px] text-left text-[11px]">
+            <table className="w-full text-left text-[11px]">
               <thead>
                 <tr className="border-b border-white/10 text-zinc-500">
-                  <th className="pb-2 font-medium">Metrik</th>
-                  <th className="pb-2 text-right font-medium">Band</th>
-                  <th className="pb-2 text-right font-medium">Ø-Gruppe</th>
-                  <th className="pb-2 text-right font-medium">Attraktiv</th>
-                  <th className="pb-2 text-right font-medium">Versatz</th>
-                  <th className="pb-2 text-right font-medium">Trennung</th>
+                  <th className="pb-2 font-medium">Datei</th>
+                  <th className="pb-2 text-right font-medium">deine Note</th>
+                  <th className="pb-2 text-right font-medium">Modell</th>
+                  <th className="pb-2 text-right font-medium">Differenz</th>
+                  <th className="pb-2 text-right font-medium">Confidence</th>
                 </tr>
               </thead>
               <tbody className="font-mono-terminal">
-                {rows.map((r) => (
-                  <tr key={r.id} className="border-b border-white/[0.05] last:border-0">
-                    <td className="py-1.5 text-zinc-300">{r.id}</td>
-                    <td className="py-1.5 text-right text-zinc-600">
-                      {SPECS[r.id].ideal[0]}–{SPECS[r.id].ideal[1]}
+                {samples.map((s, i) => (
+                  <tr key={i} className="border-b border-white/[0.05] last:border-0">
+                    <td className="py-1.5 text-zinc-300">{s.name}</td>
+                    <td className="py-1.5 text-right tabular-nums text-zinc-200">
+                      {s.rating}
                     </td>
-                    <td className="py-1.5 text-right tabular-nums text-zinc-300">
-                      {fmt(r.mAvg)}
-                    </td>
-                    <td className="py-1.5 text-right tabular-nums text-zinc-300">
-                      {fmt(r.mAtt)}
+                    <td className="py-1.5 text-right tabular-nums text-zinc-200">
+                      {s.score.toFixed(1)}
                     </td>
                     <td
                       className={`py-1.5 text-right tabular-nums ${
-                        Math.abs(r.bias) > 1 ? "text-amber-400" : "text-zinc-400"
+                        Math.abs(s.score - s.rating) > 2
+                          ? "text-amber-400"
+                          : "text-zinc-500"
                       }`}
                     >
-                      {fmt(r.bias, 2)}
+                      {(s.score - s.rating > 0 ? "+" : "") +
+                        (s.score - s.rating).toFixed(1)}
                     </td>
-                    <td
-                      className={`py-1.5 text-right tabular-nums ${
-                        Math.abs(r.sep) < 0.15 ? "text-zinc-600" : "text-accent"
-                      }`}
-                    >
-                      {fmt(r.sep, 2)}
+                    <td className="py-1.5 text-right tabular-nums text-zinc-500">
+                      {(s.confidence * 100).toFixed(0)}%
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <p className="mt-3 text-[10px] leading-relaxed text-zinc-500">
-              <strong>Versatz</strong> = wie weit die Durchschnittsgruppe neben
-              der Bandmitte liegt, in halben Bandbreiten. Alles über 1,0 (gelb)
-              heißt: das Band steht am falschen Ort, nicht das Gesicht.{" "}
-              <strong>Trennung</strong> = wie weit die attraktive Gruppe von der
-              Durchschnittsgruppe abweicht. Grau heißt: diese Metrik
-              unterscheidet die beiden Gruppen nicht und trägt kein Signal.
-            </p>
+
+            <div className="mt-4 border-t border-white/10 pt-3 text-[11px] text-zinc-400">
+              <p>
+                Rangkorrelation (Spearman ρ):{" "}
+                <strong
+                  className={
+                    rho > 0.7 ? "text-accent" : rho > 0.3 ? "text-zinc-200" : "text-amber-400"
+                  }
+                >
+                  {fmt(rho)}
+                </strong>{" "}
+                <span className="text-zinc-600">
+                  {samples.length < 3
+                    ? "(braucht mindestens 3 Gesichter)"
+                    : "— 1.0 = gleiche Reihenfolge wie deine Noten, 0 = keinerlei Zusammenhang"}
+                </span>
+              </p>
+              <p className="mt-1.5">
+                Regressionsmodell fitten:{" "}
+                <strong className={samples.length >= MIN_FOR_FIT ? "text-accent" : "text-zinc-500"}>
+                  {samples.length} / {MIN_FOR_FIT} Gesichter
+                </strong>{" "}
+                <span className="text-zinc-600">
+                  — 25 Koeffizienten aus weniger als {MIN_FOR_FIT} Beispielen wäre
+                  Auswendiglernen, kein Fit.
+                </span>
+              </p>
+            </div>
           </div>
 
-          <div className="mt-4 flex items-center gap-3">
-            <button
-              type="button"
-              onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(payload);
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
-                } catch {
-                  /* selectable below */
-                }
-              }}
-              className="flex items-center gap-2 rounded-full bg-accent px-4 py-2 text-[12px] font-semibold text-black"
-            >
-              {copied ? <Check className="h-3.5 w-3.5" /> : <ClipboardCopy className="h-3.5 w-3.5" />}
-              {copied ? "Kopiert" : "Kopieren"}
-            </button>
-            <span className="text-[11px] text-zinc-500">
-              Scores Ø-Gruppe: {avg.map((s) => s.overall).join(", ") || "—"} ·
-              attraktiv: {att.map((s) => s.overall).join(", ") || "—"}
-            </span>
+          <div className="glass mt-3 overflow-x-auto rounded-2xl p-4">
+            <h2 className="text-[13px] font-semibold text-zinc-200">
+              Gemessener Versatz je Metrik (in Standardabweichungen)
+            </h2>
+            <p className="mt-1 text-[10px] leading-relaxed text-zinc-500">
+              Median über alle Gesichter. Ein Wert weit von 0 heißt: der Mesh
+              misst diese Größe für <em>jeden</em> anders als die Zirkel-Norm —
+              das ist der Definitionsunterschied, nicht das Gesicht.
+            </p>
+            <table className="mt-3 w-full text-left text-[11px]">
+              <tbody className="font-mono-terminal">
+                {rows.map((r) => (
+                  <tr key={r.id} className="border-b border-white/[0.05] last:border-0">
+                    <td className="py-1 text-zinc-300">{r.id}</td>
+                    <td className="py-1 text-right text-zinc-600">{r.grade}</td>
+                    <td
+                      className={`py-1 text-right tabular-nums ${
+                        Math.abs(r.offset) > 1.5
+                          ? "text-amber-400"
+                          : Math.abs(r.offset) > 0.5
+                            ? "text-zinc-200"
+                            : "text-zinc-500"
+                      }`}
+                    >
+                      {fmt(r.offset)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
+
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(block);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              } catch {
+                /* selectable below */
+              }
+            }}
+            className="mt-4 flex items-center gap-2 rounded-full bg-accent px-4 py-2 text-[12px] font-semibold text-black"
+          >
+            {copied ? <Check className="h-3.5 w-3.5" /> : <ClipboardCopy className="h-3.5 w-3.5" />}
+            {copied ? "Kopiert" : "Kalibrierung kopieren"}
+          </button>
 
           <pre className="mt-4 max-h-80 overflow-auto rounded-xl bg-black/40 p-3 text-[10px] leading-relaxed text-zinc-400">
-            {payload}
+            {block}
           </pre>
         </>
       ) : null}
