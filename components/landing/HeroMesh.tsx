@@ -18,10 +18,19 @@ type P = { x: number; y: number };
 function ovalPoint(a: number, r: number): P {
   // Slightly egg-shaped: narrower toward the chin.
   const taper = 1 - 0.22 * Math.max(0, Math.sin(a));
+  // Rounded, because Math.sin/cos can differ in the last bit between the
+  // Node build that renders the HTML and the browser that hydrates it.
+  // React then reports a hydration mismatch and refuses to patch the tree.
+  // Four decimals is 0.04px at this viewBox — invisible, and identical on
+  // both sides.
   return {
-    x: 0.5 + Math.cos(a) * 0.30 * r * taper,
-    y: 0.5 + Math.sin(a) * 0.40 * r,
+    x: round(0.5 + Math.cos(a) * 0.30 * r * taper),
+    y: round(0.5 + Math.sin(a) * 0.40 * r),
   };
+}
+
+function round(v: number) {
+  return Math.round(v * 1e4) / 1e4;
 }
 
 function buildMesh() {
