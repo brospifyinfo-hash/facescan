@@ -12,6 +12,7 @@
 import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 import { measure, type Point, type Point3 } from "./measure";
 import { faceAnalyzer } from "./analysis/analyzer";
+import { geometryAnalyzer } from "./analysis/geometry";
 import type { MeshPaths } from "./store";
 import { makeMetric, METRIC_ORDER, SPECS } from "./specs";
 import { clamp, type CategoryId, type Metric } from "./metrics";
@@ -164,6 +165,41 @@ export async function detectMesh(
     }
   }
   return null;
+}
+
+/**
+ * Landmark overlay for the FRONT photo, without running the score engine.
+ *
+ * The vision path needs exactly this much from MediaPipe: the mesh to draw,
+ * the aspect ratio to draw it in, the landmark count for the stat row and
+ * the interpupillary distance in pixels. Every analysis value comes from
+ * GPT-4.1 instead, so stages 4-8 are skipped rather than computed and
+ * thrown away.
+ *
+ * Returns null when no face is detected. That is NOT fatal in the vision
+ * path — the UI falls back to the grid it already draws for an undetectable
+ * side profile.
+ */
+export async function detectFrontOverlay(image: HTMLImageElement): Promise<{
+  mesh: MeshPaths;
+  aspect: number;
+  landmarkCount: number;
+  interocularPx: number;
+} | null> {
+  const landmarker = await getLandmarker();
+  const raw = landmarker.detect(image).faceLandmarks?.[0];
+  if (!raw || raw.length < 468) return null;
+
+  const pts: Point3[] = raw.map((pt) => ({ x: pt.x, y: pt.y, z: pt.z ?? 0 }));
+  const flat: Point[] = pts.map((p) => ({ x: p.x, y: p.y }));
+  const geometry = geometryAnalyzer.analyze(pts);
+
+  return {
+    mesh: meshFrom(flat),
+    aspect: image.naturalWidth / image.naturalHeight,
+    landmarkCount: raw.length,
+    interocularPx: Math.round(geometry.ipd * image.naturalWidth),
+  };
 }
 
 /** Analyze the front-profile photo. Returns null when no face is detected. */

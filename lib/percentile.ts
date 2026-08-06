@@ -26,16 +26,33 @@
 import { DEFAULT_WEIGHTS } from "./analysis/weights";
 import { TOLERANCE_SD } from "./analysis/modules";
 import { percentileOfComposite } from "./analysis/composite-cdf";
+import { percentileOfVisionScore } from "./vision/rubric";
+import type { ScanMetrics } from "./store";
+
+export type ScoreSource = NonNullable<ScanMetrics["scoreSource"]>;
 
 /**
- * Share of the modelled population scoring below `overall` (0–100).
+ * Share of the population scoring below `overall` (0–100).
  *
- * Inverts the display mapping back to a composite, then looks it up in the
- * modelled CDF. Doing it in that order matters: the headline is anchored on
- * SD-distance and the percentile on the modelled population, and inverting
- * exactly is what keeps the two from telling different stories.
+ * TWO SCALES, AND WHY THE SOURCE HAS TO BE PASSED IN
+ * --------------------------------------------------
+ * A 6.0 does not mean the same thing in both engines, so one conversion
+ * cannot serve both.
+ *
+ *   "geometry" — the headline is `outHigh − perSd · meanAbsZ`. Inverting
+ *     that mapping back to a composite and looking it up in COMPOSITE_CDF
+ *     is what keeps the badge and the headline telling one story.
+ *
+ *   "vision" — the headline came from GPT-4.1 against the anchor table in
+ *     lib/vision/rubric.ts, which IS a percentile table. Running it through
+ *     the geometry inverse instead would report the rarity of a composite
+ *     that was never computed.
+ *
+ * Defaults to geometry, so every existing call site keeps its behaviour.
  */
-export function percentileFor(overall: number): number {
+export function percentileFor(overall: number, source: ScoreSource = "geometry"): number {
+  if (source === "vision") return Math.round(percentileOfVisionScore(overall));
+
   const { outHigh, perSd } = DEFAULT_WEIGHTS.display;
   const meanAbsZ = Math.max(0, (outHigh - overall) / perSd);
   const composite = 100 * Math.exp(-0.5 * (meanAbsZ / TOLERANCE_SD) ** 2);
@@ -50,8 +67,11 @@ export function percentileFor(overall: number): number {
  * as praise. Returns null unless the result is genuinely in the upper half,
  * and the UI falls back to the plain percentile.
  */
-export function topPercentFor(overall: number): number | null {
-  const p = percentileFor(overall);
+export function topPercentFor(
+  overall: number,
+  source: ScoreSource = "geometry",
+): number | null {
+  const p = percentileFor(overall, source);
   if (p < 55) return null;
   return Math.max(1, 100 - p);
 }

@@ -127,6 +127,21 @@ export interface ScanMetrics {
    * that bound the reading. Absent on the demo path, which has no pixels.
    */
   report?: AnalysisResponse;
+  /**
+   * Which engine produced the numbers above.
+   *
+   * "geometry" — the on-device pipeline: landmark measurements scored
+   *   against the published norms in lib/analysis/norms.ts. Its headline is
+   *   a conformity-to-reference-proportions figure.
+   * "vision"   — GPT-4.1 Vision: every value, including the rating, comes
+   *   from the model (lib/vision/). Its headline is an attractiveness
+   *   judgement on the rubric in lib/vision/rubric.ts.
+   *
+   * The two headlines are anchored on different scales, which is why
+   * percentileFor() has to be told which one it is looking at rather than
+   * assuming. Absent means "geometry", so the demo path is unaffected.
+   */
+  scoreSource?: "geometry" | "vision";
   demo?: boolean;
 }
 

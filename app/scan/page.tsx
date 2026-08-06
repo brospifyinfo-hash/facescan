@@ -19,6 +19,99 @@ import { useFunnel } from "@/lib/store";
 const MIN_MS = 3_400;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/**
+ * Roughly how long the active engine takes, used to PACE the bar.
+ *
+ * Measured, not guessed: a GPT-4.1 call returning 25 measurements, nine
+ * modules and a quality block took 7 s on a trivial image and longer on a
+ * real face (scripts/smoke-vision.mts prints the figure). The on-device
+ * pipeline is ~200 ms once the WASM model is cached, so MIN_MS is the whole
+ * wait there.
+ *
+ * This is a pacing hint for the animation and nothing else. Both paths
+ * still end the instant the real work ends.
+ */
+const PACE_MS = (vision: boolean) => (vision ? 16_000 : MIN_MS);
+
+/**
+ * Progress that approaches the ceiling instead of hitting it.
+ *
+ * The previous curve was linear against MIN_MS and clamped at 97, which was
+ * right when the whole wait WAS MIN_MS. Against a network call it pins at
+ * 97% after 3.4 s and then sits there — and a bar frozen at 97 reads as a
+ * hung page, which is worse than an honest slow one.
+ *
+ * An exponential approach never stalls: it is still visibly moving at 30 s,
+ * and it cannot reach 100 before the work does.
+ */
+const progressAt = (elapsed: number, pace: number) =>
+  97 * (1 - Math.exp(-elapsed / (pace / 2.5)));
+
+/**
+ * Which engine scores the face.
+ *
+ * "vision" routes the analysis through GPT-4.1 (lib/vision/), which then
+ * owns every value including the rating. "geometry" keeps the on-device
+ * pipeline. Unset means geometry, so nothing changes for a deployment that
+ * has not set an OpenAI key.
+ *
+ * The vision path is slower than the local one — a network round trip
+ * instead of ~200 ms of WASM — which is why MIN_MS stays a floor rather
+ * than becoming a target: the screen still ends when the work ends.
+ */
+const USE_VISION = process.env.NEXT_PUBLIC_SCORE_ENGINE === "vision";
+
+/**
+ * The vision path: GPT-4.1 scores the face, MediaPipe only draws the mesh.
+ *
+ * The two run CONCURRENTLY. The overlay detection is ~200 ms of WASM and
+ * the vision call is seven to twenty seconds of network; running them in
+ * sequence would add the smaller to the larger for no reason. Neither
+ * overlay is allowed to fail the scan — the mesh is decoration, the rating
+ * is the product.
+ */
+async function runVisionScan(
+  analysis: typeof import("@/lib/analysis"),
+  frontDataUrl: string,
+) {
+  const { analyzeWithVision, NO_OVERLAY } = await import("@/lib/vision/client");
+  const side = useFunnel.getState().photos.side ?? null;
+
+  const overlay = (async () => {
+    try {
+      const img = await analysis.loadImage(frontDataUrl);
+      const front = await analysis.detectFrontOverlay(img);
+      // No face for MediaPipe still leaves a usable aspect ratio, and GPT
+      // may well find the face the local detector missed.
+      if (!front) return { ...NO_OVERLAY, aspect: img.naturalWidth / img.naturalHeight };
+
+      let sideMesh = null;
+      let sideAspect = null;
+      if (side) {
+        try {
+          const detected = await analysis.detectMesh(await analysis.loadImage(side.dataUrl));
+          if (detected) {
+            sideMesh = detected.mesh;
+            sideAspect = detected.aspect;
+          }
+        } catch {
+          /* keep the grid fallback */
+        }
+      }
+      return { ...front, sideMesh, sideAspect };
+    } catch {
+      return NO_OVERLAY;
+    }
+  })();
+
+  const [resolved, scan] = await Promise.all([
+    overlay,
+    analyzeWithVision({ frontDataUrl, sideDataUrl: side?.dataUrl ?? null }),
+  ]);
+
+  return { ...scan, ...resolved };
+}
+
 export default function ScanPage() {
   const router = useRouter();
   const t = useT();
@@ -27,6 +120,7 @@ export default function ScanPage() {
   const [progress, setProgress] = useState(0);
   const [lineIdx, setLineIdx] = useState(0);
   const [error, setError] = useState<"noFace" | "model" | null>(null);
+  const [errorDetail, setErrorDetail] = useState<string | null>(null);
 
   useEffect(() => {
     if (started.current) return;
@@ -45,11 +139,12 @@ export default function ScanPage() {
     }
 
     const lineCount = 9;
+    const pace = PACE_MS(USE_VISION && !demo);
     const t0 = Date.now();
     const tick = setInterval(() => {
       const elapsed = Date.now() - t0;
-      setProgress(Math.min(97, (elapsed / MIN_MS) * 100));
-      setLineIdx(Math.min(lineCount - 1, Math.floor(elapsed / (MIN_MS / lineCount))));
+      setProgress(progressAt(elapsed, pace));
+      setLineIdx(Math.min(lineCount - 1, Math.floor(elapsed / (pace / lineCount))));
     }, 60);
 
     (async () => {
@@ -58,6 +153,8 @@ export default function ScanPage() {
         let metrics;
         if (demo) {
           metrics = analysis.demoMetrics(front?.name ?? "demo");
+        } else if (USE_VISION) {
+          metrics = await runVisionScan(analysis, front!.dataUrl);
         } else {
           const img = await analysis.loadImage(front!.dataUrl);
           metrics = await analysis.analyzeFront(img);
@@ -90,7 +187,15 @@ export default function ScanPage() {
         router.push("/results");
       } catch (e) {
         clearInterval(tick);
-        setError(e instanceof Error && e.message === "no-face" ? "noFace" : "model");
+        if (e instanceof Error && e.message === "no-face") {
+          setError("noFace");
+        } else {
+          setError("model");
+          // The vision route returns a message that says what to do about
+          // it — a timeout, a rate limit and a refusal need different
+          // actions from the user and the generic string covers none of them.
+          if (e instanceof Error && "kind" in e) setErrorDetail(e.message);
+        }
       }
     })();
 
@@ -107,7 +212,7 @@ export default function ScanPage() {
             {t.scan.failedTitle}
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-zinc-400">
-            {error === "noFace" ? t.scan.errNoFace : t.scan.errModel}
+            {error === "noFace" ? t.scan.errNoFace : (errorDetail ?? t.scan.errModel)}
           </p>
           <div className="mt-8 flex justify-center gap-3">
             <Link href="/upload">

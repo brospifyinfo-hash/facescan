@@ -4,7 +4,7 @@ import { useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Info } from "lucide-react";
 import { CountUp } from "./CountUp";
-import { percentileFor, topPercentFor } from "@/lib/percentile";
+import { percentileFor, topPercentFor, type ScoreSource } from "@/lib/percentile";
 import { fill, useT } from "@/lib/i18n";
 
 /** Split a template on {token} so the number can animate in place. */
@@ -44,12 +44,19 @@ function Animated({
  * measures conformity to published reference proportions and has never been
  * validated against attractiveness ratings.
  */
-export function PercentileBadge({ overall }: { overall: number }) {
+export function PercentileBadge({
+  overall,
+  source = "geometry",
+}: {
+  overall: number;
+  /** Which engine produced `overall`; the two are on different scales. */
+  source?: ScoreSource;
+}) {
   const t = useT();
   const reduce = useReducedMotion();
   const [open, setOpen] = useState(false);
-  const below = percentileFor(overall);
-  const top = topPercentFor(overall);
+  const below = percentileFor(overall, source);
+  const top = topPercentFor(overall, source);
 
   return (
     <motion.div

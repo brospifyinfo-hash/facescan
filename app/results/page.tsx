@@ -177,7 +177,10 @@ export default function ResultsPage() {
 
               {/* Visible before payment — the hook is a real figure. */}
               <div className="mt-3">
-                <PercentileBadge overall={metrics.overall} />
+                <PercentileBadge
+                  overall={metrics.overall}
+                  source={metrics.scoreSource ?? "geometry"}
+                />
               </div>
 
               {/* How good the photo was, kept apart from how good the face

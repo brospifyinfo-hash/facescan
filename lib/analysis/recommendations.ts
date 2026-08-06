@@ -45,7 +45,7 @@ export interface Recommendation {
  * Everything absent from this map is skeletal or cartilaginous and is
  * therefore reported but never actioned.
  */
-const ACTIONABLE: Partial<Record<MeasurementId, string>> = {
+export const ACTIONABLE: Partial<Record<MeasurementId, string>> = {
   // Expression and lid position, not anatomy.
   eyeAspect: "eyeOpenness",
   browPosition: "browGrooming",
