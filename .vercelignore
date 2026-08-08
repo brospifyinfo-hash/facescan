@@ -8,6 +8,15 @@
 # quietly contains stale code.
 #
 # Source-only payload is well under a megabyte.
+#
+# .env*.local IS THE IMPORTANT ONE. .vercelignore is the CLI's only ignore
+# list — it does not read .gitignore — so a file being safely out of git
+# says nothing about whether it is uploaded. Local env files were therefore
+# shipped with every deploy, and the moment one of them held a real key the
+# deployments stopped building: created, zero build output, status UNKNOWN,
+# which is what a credential-scan block looks like from the outside.
+#
+# Production values belong in `vercel env add`, never in the payload.
 
 .next
 node_modules
@@ -15,3 +24,6 @@ node_modules
 .git
 scripts
 *.tsbuildinfo
+.env
+.env.*
+!.env.example
