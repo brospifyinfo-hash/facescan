@@ -21,8 +21,22 @@ import { HeroMesh } from "@/components/landing/HeroMesh";
 import { ReviewsSection } from "@/components/landing/ReviewsSection";
 import { CATEGORY_ORDER } from "@/lib/metrics";
 import { METRIC_ORDER, SPECS } from "@/lib/specs";
-import { useT } from "@/lib/i18n";
+import { useI18n, useT } from "@/lib/i18n";
+import { visionPrivacy } from "@/lib/i18n/privacy";
 import { useFunnel } from "@/lib/store";
+
+/**
+ * Positions of the two photo-related items in the dictionaries.
+ *
+ * Both arrays are parallel across every locale, so one index works for all
+ * four. Named rather than inlined because the coupling is invisible
+ * otherwise: reorder `steps` or `faq` in a dictionary and the vision-mode
+ * privacy wording silently lands on the wrong entry.
+ */
+const PHOTO_TRUST_INDEX = 0;
+const PHOTO_STEP_INDEX = 1;
+const PHOTO_SCAN_STEP_INDEX = 2;
+const PHOTO_FAQ_INDEX = 2;
 import { cn } from "@/lib/cn";
 
 const TRUST_ICONS = [ShieldCheck, Cpu, Lock];
@@ -106,6 +120,11 @@ function Faq({ q, a, index }: { q: string; a: string; index: number }) {
 
 export default function LandingPage() {
   const t = useT();
+  const { locale } = useI18n();
+  // Null on the on-device engine, where the dictionaries' stronger claim is
+  // simply true. Non-null once the free scan uploads, and then it replaces
+  // every string that would otherwise assert the photo stays local.
+  const priv = visionPrivacy(locale);
   const expiredNotice = useFunnel((s) => s.expiredNotice);
   const clearExpiredNotice = useFunnel((s) => s.clearExpiredNotice);
 
@@ -216,9 +235,11 @@ export default function LandingPage() {
                 className="bg-zinc-950 p-5"
               >
                 <Icon className="h-4 w-4 text-accent" />
-                <h3 className="mt-3.5 text-[13px] font-semibold">{item.title}</h3>
+                <h3 className="mt-3.5 text-[13px] font-semibold">
+                  {priv && i === PHOTO_TRUST_INDEX ? priv.trustTitle : item.title}
+                </h3>
                 <p className="mt-1.5 text-[12px] leading-relaxed text-zinc-500">
-                  {item.text}
+                  {priv && i === PHOTO_TRUST_INDEX ? priv.trustText : item.text}
                 </p>
               </motion.div>
             );
@@ -285,9 +306,15 @@ export default function LandingPage() {
                 <span className="font-mono-terminal text-[10px] tabular-nums text-accent">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <h3 className="mt-2.5 text-[13px] font-semibold">{step.title}</h3>
+                <h3 className="mt-2.5 text-[13px] font-semibold">
+                  {priv && i === PHOTO_SCAN_STEP_INDEX ? priv.scanStepTitle : step.title}
+                </h3>
                 <p className="mt-1.5 text-[12px] leading-relaxed text-zinc-500">
-                  {step.text}
+                  {priv && i === PHOTO_STEP_INDEX
+                    ? priv.step
+                    : priv && i === PHOTO_SCAN_STEP_INDEX
+                      ? priv.scanStepText
+                      : step.text}
                 </p>
               </motion.div>
             ))}
@@ -299,12 +326,12 @@ export default function LandingPage() {
           <SectionHead
             index="03"
             eyebrow="Data"
-            title={t.landing.privacyTitle}
-            sub={t.landing.privacyBody}
+            title={priv?.title ?? t.landing.privacyTitle}
+            sub={priv?.body ?? t.landing.privacyBody}
           />
 
           <ul className="mt-9 grid gap-px overflow-hidden rounded-2xl border border-white/[0.09] bg-white/[0.06] sm:grid-cols-3">
-            {t.landing.privacyPoints.map((p, i) => (
+            {(priv?.points ?? t.landing.privacyPoints).map((p, i) => (
               <motion.li
                 key={p}
                 initial={{ opacity: 0 }}
@@ -327,7 +354,12 @@ export default function LandingPage() {
           <SectionHead index="04" eyebrow="FAQ" title={t.landing.faqTitle} />
           <div className="mt-8 border-t border-white/[0.07]">
             {t.landing.faq.map((item, i) => (
-              <Faq key={item.q} q={item.q} a={item.a} index={i} />
+              <Faq
+                key={item.q}
+                q={item.q}
+                a={priv && i === PHOTO_FAQ_INDEX ? priv.faq : item.a}
+                index={i}
+              />
             ))}
           </div>
         </section>

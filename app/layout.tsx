@@ -1,14 +1,21 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { I18nProvider } from "@/lib/i18n";
+import { META_DESCRIPTION, VISION_ACTIVE } from "@/lib/i18n/privacy";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
+// Title and description both track the engine. The old pair asserted the
+// analysis runs "on-device" and that photos "never leave your device" —
+// true of the geometry pipeline, false the moment the free scan uploads to
+// GPT-4.1. A share card and a search result are where that claim travels
+// furthest, so it is the last place it should be left stale.
 export const metadata: Metadata = {
-  title: "FaceScan — On-device facial aesthetics analysis",
-  description:
-    "Clinical-grade facial geometry analysis that runs entirely in your browser. 478 landmarks, 16 real measurements — your photos never leave your device during the free scan.",
+  title: VISION_ACTIVE
+    ? "FaceScan — AI facial aesthetics analysis"
+    : "FaceScan — On-device facial aesthetics analysis",
+  description: META_DESCRIPTION,
 };
 
 export const viewport: Viewport = {
