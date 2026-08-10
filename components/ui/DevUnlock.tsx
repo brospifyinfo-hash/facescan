@@ -86,7 +86,7 @@ export function DevUnlock({ children }: { children: React.ReactNode }) {
 
       {prompting ? (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-zinc-950/80 p-4 backdrop-blur-md"
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-[var(--color-canvas)]/80 p-4 backdrop-blur-md"
           onClick={() => setPrompting(false)}
         >
           <motion.form
@@ -95,7 +95,7 @@ export function DevUnlock({ children }: { children: React.ReactNode }) {
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1, x: shake ? [0, -8, 8, -6, 6, 0] : 0 }}
             transition={{ duration: shake ? 0.45 : 0.2 }}
-            className="glass-strong w-full max-w-[260px] rounded-3xl p-5"
+            className="material-sheet w-full max-w-[260px] rounded-[var(--r-card)] p-5"
           >
             <input
               autoFocus
@@ -106,14 +106,14 @@ export function DevUnlock({ children }: { children: React.ReactNode }) {
               onChange={(e) => setCode(e.target.value)}
               placeholder="••••"
               aria-label="Code"
-              className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center text-lg tracking-[0.5em] outline-none transition-colors placeholder:text-zinc-700 focus:border-accent/50"
+              className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center text-lg tracking-[0.5em] outline-none transition-colors placeholder:text-[var(--color-ink-quaternary)] focus:border-accent/50"
             />
             {/* An explicit submit — a soft keyboard has no reliable Enter,
                 so the prompt was impossible to confirm on a phone. */}
             <button
               type="submit"
               disabled={code.length === 0}
-              className="mt-3 w-full rounded-2xl bg-accent py-2.5 text-sm font-semibold text-zinc-950 transition-opacity disabled:opacity-30"
+              className="mt-3 w-full rounded-2xl bg-accent py-2.5 text-sm font-semibold text-[var(--color-accent-ink)] transition-opacity disabled:opacity-30"
             >
               OK
             </button>

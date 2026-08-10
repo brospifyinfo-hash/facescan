@@ -39,13 +39,13 @@ export function MonthlyProgram({
   const introduced = weeks[week];
 
   return (
-    <section className="glass rounded-3xl p-4 sm:p-6">
+    <section className="surface p-4 sm:p-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="text-base font-semibold tracking-tight sm:text-lg">
             {t.monthly.title}
           </h2>
-          <p className="mt-1.5 text-[12px] text-zinc-500">{t.monthly.sub}</p>
+          <p className="mt-1.5 text-[12px] text-[var(--color-ink-tertiary)]">{t.monthly.sub}</p>
         </div>
       </div>
 
@@ -60,7 +60,7 @@ export function MonthlyProgram({
               aria-pressed={active}
               className={cn(
                 "relative rounded-xl px-2 py-2.5 text-center transition-colors",
-                active ? "text-zinc-950" : "text-zinc-400 hover:text-zinc-100",
+                active ? "text-[var(--color-accent-ink)]" : "text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)]",
               )}
             >
               {active ? (
@@ -101,13 +101,13 @@ export function MonthlyProgram({
                 {entry.emoji}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="flex flex-wrap items-center gap-x-2 text-[13px] font-medium text-zinc-100">
+                <p className="flex flex-wrap items-center gap-x-2 text-[13px] font-medium text-[var(--color-ink)]">
                   {copy.title}
                   <span className="rounded-md bg-accent/15 px-1.5 py-0.5 text-[10px] text-accent">
                     {copy.cadence}
                   </span>
                 </p>
-                <p className="mt-1 text-[12px] leading-relaxed text-zinc-400">
+                <p className="mt-1 text-[12px] leading-relaxed text-[var(--color-ink-secondary)]">
                   {copy.detail}
                 </p>
               </div>
@@ -125,8 +125,8 @@ export function MonthlyProgram({
               <span className="text-[13px]" aria-hidden>
                 {entry.emoji}
               </span>
-              <span className="flex-1 text-[12px] text-zinc-400">{copy.title}</span>
-              <span className="text-[10px] tabular-nums text-zinc-600">
+              <span className="flex-1 text-[12px] text-[var(--color-ink-secondary)]">{copy.title}</span>
+              <span className="text-[10px] tabular-nums text-[var(--color-ink-tertiary)]">
                 {copy.cadence}
               </span>
             </li>

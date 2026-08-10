@@ -41,14 +41,14 @@ export function LanguageSwitcher() {
         onClick={() => setOpen((v) => !v)}
         aria-label={t.nav.language}
         aria-expanded={open}
-        className="glass flex items-center gap-2 rounded-full px-3.5 py-2 text-xs font-medium text-zinc-300 transition-colors hover:text-zinc-50"
+        className="material-nav interactive flex items-center gap-2 rounded-full px-3.5 py-2 text-xs font-medium text-[var(--color-ink-secondary)] transition-colors hover:text-[var(--color-ink)]"
       >
         <Globe className="h-3.5 w-3.5" />
         <span className="uppercase tracking-wider">{locale}</span>
       </button>
 
       {open ? (
-        <div className="glass-strong absolute right-0 top-full z-50 mt-2 w-44 overflow-hidden rounded-2xl p-1.5">
+        <div className="material-sheet absolute right-0 top-full z-50 mt-2 w-44 overflow-hidden rounded-2xl p-1.5">
           {LOCALES.map((l: Locale) => (
             <button
               key={l}
@@ -60,8 +60,8 @@ export function LanguageSwitcher() {
               className={cn(
                 "flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[13px] transition-colors",
                 l === locale
-                  ? "bg-white/10 text-zinc-50"
-                  : "text-zinc-400 hover:bg-white/5 hover:text-zinc-100",
+                  ? "bg-white/10 text-[var(--color-ink)]"
+                  : "text-[var(--color-ink-secondary)] hover:bg-white/5 hover:text-[var(--color-ink)]",
               )}
             >
               <span aria-hidden>{LOCALE_FLAGS[l]}</span>

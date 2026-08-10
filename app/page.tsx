@@ -65,7 +65,7 @@ function SectionHead({
         <span className="font-mono-terminal text-[11px] tabular-nums text-accent">
           {index}
         </span>
-        <span className="font-mono-terminal text-[10px] uppercase tracking-[0.22em] text-zinc-500">
+        <span className="font-mono-terminal text-[10px] uppercase tracking-[0.22em] text-[var(--color-ink-tertiary)]">
           {eyebrow}
         </span>
       </div>
@@ -73,7 +73,7 @@ function SectionHead({
         {title}
       </h2>
       {sub ? (
-        <p className="mt-3 max-w-xl text-[14px] leading-relaxed text-zinc-400">
+        <p className="mt-3 max-w-xl text-[14px] leading-relaxed text-[var(--color-ink-secondary)]">
           {sub}
         </p>
       ) : null}
@@ -91,11 +91,11 @@ function Faq({ q, a, index }: { q: string; a: string; index: number }) {
         aria-expanded={open}
         className="flex w-full items-center gap-5 py-4 text-left"
       >
-        <span className="font-mono-terminal text-[10px] tabular-nums text-zinc-600">
+        <span className="font-mono-terminal text-[10px] tabular-nums text-[var(--color-ink-tertiary)]">
           {String(index + 1).padStart(2, "0")}
         </span>
-        <span className="flex-1 text-[14px] font-medium text-zinc-100">{q}</span>
-        <span className="text-zinc-500">
+        <span className="flex-1 text-[14px] font-medium text-[var(--color-ink)]">{q}</span>
+        <span className="text-[var(--color-ink-tertiary)]">
           {open ? <Minus className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
         </span>
       </button>
@@ -108,7 +108,7 @@ function Faq({ q, a, index }: { q: string; a: string; index: number }) {
             transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
-            <p className="max-w-2xl pb-5 pl-[3.1rem] text-[13px] leading-relaxed text-zinc-400">
+            <p className="max-w-2xl pb-5 pl-[3.1rem] text-[13px] leading-relaxed text-[var(--color-ink-secondary)]">
               {a}
             </p>
           </motion.div>
@@ -138,7 +138,7 @@ export default function LandingPage() {
   return (
     <main className="flex min-h-dvh flex-col">
       {/* ---------------- Nav ---------------- */}
-      <header className="sticky top-0 z-40 border-b border-white/[0.07] bg-zinc-950/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-white/[0.07] bg-[var(--color-canvas)]/80 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-5 py-3.5 sm:px-8">
           <DevUnlock>
             <span className="flex items-center gap-2.5">
@@ -151,7 +151,7 @@ export default function LandingPage() {
           <div className="flex items-center gap-4">
             <a
               href="#method"
-              className="hidden text-[13px] text-zinc-400 transition-colors hover:text-zinc-100 sm:block"
+              className="hidden text-[13px] text-[var(--color-ink-secondary)] transition-colors hover:text-[var(--color-ink)] sm:block"
             >
               {t.nav.howItWorks}
             </a>
@@ -162,10 +162,10 @@ export default function LandingPage() {
 
       {expiredNotice ? (
         <div className="mx-auto mt-4 w-full max-w-4xl px-5 sm:px-8">
-          <div className="flex items-start justify-between gap-4 rounded-xl border border-white/[0.09] bg-white/[0.02] p-4 text-[13px] text-zinc-300">
+          <div className="flex items-start justify-between gap-4 rounded-xl border border-white/[0.09] bg-white/[0.02] p-4 text-[13px] text-[var(--color-ink-secondary)]">
             <p>{t.landing.expired}</p>
             <button onClick={clearExpiredNotice} aria-label="Dismiss">
-              <X className="h-4 w-4 text-zinc-500 hover:text-zinc-200" />
+              <X className="h-4 w-4 text-[var(--color-ink-tertiary)] hover:text-[var(--color-ink)]" />
             </button>
           </div>
         </div>
@@ -179,7 +179,7 @@ export default function LandingPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            <div className="flex items-center gap-2.5 font-mono-terminal text-[10px] uppercase tracking-[0.2em] text-zinc-500">
+            <div className="flex items-center gap-2.5 font-mono-terminal text-[10px] uppercase tracking-[0.2em] text-[var(--color-ink-tertiary)]">
               <span className="h-px w-6 bg-accent" />
               {t.landing.badge}
             </div>
@@ -189,7 +189,7 @@ export default function LandingPage() {
               <span className="text-accent">{t.landing.headlineAccent}</span>
             </h1>
 
-            <p className="mt-6 max-w-md text-[16px] leading-relaxed text-zinc-400">
+            <p className="mt-6 max-w-md text-[16px] leading-relaxed text-[var(--color-ink-secondary)]">
               {t.landing.sub}
             </p>
 
@@ -199,7 +199,7 @@ export default function LandingPage() {
                   {t.landing.cta} <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <p className="text-[12px] leading-snug text-zinc-500">
+              <p className="text-[12px] leading-snug text-[var(--color-ink-tertiary)]">
                 {t.landing.ctaNote}
               </p>
             </div>
@@ -213,7 +213,7 @@ export default function LandingPage() {
           >
             <div className="rounded-2xl border border-white/[0.09] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),transparent)] p-3">
               <HeroMesh className="aspect-square w-full" />
-              <div className="flex items-center justify-between border-t border-white/[0.07] px-1 pt-2.5 font-mono-terminal text-[9px] uppercase tracking-[0.14em] text-zinc-600">
+              <div className="flex items-center justify-between border-t border-white/[0.07] px-1 pt-2.5 font-mono-terminal text-[9px] uppercase tracking-[0.14em] text-[var(--color-ink-tertiary)]">
                 <span>MediaPipe FaceLandmarker</span>
                 <span className="tabular-nums text-accent">478</span>
               </div>
@@ -232,13 +232,13 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.45, delay: i * 0.08 }}
-                className="bg-zinc-950 p-5"
+                className="bg-[var(--color-canvas)] p-5"
               >
                 <Icon className="h-4 w-4 text-accent" />
                 <h3 className="mt-3.5 text-[13px] font-semibold">
                   {priv && i === PHOTO_TRUST_INDEX ? priv.trustTitle : item.title}
                 </h3>
-                <p className="mt-1.5 text-[12px] leading-relaxed text-zinc-500">
+                <p className="mt-1.5 text-[12px] leading-relaxed text-[var(--color-ink-tertiary)]">
                   {priv && i === PHOTO_TRUST_INDEX ? priv.trustText : item.text}
                 </p>
               </motion.div>
@@ -268,17 +268,17 @@ export default function LandingPage() {
                   className="grid gap-2 py-4 sm:grid-cols-[150px_minmax(0,1fr)] sm:gap-6"
                 >
                   <div className="flex items-baseline gap-2">
-                    <span className="text-[13px] font-semibold text-zinc-200">
+                    <span className="text-[13px] font-semibold text-[var(--color-ink)]">
                       {categoryLabel[cat]}
                     </span>
-                    <span className="font-mono-terminal text-[10px] tabular-nums text-zinc-600">
+                    <span className="font-mono-terminal text-[10px] tabular-nums text-[var(--color-ink-tertiary)]">
                       {String(ids.length).padStart(2, "0")}
                     </span>
                   </div>
-                  <p className="text-[13px] leading-relaxed text-zinc-500">
+                  <p className="text-[13px] leading-relaxed text-[var(--color-ink-tertiary)]">
                     {ids.map((id, i) => (
                       <span key={id}>
-                        {i > 0 ? <span className="text-zinc-700"> · </span> : null}
+                        {i > 0 ? <span className="text-[var(--color-ink-quaternary)]"> · </span> : null}
                         {t.metrics[id].label}
                       </span>
                     ))}
@@ -301,7 +301,7 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.45, delay: i * 0.06 }}
-                className="bg-zinc-950 p-5"
+                className="bg-[var(--color-canvas)] p-5"
               >
                 <span className="font-mono-terminal text-[10px] tabular-nums text-accent">
                   {String(i + 1).padStart(2, "0")}
@@ -309,7 +309,7 @@ export default function LandingPage() {
                 <h3 className="mt-2.5 text-[13px] font-semibold">
                   {priv && i === PHOTO_SCAN_STEP_INDEX ? priv.scanStepTitle : step.title}
                 </h3>
-                <p className="mt-1.5 text-[12px] leading-relaxed text-zinc-500">
+                <p className="mt-1.5 text-[12px] leading-relaxed text-[var(--color-ink-tertiary)]">
                   {priv && i === PHOTO_STEP_INDEX
                     ? priv.step
                     : priv && i === PHOTO_SCAN_STEP_INDEX
@@ -338,7 +338,7 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.45, delay: i * 0.07 }}
-                className="bg-zinc-950 p-5 text-[12px] leading-relaxed text-zinc-400"
+                className="bg-[var(--color-canvas)] p-5 text-[12px] leading-relaxed text-[var(--color-ink-secondary)]"
               >
                 <span className="font-mono-terminal mb-2.5 block text-[10px] tabular-nums text-accent">
                   {String(i + 1).padStart(2, "0")}
@@ -379,7 +379,7 @@ export default function LandingPage() {
               <h2 className="text-[24px] font-semibold tracking-tight sm:text-[30px]">
                 {t.landing.headline} {t.landing.headlineAccent}
               </h2>
-              <p className="mt-2 text-[13px] text-zinc-500">{t.landing.ctaNote}</p>
+              <p className="mt-2 text-[13px] text-[var(--color-ink-tertiary)]">{t.landing.ctaNote}</p>
             </div>
             <Link href="/quiz" className="shrink-0">
               <Button size="lg">
@@ -395,14 +395,14 @@ export default function LandingPage() {
         <div className="mx-auto flex w-full max-w-4xl flex-col gap-5 px-5 sm:px-8">
           <div className="flex items-center gap-2.5">
             <ScanFace className="h-3.5 w-3.5 text-accent" />
-            <span className="text-[10px] font-semibold tracking-[0.16em] text-zinc-500">
+            <span className="text-[10px] font-semibold tracking-[0.16em] text-[var(--color-ink-tertiary)]">
               FACESCAN
             </span>
           </div>
-          <p className="max-w-2xl text-[11px] leading-relaxed text-zinc-600">
+          <p className="max-w-2xl text-[11px] leading-relaxed text-[var(--color-ink-tertiary)]">
             {t.landing.disclaimer}
           </p>
-          <div className={cn("flex gap-5 text-[11px] text-zinc-600")}>
+          <div className={cn("flex gap-5 text-[11px] text-[var(--color-ink-tertiary)]")}>
             <span>{t.landing.imprint}</span>
             <span>{t.landing.privacyLink}</span>
           </div>

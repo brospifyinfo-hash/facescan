@@ -99,7 +99,7 @@ export function AuthModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[55] flex items-center justify-center overflow-y-auto bg-zinc-950/80 p-4 backdrop-blur-md">
+    <div className="fixed inset-0 z-[55] flex items-center justify-center overflow-y-auto bg-[var(--color-canvas)]/80 p-4 backdrop-blur-md">
       <button
         type="button"
         aria-label="Close"
@@ -114,12 +114,12 @@ export function AuthModal({
         initial={{ opacity: 0, y: 20, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-        className="glass-strong relative my-auto w-full max-w-sm rounded-[26px] p-6 sm:p-7"
+        className="material-sheet relative my-auto w-full max-w-sm rounded-[var(--r-window)] p-6 sm:p-7"
       >
         <button
           onClick={onClose}
           aria-label="Close"
-          className="absolute right-4 top-4 rounded-full p-1.5 text-zinc-500 transition-colors hover:bg-white/5 hover:text-zinc-200"
+          className="absolute right-4 top-4 rounded-full p-1.5 text-[var(--color-ink-tertiary)] transition-colors hover:bg-white/5 hover:text-[var(--color-ink)]"
         >
           <X className="h-4 w-4" />
         </button>
@@ -132,7 +132,7 @@ export function AuthModal({
             <h2 className="mt-5 text-xl font-semibold tracking-tight">
               {t.auth.title}
             </h2>
-            <p className="mt-2 text-[13px] leading-relaxed text-zinc-400">
+            <p className="mt-2 text-[13px] leading-relaxed text-[var(--color-ink-secondary)]">
               {t.auth.sub}
             </p>
 
@@ -143,7 +143,7 @@ export function AuthModal({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t.auth.emailPlaceholder}
-              className="mt-5 w-full rounded-2xl border border-white/[0.1] bg-white/[0.03] px-4 py-3 text-sm outline-none transition-colors placeholder:text-zinc-600 focus:border-accent/60"
+              className="mt-5 w-full rounded-2xl border border-white/[0.1] bg-white/[0.03] px-4 py-3 text-sm outline-none transition-colors placeholder:text-[var(--color-ink-tertiary)] focus:border-accent/60"
             />
 
             {error ? (
@@ -160,7 +160,7 @@ export function AuthModal({
               )}
             </Button>
 
-            <p className="mt-3.5 flex items-start gap-2 text-[11px] leading-relaxed text-zinc-500">
+            <p className="mt-3.5 flex items-start gap-2 text-[11px] leading-relaxed text-[var(--color-ink-tertiary)]">
               <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" />
               {t.auth.privacy}
             </p>
@@ -169,7 +169,7 @@ export function AuthModal({
           <div>
             <button
               onClick={() => setStage("email")}
-              className="flex items-center gap-1.5 text-[12px] text-zinc-500 transition-colors hover:text-zinc-300"
+              className="flex items-center gap-1.5 text-[12px] text-[var(--color-ink-tertiary)] transition-colors hover:text-[var(--color-ink-secondary)]"
             >
               <ArrowLeft className="h-3.5 w-3.5" /> {t.auth.changeEmail}
             </button>
@@ -177,7 +177,7 @@ export function AuthModal({
             <h2 className="mt-4 text-xl font-semibold tracking-tight">
               {t.auth.codeTitle}
             </h2>
-            <p className="mt-2 text-[13px] leading-relaxed text-zinc-400">
+            <p className="mt-2 text-[13px] leading-relaxed text-[var(--color-ink-secondary)]">
               {fill(t.auth.codeSub, { email })}
             </p>
 
@@ -219,7 +219,7 @@ export function AuthModal({
             <button
               onClick={() => send()}
               disabled={cooldown > 0 || busy}
-              className="mt-3 w-full text-center text-[12px] text-zinc-500 transition-colors hover:text-zinc-300 disabled:opacity-50"
+              className="mt-3 w-full text-center text-[12px] text-[var(--color-ink-tertiary)] transition-colors hover:text-[var(--color-ink-secondary)] disabled:opacity-50"
             >
               {cooldown > 0
                 ? fill(t.auth.resendIn, { s: cooldown })

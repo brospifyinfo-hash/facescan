@@ -90,7 +90,7 @@ export function MetricDial({
           <span className="text-[12px] leading-none" aria-hidden>
             {METRIC_EMOJI[metric.id]}
           </span>
-          <span className="mt-0.5 text-[12px] font-semibold leading-none tracking-tight text-zinc-50">
+          <span className="mt-0.5 text-[12px] font-semibold leading-none tracking-tight text-[var(--color-ink)]">
             {metric.display}
           </span>
           <span
@@ -104,7 +104,7 @@ export function MetricDial({
 
       {/* Fixed two-line box keeps every grid row exactly the same height */}
       <span className="mt-1.5 flex min-h-[24px] items-start justify-center">
-        <span className="line-clamp-2 text-center text-[9.5px] font-medium leading-[1.3] text-zinc-400">
+        <span className="line-clamp-2 text-center text-[9.5px] font-medium leading-[1.3] text-[var(--color-ink-secondary)]">
           {t.metrics[metric.id].label}
         </span>
       </span>

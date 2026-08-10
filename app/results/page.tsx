@@ -148,7 +148,7 @@ export default function ResultsPage() {
         </div>
 
         {/* Score card */}
-        <div className="glass relative overflow-hidden rounded-3xl p-5 sm:p-6">
+        <div className="surface-raised relative overflow-hidden p-5 sm:p-6">
           <div
             aria-hidden
             className="pointer-events-none absolute -right-20 -top-20 h-52 w-52 rounded-full blur-3xl"
@@ -159,7 +159,7 @@ export default function ResultsPage() {
             <ScoreRing score={metrics.overall} color={band.color} />
 
             <div className="min-w-0 flex-1 text-center sm:text-left">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--color-ink-tertiary)]">
                 {t.results.overall}
               </p>
               <motion.div
@@ -171,7 +171,7 @@ export default function ResultsPage() {
               >
                 {bandCopy.label}
               </motion.div>
-              <p className="mt-2 text-[12px] leading-relaxed text-zinc-400">
+              <p className="mt-2 text-[12px] leading-relaxed text-[var(--color-ink-secondary)]">
                 {bandCopy.blurb}
               </p>
 
@@ -200,10 +200,10 @@ export default function ResultsPage() {
                   ["✅", t.results.inRange, `${inRange}/${metrics.metrics.length}`],
                 ].map(([emoji, label, value]) => (
                   <div key={label} className="text-center sm:text-left">
-                    <dt className="text-[9px] uppercase tracking-[0.08em] text-zinc-600">
+                    <dt className="text-[9px] uppercase tracking-[0.08em] text-[var(--color-ink-tertiary)]">
                       <span aria-hidden>{emoji}</span> {label}
                     </dt>
-                    <dd className="mt-0.5 text-[13px] font-semibold tabular-nums text-zinc-200">
+                    <dd className="mt-0.5 text-[13px] font-semibold tabular-nums text-[var(--color-ink)]">
                       {value}
                     </dd>
                   </div>
@@ -225,7 +225,7 @@ export default function ResultsPage() {
         <div className="flex flex-col gap-3">
           {/* Category composites + radar — one compact row */}
           <LockedSection locked={locked}>
-            <div className="glass rounded-3xl p-4 sm:p-6">
+            <div className="surface p-4 sm:p-6">
               <div className="grid items-center gap-5 sm:grid-cols-[minmax(0,1fr)_auto]">
                 <div className="grid grid-cols-5 gap-2">
                   <MiniRing emoji="⚖️" label={t.results.symmetry} value={metrics.symmetry} delay={0} />
@@ -271,7 +271,7 @@ export default function ResultsPage() {
 
           <LockedSection locked={locked}>
             <Collapsible emoji="✨" title={t.results.skinTitle} hint={t.results.skinSub}>
-              <p className="text-[12px] leading-relaxed text-zinc-400">
+              <p className="text-[12px] leading-relaxed text-[var(--color-ink-secondary)]">
                 {t.results.skinSub}
               </p>
             </Collapsible>
@@ -300,7 +300,7 @@ export default function ResultsPage() {
               <h2 className="text-base font-semibold tracking-tight">
                 {t.monthly.upsellTitle}
               </h2>
-              <p className="mt-1.5 max-w-lg text-[12px] leading-relaxed text-zinc-400">
+              <p className="mt-1.5 max-w-lg text-[12px] leading-relaxed text-[var(--color-ink-secondary)]">
                 {t.monthly.upsellBody}
               </p>
               <Button className="mt-4" onClick={() => startUnlock()}>
@@ -318,7 +318,7 @@ export default function ResultsPage() {
                 initial={{ opacity: 0, y: 16, scale: 0.97 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                className="glass-strong pointer-events-auto rounded-3xl p-5 text-center sm:p-6"
+                className="material-sheet pointer-events-auto rounded-[var(--r-window)] p-5 text-center sm:p-6"
               >
                 <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-accent/15 text-lg">
                   🔒
@@ -327,9 +327,9 @@ export default function ResultsPage() {
                 <h3 className="mt-4 text-lg font-semibold tracking-tight">
                   {fill(t.results.unlockTitle, { n: metrics.metrics.length })}
                 </h3>
-                <p className="mt-2 text-[12px] leading-relaxed text-zinc-400">
+                <p className="mt-2 text-[12px] leading-relaxed text-[var(--color-ink-secondary)]">
                   {t.results.unlockBody}{" "}
-                  <span className="font-medium text-zinc-100">
+                  <span className="font-medium text-[var(--color-ink)]">
                     {metrics.weakest.map((id) => t.metrics[id].label).join(", ")}
                   </span>
                 </p>
@@ -338,7 +338,7 @@ export default function ResultsPage() {
                   {t.results.unlockChips.map((chip) => (
                     <li
                       key={chip}
-                      className="glass-subtle rounded-full px-2 py-0.5 text-[10px] text-zinc-400"
+                      className="fill rounded-full px-2 py-0.5 text-[10px] text-[var(--color-ink-secondary)]"
                     >
                       {chip}
                     </li>
@@ -350,7 +350,7 @@ export default function ResultsPage() {
                   {t.results.unlockCta}
                 </Button>
 
-                <p className="mt-2.5 text-[10px] text-zinc-500">
+                <p className="mt-2.5 text-[10px] text-[var(--color-ink-tertiary)]">
                   {t.results.unlockNote}
                 </p>
               </motion.div>
@@ -365,7 +365,7 @@ export default function ResultsPage() {
         </div>
       ) : null}
 
-      <p className="mx-auto mt-8 max-w-xl text-center text-[10px] leading-relaxed text-zinc-600">
+      <p className="mx-auto mt-8 max-w-xl text-center text-[10px] leading-relaxed text-[var(--color-ink-tertiary)]">
         {t.results.disclaimer}
       </p>
 

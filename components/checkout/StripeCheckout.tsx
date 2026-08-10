@@ -87,7 +87,7 @@ export function StripeCheckout({
         </p>
         <button
           onClick={onBack}
-          className="flex items-center justify-center gap-1.5 text-[12px] text-zinc-500 hover:text-zinc-300"
+          className="flex items-center justify-center gap-1.5 text-[12px] text-[var(--color-ink-tertiary)] hover:text-[var(--color-ink-secondary)]"
         >
           <ArrowLeft className="h-3.5 w-3.5" /> {t.quiz.back}
         </button>
@@ -97,7 +97,7 @@ export function StripeCheckout({
 
   if (!clientSecret || !amounts) {
     return (
-      <div className="flex items-center justify-center gap-2 py-12 text-[13px] text-zinc-500">
+      <div className="flex items-center justify-center gap-2 py-12 text-[13px] text-[var(--color-ink-tertiary)]">
         <Loader2 className="h-4 w-4 animate-spin" /> {t.checkout.processing}
       </div>
     );
@@ -107,7 +107,7 @@ export function StripeCheckout({
     <div className="flex flex-col gap-4">
       <button
         onClick={onBack}
-        className="flex items-center gap-1.5 self-start text-[12px] text-zinc-500 transition-colors hover:text-zinc-300"
+        className="flex items-center gap-1.5 self-start text-[12px] text-[var(--color-ink-tertiary)] transition-colors hover:text-[var(--color-ink-secondary)]"
       >
         <ArrowLeft className="h-3.5 w-3.5" /> {t.checkout.choosePlan}
       </button>

@@ -13,12 +13,12 @@ export function ReviewsSection() {
       </h2>
       <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {REVIEWS.map((r) => (
-          <figure key={r.author} className="glass rounded-3xl p-6">
+          <figure key={r.author} className="surface p-6">
             <Quote className="h-5 w-5 text-accent" aria-hidden />
-            <blockquote className="mt-4 text-sm leading-relaxed text-zinc-300">
+            <blockquote className="mt-4 text-sm leading-relaxed text-[var(--color-ink-secondary)]">
               “{r.quote}”
             </blockquote>
-            <figcaption className="mt-4 text-xs font-medium text-zinc-500">
+            <figcaption className="mt-4 text-xs font-medium text-[var(--color-ink-tertiary)]">
               {r.author}
               {r.source ? ` · ${r.source}` : null}
             </figcaption>

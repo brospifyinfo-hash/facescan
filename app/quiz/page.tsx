@@ -45,12 +45,12 @@ export default function QuizPage() {
   if (minorGate) {
     return (
       <main className="flex min-h-dvh items-center justify-center px-6">
-        <div className="glass-strong w-full max-w-md rounded-[28px] p-8 text-center">
+        <div className="surface-raised w-full max-w-md p-8 text-center">
           <ShieldAlert className="mx-auto h-9 w-9 text-accent" />
           <h1 className="mt-6 text-2xl font-semibold tracking-tight">
             {t.quiz.minorTitle}
           </h1>
-          <p className="mt-4 text-sm leading-relaxed text-zinc-400">
+          <p className="mt-4 text-sm leading-relaxed text-[var(--color-ink-secondary)]">
             {t.quiz.minorBody}
           </p>
           <Link href="/" className="mt-8 inline-block">
@@ -81,7 +81,7 @@ export default function QuizPage() {
       </div>
 
       <div className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center px-6 pb-16">
-        <p className="font-mono-terminal text-[11px] uppercase tracking-[0.18em] text-zinc-500">
+        <p className="font-mono-terminal text-[11px] uppercase tracking-[0.18em] text-[var(--color-ink-tertiary)]">
           {fill(t.quiz.progress, { n: step + 1, total })}
         </p>
 
@@ -97,7 +97,7 @@ export default function QuizPage() {
               {copy.title}
             </h1>
             {copy.sub ? (
-              <p className="mt-2.5 text-[13px] leading-relaxed text-zinc-500">
+              <p className="mt-2.5 text-[13px] leading-relaxed text-[var(--color-ink-tertiary)]">
                 {copy.sub}
               </p>
             ) : null}
@@ -114,7 +114,7 @@ export default function QuizPage() {
                         "group flex items-center justify-between rounded-2xl border px-5 py-4 text-left text-[14px] font-medium transition-all duration-200",
                         active
                           ? "border-accent/60 bg-accent/[0.09] text-accent"
-                          : "border-white/[0.08] bg-white/[0.02] text-zinc-200 hover:border-white/20 hover:bg-white/[0.05]",
+                          : "border-white/[0.08] bg-white/[0.02] text-[var(--color-ink)] hover:border-white/20 hover:bg-white/[0.05]",
                       )}
                     >
                       {option}
@@ -146,7 +146,7 @@ export default function QuizPage() {
                     className="w-32 border-b border-white/15 bg-transparent pb-1 text-center text-5xl font-semibold tabular-nums outline-none transition-colors focus:border-accent [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                     aria-label={copy.title}
                   />
-                  <span className="pb-2 text-lg text-zinc-500">{spec.unit}</span>
+                  <span className="pb-2 text-lg text-[var(--color-ink-tertiary)]">{spec.unit}</span>
                 </div>
 
                 <input
@@ -159,7 +159,7 @@ export default function QuizPage() {
                   className="mt-7 w-full accent-[#95BF47]"
                   aria-label={copy.title}
                 />
-                <div className="mt-1 flex justify-between font-mono-terminal text-[10px] tabular-nums text-zinc-600">
+                <div className="mt-1 flex justify-between font-mono-terminal text-[10px] tabular-nums text-[var(--color-ink-tertiary)]">
                   <span>
                     {spec.min} {spec.unit}
                   </span>
@@ -174,7 +174,7 @@ export default function QuizPage() {
                 </Button>
                 <button
                   onClick={advance}
-                  className="mt-3 w-full text-center text-[12px] text-zinc-500 transition-colors hover:text-zinc-300"
+                  className="mt-3 w-full text-center text-[12px] text-[var(--color-ink-tertiary)] transition-colors hover:text-[var(--color-ink-secondary)]"
                 >
                   {t.quiz.skip}
                 </button>
@@ -187,14 +187,14 @@ export default function QuizPage() {
           {step > 0 ? (
             <button
               onClick={() => setStep(step - 1)}
-              className="flex items-center gap-1.5 text-[13px] text-zinc-500 transition-colors hover:text-zinc-200"
+              className="flex items-center gap-1.5 text-[13px] text-[var(--color-ink-tertiary)] transition-colors hover:text-[var(--color-ink)]"
             >
               <ArrowLeft className="h-3.5 w-3.5" /> {t.quiz.back}
             </button>
           ) : (
             <Link
               href="/"
-              className="flex items-center gap-1.5 text-[13px] text-zinc-500 transition-colors hover:text-zinc-200"
+              className="flex items-center gap-1.5 text-[13px] text-[var(--color-ink-tertiary)] transition-colors hover:text-[var(--color-ink)]"
             >
               <ArrowLeft className="h-3.5 w-3.5" /> {t.quiz.home}
             </Link>

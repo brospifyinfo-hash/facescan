@@ -161,14 +161,14 @@ export default function CalibratePage() {
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-8">
       <h1 className="text-xl font-semibold tracking-tight">🔧 Kalibrierung</h1>
-      <p className="mt-2 max-w-2xl text-[12px] leading-relaxed text-zinc-400">
+      <p className="mt-2 max-w-2xl text-[12px] leading-relaxed text-[var(--color-ink-secondary)]">
         Stell die Bewertung ein, die du dem Gesicht geben würdest, und lade dann
         das Bild dazu hoch. Wiederhole das pro Bild. Alles läuft lokal im
         Browser, nichts wird hochgeladen. Am Ende unten auf „Kopieren“.
       </p>
 
       <div className="mt-5 flex flex-wrap items-center gap-3">
-        <label className="flex items-center gap-2 text-[12px] text-zinc-300">
+        <label className="flex items-center gap-2 text-[12px] text-[var(--color-ink-secondary)]">
           Bewertung
           <input
             type="range"
@@ -179,17 +179,17 @@ export default function CalibratePage() {
             onChange={(e) => setRating(Number(e.target.value))}
             className="w-40 accent-[#95BF47]"
           />
-          <span className="w-10 text-center text-[15px] font-semibold tabular-nums text-zinc-100">
+          <span className="w-10 text-center text-[15px] font-semibold tabular-nums text-[var(--color-ink)]">
             {rating}
           </span>
-          <span className="text-zinc-600">/ 10</span>
+          <span className="text-[var(--color-ink-tertiary)]">/ 10</span>
         </label>
 
         <button
           type="button"
           disabled={busy}
           onClick={() => input.current?.click()}
-          className="glass-subtle ml-auto flex items-center gap-2 rounded-full px-4 py-2 text-[12px] text-zinc-200 disabled:opacity-50"
+          className="fill interactive ml-auto flex items-center gap-2 rounded-full px-4 py-2 text-[12px] text-[var(--color-ink)] disabled:opacity-50"
         >
           {busy ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -219,10 +219,10 @@ export default function CalibratePage() {
 
       {samples.length > 0 ? (
         <>
-          <div className="glass mt-5 overflow-x-auto rounded-2xl p-4">
+          <div className="surface mt-5 overflow-x-auto p-4">
             <table className="w-full text-left text-[11px]">
               <thead>
-                <tr className="border-b border-white/10 text-zinc-500">
+                <tr className="border-b border-white/10 text-[var(--color-ink-tertiary)]">
                   <th className="pb-2 font-medium">Datei</th>
                   <th className="pb-2 text-right font-medium">deine Note</th>
                   <th className="pb-2 text-right font-medium">Modell</th>
@@ -233,24 +233,24 @@ export default function CalibratePage() {
               <tbody className="font-mono-terminal">
                 {samples.map((s, i) => (
                   <tr key={i} className="border-b border-white/[0.05] last:border-0">
-                    <td className="py-1.5 text-zinc-300">{s.name}</td>
-                    <td className="py-1.5 text-right tabular-nums text-zinc-200">
+                    <td className="py-1.5 text-[var(--color-ink-secondary)]">{s.name}</td>
+                    <td className="py-1.5 text-right tabular-nums text-[var(--color-ink)]">
                       {s.rating}
                     </td>
-                    <td className="py-1.5 text-right tabular-nums text-zinc-200">
+                    <td className="py-1.5 text-right tabular-nums text-[var(--color-ink)]">
                       {s.score.toFixed(1)}
                     </td>
                     <td
                       className={`py-1.5 text-right tabular-nums ${
                         Math.abs(s.score - s.rating) > 2
                           ? "text-amber-400"
-                          : "text-zinc-500"
+                          : "text-[var(--color-ink-tertiary)]"
                       }`}
                     >
                       {(s.score - s.rating > 0 ? "+" : "") +
                         (s.score - s.rating).toFixed(1)}
                     </td>
-                    <td className="py-1.5 text-right tabular-nums text-zinc-500">
+                    <td className="py-1.5 text-right tabular-nums text-[var(--color-ink-tertiary)]">
                       {(s.confidence * 100).toFixed(0)}%
                     </td>
                   </tr>
@@ -258,17 +258,17 @@ export default function CalibratePage() {
               </tbody>
             </table>
 
-            <div className="mt-4 border-t border-white/10 pt-3 text-[11px] text-zinc-400">
+            <div className="mt-4 border-t border-white/10 pt-3 text-[11px] text-[var(--color-ink-secondary)]">
               <p>
                 Rangkorrelation (Spearman ρ):{" "}
                 <strong
                   className={
-                    rho > 0.7 ? "text-accent" : rho > 0.3 ? "text-zinc-200" : "text-amber-400"
+                    rho > 0.7 ? "text-accent" : rho > 0.3 ? "text-[var(--color-ink)]" : "text-amber-400"
                   }
                 >
                   {fmt(rho)}
                 </strong>{" "}
-                <span className="text-zinc-600">
+                <span className="text-[var(--color-ink-tertiary)]">
                   {samples.length < 3
                     ? "(braucht mindestens 3 Gesichter)"
                     : "— 1.0 = gleiche Reihenfolge wie deine Noten, 0 = keinerlei Zusammenhang"}
@@ -276,10 +276,10 @@ export default function CalibratePage() {
               </p>
               <p className="mt-1.5">
                 Regressionsmodell fitten:{" "}
-                <strong className={samples.length >= MIN_FOR_FIT ? "text-accent" : "text-zinc-500"}>
+                <strong className={samples.length >= MIN_FOR_FIT ? "text-accent" : "text-[var(--color-ink-tertiary)]"}>
                   {samples.length} / {MIN_FOR_FIT} Gesichter
                 </strong>{" "}
-                <span className="text-zinc-600">
+                <span className="text-[var(--color-ink-tertiary)]">
                   — 25 Koeffizienten aus weniger als {MIN_FOR_FIT} Beispielen wäre
                   Auswendiglernen, kein Fit.
                 </span>
@@ -287,11 +287,11 @@ export default function CalibratePage() {
             </div>
           </div>
 
-          <div className="glass mt-3 overflow-x-auto rounded-2xl p-4">
-            <h2 className="text-[13px] font-semibold text-zinc-200">
+          <div className="surface mt-3 overflow-x-auto p-4">
+            <h2 className="text-[13px] font-semibold text-[var(--color-ink)]">
               Gemessener Versatz je Metrik (in Standardabweichungen)
             </h2>
-            <p className="mt-1 text-[10px] leading-relaxed text-zinc-500">
+            <p className="mt-1 text-[10px] leading-relaxed text-[var(--color-ink-tertiary)]">
               Median über alle Gesichter. Ein Wert weit von 0 heißt: der Mesh
               misst diese Größe für <em>jeden</em> anders als die Zirkel-Norm —
               das ist der Definitionsunterschied, nicht das Gesicht.
@@ -300,15 +300,15 @@ export default function CalibratePage() {
               <tbody className="font-mono-terminal">
                 {rows.map((r) => (
                   <tr key={r.id} className="border-b border-white/[0.05] last:border-0">
-                    <td className="py-1 text-zinc-300">{r.id}</td>
-                    <td className="py-1 text-right text-zinc-600">{r.grade}</td>
+                    <td className="py-1 text-[var(--color-ink-secondary)]">{r.id}</td>
+                    <td className="py-1 text-right text-[var(--color-ink-tertiary)]">{r.grade}</td>
                     <td
                       className={`py-1 text-right tabular-nums ${
                         Math.abs(r.offset) > 1.5
                           ? "text-amber-400"
                           : Math.abs(r.offset) > 0.5
-                            ? "text-zinc-200"
-                            : "text-zinc-500"
+                            ? "text-[var(--color-ink)]"
+                            : "text-[var(--color-ink-tertiary)]"
                       }`}
                     >
                       {fmt(r.offset)}
@@ -336,7 +336,7 @@ export default function CalibratePage() {
             {copied ? "Kopiert" : "Kalibrierung kopieren"}
           </button>
 
-          <pre className="mt-4 max-h-80 overflow-auto rounded-xl bg-black/40 p-3 text-[10px] leading-relaxed text-zinc-400">
+          <pre className="mt-4 max-h-80 overflow-auto rounded-xl bg-black/40 p-3 text-[10px] leading-relaxed text-[var(--color-ink-secondary)]">
             {block}
           </pre>
         </>

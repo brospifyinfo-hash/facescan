@@ -206,12 +206,12 @@ export default function ScanPage() {
   if (error) {
     return (
       <main className="flex min-h-dvh items-center justify-center px-6">
-        <div className="glass-strong w-full max-w-md rounded-[30px] p-8 text-center">
+        <div className="surface-raised w-full max-w-md p-8 text-center">
           <AlertTriangle className="mx-auto h-10 w-10 text-amber-400" />
           <h1 className="mt-6 text-xl font-semibold tracking-tight">
             {t.scan.failedTitle}
           </h1>
-          <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+          <p className="mt-3 text-sm leading-relaxed text-[var(--color-ink-secondary)]">
             {error === "noFace" ? t.scan.errNoFace : (errorDetail ?? t.scan.errModel)}
           </p>
           <div className="mt-8 flex justify-center gap-3">
@@ -255,7 +255,7 @@ export default function ScanPage() {
         ) : null}
       </div>
 
-      <div className="glass mt-8 rounded-[26px] p-6">
+      <div className="surface mt-8 p-6">
         <div className="font-mono-terminal flex items-center gap-2 text-xs text-accent">
           <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-accent" />
           {t.scan.lines[lineIdx]}
@@ -266,7 +266,7 @@ export default function ScanPage() {
             style={{ width: `${progress}%` }}
           />
         </div>
-        <div className="mt-2 flex items-center justify-between text-[11px] text-zinc-500">
+        <div className="mt-2 flex items-center justify-between text-[11px] text-[var(--color-ink-tertiary)]">
           <span>{t.scan.running}</span>
           <span className="font-mono-terminal tabular-nums">
             {Math.floor(progress)}%
@@ -274,7 +274,7 @@ export default function ScanPage() {
         </div>
       </div>
 
-      <p className="mt-6 text-center text-xs text-zinc-600">{t.scan.keepOpen}</p>
+      <p className="mt-6 text-center text-xs text-[var(--color-ink-tertiary)]">{t.scan.keepOpen}</p>
     </main>
   );
 }

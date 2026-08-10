@@ -147,12 +147,12 @@ export function TierLadder({ current }: { current: BandId }) {
   const currentIndex = TIER_ORDER.indexOf(current);
 
   return (
-    <section className="glass rounded-3xl p-4 sm:p-6">
+    <section className="surface p-4 sm:p-6">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="flex items-center gap-2 text-base font-semibold tracking-tight sm:text-lg">
           <span aria-hidden>🪜</span> {t.results.tierTitle}
         </h2>
-        <span className="text-[11px] text-zinc-500">{t.results.tierSub}</span>
+        <span className="text-[11px] text-[var(--color-ink-tertiary)]">{t.results.tierSub}</span>
       </div>
 
       <ol className="mt-5 grid grid-cols-7 gap-1">
@@ -178,7 +178,7 @@ export function TierLadder({ current }: { current: BandId }) {
               <span
                 className={cn(
                   "mt-1 line-clamp-2 text-center text-[8.5px] font-medium leading-tight sm:text-[10px]",
-                  active ? "text-accent" : "text-zinc-500",
+                  active ? "text-accent" : "text-[var(--color-ink-tertiary)]",
                 )}
               >
                 {t.bands[id].label}
@@ -194,10 +194,10 @@ export function TierLadder({ current }: { current: BandId }) {
         })}
       </ol>
 
-      <p className="mt-4 text-[11px] leading-relaxed text-zinc-500">
+      <p className="mt-4 text-[11px] leading-relaxed text-[var(--color-ink-tertiary)]">
         {t.bands[current].blurb}
       </p>
-      <p className="mt-2 text-[10px] leading-relaxed text-zinc-600">
+      <p className="mt-2 text-[10px] leading-relaxed text-[var(--color-ink-tertiary)]">
         {t.results.tierNote}
       </p>
     </section>

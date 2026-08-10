@@ -97,7 +97,7 @@ export function PercentileBadge({
               />
             ) : null}
           </div>
-          <p className="mt-1 text-[11px] leading-snug text-zinc-400">
+          <p className="mt-1 text-[11px] leading-snug text-[var(--color-ink-secondary)]">
             {t.results.percentileCaption}
           </p>
         </div>
@@ -106,7 +106,7 @@ export function PercentileBadge({
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-label="Info"
-          className="shrink-0 rounded-full p-1 text-zinc-500 transition-colors hover:bg-white/5 hover:text-zinc-300"
+          className="shrink-0 rounded-full p-1 text-[var(--color-ink-tertiary)] transition-colors hover:bg-white/5 hover:text-[var(--color-ink-secondary)]"
         >
           <Info className="h-3.5 w-3.5" />
         </button>
@@ -121,7 +121,7 @@ export function PercentileBadge({
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             className="relative overflow-hidden"
           >
-            <p className="mt-2 text-[10px] leading-relaxed text-zinc-500">
+            <p className="mt-2 text-[10px] leading-relaxed text-[var(--color-ink-tertiary)]">
               {t.results.percentileWhat}
             </p>
           </motion.div>

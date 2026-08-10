@@ -178,19 +178,19 @@ export function PaymentForm({
     <div className="flex flex-col gap-5">
       {/* ---------- Order summary ---------- */}
       <section className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
-        <h3 className="font-mono-terminal text-[10px] uppercase tracking-[0.18em] text-zinc-500">
+        <h3 className="font-mono-terminal text-[10px] uppercase tracking-[0.18em] text-[var(--color-ink-tertiary)]">
           {t.pay.summaryTitle}
         </h3>
         <dl className="mt-3 flex flex-col gap-1.5 text-[13px]">
           {isEur ? (
             <>
-              <div className="flex justify-between text-zinc-400">
+              <div className="flex justify-between text-[var(--color-ink-secondary)]">
                 <dt>{t.pay.net}</dt>
                 <dd className="tabular-nums">
                   {money(amounts.netMinor, amounts.currency, intlLocale)}
                 </dd>
               </div>
-              <div className="flex justify-between text-zinc-400">
+              <div className="flex justify-between text-[var(--color-ink-secondary)]">
                 <dt>{fill(t.pay.vat, { rate })}</dt>
                 <dd className="tabular-nums">
                   {money(amounts.vatMinor, amounts.currency, intlLocale)}
@@ -198,19 +198,19 @@ export function PaymentForm({
               </div>
             </>
           ) : null}
-          <div className="flex justify-between text-zinc-400">
+          <div className="flex justify-between text-[var(--color-ink-secondary)]">
             <dt>{t.pay.shipping}</dt>
-            <dd className="text-zinc-500">{t.pay.shippingFree}</dd>
+            <dd className="text-[var(--color-ink-tertiary)]">{t.pay.shippingFree}</dd>
           </div>
           <div className="mt-1.5 flex items-baseline justify-between border-t border-white/[0.08] pt-2.5">
-            <dt className="text-[14px] font-semibold text-zinc-100">{t.pay.total}</dt>
-            <dd className="text-[17px] font-semibold tabular-nums text-zinc-50">
+            <dt className="text-[14px] font-semibold text-[var(--color-ink)]">{t.pay.total}</dt>
+            <dd className="text-[17px] font-semibold tabular-nums text-[var(--color-ink)]">
               {money(amounts.amountMinor, amounts.currency, intlLocale)}
             </dd>
           </div>
         </dl>
         {isEur ? (
-          <p className="mt-1 text-right text-[10px] text-zinc-600">
+          <p className="mt-1 text-right text-[10px] text-[var(--color-ink-tertiary)]">
             {fill(t.pay.inclVat, { rate })}
           </p>
         ) : null}
@@ -238,7 +238,7 @@ export function PaymentForm({
 
       <div className="flex items-center gap-3">
         <span className="h-px flex-1 bg-white/[0.08]" />
-        <span className="text-[11px] text-zinc-600">{t.pay.expressOr}</span>
+        <span className="text-[11px] text-[var(--color-ink-tertiary)]">{t.pay.expressOr}</span>
         <span className="h-px flex-1 bg-white/[0.08]" />
       </div>
 
@@ -266,7 +266,7 @@ export function PaymentForm({
         ].map((row, i) => (
           <label
             key={i}
-            className="flex cursor-pointer items-start gap-2.5 text-[11.5px] leading-relaxed text-zinc-400"
+            className="flex cursor-pointer items-start gap-2.5 text-[11.5px] leading-relaxed text-[var(--color-ink-secondary)]"
           >
             <input
               type="checkbox"
@@ -302,7 +302,7 @@ export function PaymentForm({
         disabled={busy || !stripe || phase === "done"}
         className={cn(
           "flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 text-[15px] font-semibold transition-all duration-200",
-          "bg-accent text-zinc-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_8px_24px_-8px_rgba(149,191,71,0.55)]",
+          "bg-accent text-[var(--color-accent-ink)] shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_8px_24px_-8px_rgba(149,191,71,0.55)]",
           "hover:bg-accent-bright active:scale-[0.99]",
           "disabled:cursor-not-allowed disabled:opacity-50",
         )}
@@ -326,7 +326,7 @@ export function PaymentForm({
 
       <PaymentIcons />
 
-      <p className="flex items-center justify-center gap-1.5 text-center text-[10px] leading-relaxed text-zinc-600">
+      <p className="flex items-center justify-center gap-1.5 text-center text-[10px] leading-relaxed text-[var(--color-ink-tertiary)]">
         <ShieldCheck className="h-3 w-3 shrink-0 text-accent" />
         {t.pay.securedBy}
       </p>

@@ -30,20 +30,20 @@ export function ActionPlan({
   };
 
   return (
-    <section className="glass rounded-[30px] p-7 sm:p-9">
+    <section className="surface p-7 sm:p-9">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h2 className="flex items-center gap-2.5 text-xl font-semibold tracking-tight">
             <span aria-hidden>✨</span> {t.results.planTitle}
           </h2>
-          <p className="mt-1.5 text-[13px] text-zinc-500">{t.results.planSub}</p>
+          <p className="mt-1.5 text-[13px] text-[var(--color-ink-tertiary)]">{t.results.planSub}</p>
         </div>
         <div className="text-right">
-          <p className="text-lg font-semibold text-zinc-100">
+          <p className="text-lg font-semibold text-[var(--color-ink)]">
             {done.size}
-            <span className="text-zinc-600"> / {plan.length}</span>
+            <span className="text-[var(--color-ink-tertiary)]"> / {plan.length}</span>
           </p>
-          <p className="text-[10px] uppercase tracking-[0.12em] text-zinc-600">
+          <p className="text-[10px] uppercase tracking-[0.12em] text-[var(--color-ink-tertiary)]">
             {t.results.completed}
           </p>
         </div>
@@ -66,7 +66,7 @@ export function ActionPlan({
                 type="button"
                 onClick={() => toggle(entry.id)}
                 className={cn(
-                  "glass-subtle flex w-full items-start gap-4 rounded-2xl p-4 text-left transition-all duration-200",
+                  "fill interactive flex w-full items-start gap-4 rounded-[var(--r-inner)] p-4 text-left transition-all duration-200",
                   interactive && "hover:bg-white/[0.06]",
                   isDone && "opacity-55",
                 )}
@@ -75,7 +75,7 @@ export function ActionPlan({
                   className={cn(
                     "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border text-sm transition-colors",
                     isDone
-                      ? "border-accent bg-accent text-zinc-950"
+                      ? "border-accent bg-accent text-[var(--color-accent-ink)]"
                       : "border-white/10 bg-white/[0.04]",
                   )}
                   aria-hidden
@@ -87,7 +87,7 @@ export function ActionPlan({
                   <span className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
                     <span
                       className={cn(
-                        "text-[14px] font-medium text-zinc-100",
+                        "text-[14px] font-medium text-[var(--color-ink)]",
                         isDone && "line-through",
                       )}
                     >
@@ -97,12 +97,12 @@ export function ActionPlan({
                       {copy.cadence}
                     </span>
                   </span>
-                  <span className="mt-1.5 block text-[12px] leading-relaxed text-zinc-500">
+                  <span className="mt-1.5 block text-[12px] leading-relaxed text-[var(--color-ink-tertiary)]">
                     {copy.detail}
                   </span>
                 </span>
 
-                <span className="hidden shrink-0 rounded-full border border-white/[0.08] px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-zinc-500 sm:block">
+                <span className="hidden shrink-0 rounded-full border border-white/[0.08] px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-[var(--color-ink-tertiary)] sm:block">
                   {copy.tag}
                 </span>
               </button>

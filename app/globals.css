@@ -1,109 +1,383 @@
 @import "tailwindcss";
 
+/* ===========================================================================
+   FaceScan design system — Apple Liquid Glass, translated to the web.
+   ===========================================================================
+
+   WHAT WAS WRONG BEFORE, AND WHY IT IS THE WHOLE POINT OF THIS FILE
+   -----------------------------------------------------------------
+   The previous sheet defined .glass / .glass-subtle / .glass-strong and the
+   app put them on EVERYTHING: every landing section, every dashboard panel,
+   every badge. Two of Apple's rules were broken flatly (WWDC25):
+
+     "Liquid Glass is the material of the NAVIGATION LAYER — bars, toolbars,
+      floating controls — never the content layer."
+     "Never glass on glass. Elements sitting ON glass don't get the material
+      again — style them with fills and vibrancy."
+
+   Glass everywhere is why the old build read as "a stack of translucent
+   divs" rather than as an interface. Blur is a depth cue; when every layer
+   blurs, there is no depth left to cue, only noise — and the text sitting on
+   it has to fight whatever happens to scroll past underneath.
+
+   THE MODEL THIS REPLACES IT WITH
+   -------------------------------
+     NAVIGATION LAYER  floats above content, moves independently of it, and
+                       is the ONLY thing allowed the glass material:
+                       the sticky header, the unlock overlay, modals, sheets.
+     CONTENT LAYER     opaque surfaces at three elevations. Separation comes
+                       from value steps and hairlines, which is what Apple's
+                       own dark mode does — not from transparency.
+     ON A SURFACE      fills and vibrancy. Never another surface, never glass.
+
+   Everything below is tokens plus a small number of primitives. There are no
+   one-off values in components any more; that is what kept the dials
+   disagreeing with the panels they sat in.
+--------------------------------------------------------------------------- */
+
 @theme {
-  --color-accent: #95bf47;
-  --color-accent-bright: #aad35f;
-  --color-accent-dim: #6f8f35;
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  /* ---- Accent -------------------------------------------------------------
+     One accent, and per the tint rule it marks PRIMARY ACTIONS ONLY:
+     "When every element is tinted, nothing stands out." The old build tinted
+     eyebrows, step numbers, icons, borders and rules as well, which left the
+     actual buttons with nothing to distinguish them. */
+  --color-accent: #9ecb4f;
+  --color-accent-bright: #b4de69;
+  --color-accent-press: #85ae3f;
+  --color-accent-ink: #0a0a0b;
+
+  /* ---- Content-layer surfaces --------------------------------------------
+     A deliberate value ladder. Each step is small — roughly 3% lightness —
+     because in a dark interface that is already a clear edge, and anything
+     larger reads as a different colour rather than a different height. */
+  --color-canvas: #0a0a0b;
+  --color-surface: #131316;
+  --color-surface-raised: #1a1a1f;
+  --color-surface-sunken: #0e0e10;
+
+  /* ---- Ink ----------------------------------------------------------------
+     Four levels, mirroring Apple's label / secondaryLabel / tertiaryLabel /
+     quaternaryLabel. Hierarchy comes from these plus size — not from colour. */
+  --color-ink: #f5f5f7;
+  --color-ink-secondary: #a1a1a8;
+  --color-ink-tertiary: #6e6e76;
+  --color-ink-quaternary: #48484f;
+
+  /* ---- Separators ---------------------------------------------------------
+     Hairlines, not borders. Opaque enough to read, faint enough to disappear
+     when you are not looking for them. */
+  --color-hairline: rgba(255, 255, 255, 0.08);
+  --color-hairline-strong: rgba(255, 255, 255, 0.14);
+
+  --color-positive: #9ecb4f;
+  --color-caution: #e0a33c;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "SF Pro Text", "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 }
 
 :root {
   color-scheme: dark;
+
+  /* ---- Concentric radii ---------------------------------------------------
+     "Concentric: parent radius minus padding. Nested containers auto-
+     calculate." A 12px radius inside a 24px container padded by 12px is
+     concentric; the same 12px inside a 20px container is not, and the eye
+     catches it as a wobble even when nobody can name what is wrong.
+     --r-inner is the derived value: use it on anything nested one level. */
+  --r-window: 28px;
+  --r-card: 20px;
+  --r-control: 14px;
+  --r-chip: 999px;
+  --pad-card: 24px;
+  --pad-tight: 14px;
+  --r-inner: calc(var(--r-card) - var(--pad-tight));
+
+  /* ---- Motion -------------------------------------------------------------
+     Approximations of SwiftUI's three named springs. CSS springs need
+     linear() with dozens of stops; these beziers land close enough that the
+     difference is not perceptible at UI durations, and they degrade to a
+     sane curve in every engine.
+
+       smooth  no overshoot at all — for anything showing information
+       snappy  a hint of overshoot — for controls acknowledging a press
+       bouncy  visible overshoot — sparingly, for a real moment */
+  --ease-smooth: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-snappy: cubic-bezier(0.28, 0.9, 0.3, 1.06);
+  --ease-bouncy: cubic-bezier(0.3, 1.4, 0.5, 1);
+  --dur-fast: 180ms;
+  --dur-base: 280ms;
+  --dur-slow: 520ms;
 }
 
 html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: var(--color-canvas);
+  /* The system web stack, as the typography skill names it. */
+  font-synthesis-weight: none;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
 }
 
 ::selection {
-  background: #95bf47;
-  color: #09090b;
+  background: color-mix(in srgb, var(--color-accent) 30%, transparent);
+  color: var(--color-ink);
 }
 
 /* ---------------------------------------------------------------------------
-   Apple-style glass.
+   TYPOGRAPHY
 
-   Real frosted glass is four things layered, not one translucent fill:
-   a vertical tint gradient (light pools at the top), a saturating blur so
-   colour behind the panel blooms through, a bright 1px specular edge along
-   the top, and a soft ambient shadow that lifts the panel off the surface.
-   Dropping any one of them reads as "transparent div", not glass.
+   Apple's text styles, with the one detail that makes type look native and
+   is nearly always skipped: TRACKING IS A FUNCTION OF SIZE. San Francisco
+   blends its Text and Display designs continuously between 17 and 28pt —
+   below that the letterforms are sturdier and tracking opens up, above it
+   everything tightens. A single letter-spacing across a page is the most
+   reliable tell that type was set by hand rather than by the system.
+
+   Inter is the shipped face and does not do this on its own, so the tracking
+   is applied per style here. Values are Apple's published tracking table for
+   the matching sizes, converted from points to em.
 --------------------------------------------------------------------------- */
 
-/* NOTE: write ONLY the unprefixed `backdrop-filter` and let the build add
-   prefixes. Hand-writing the `-webkit-` pair made Lightning CSS collapse the
-   two into the prefixed form alone, which current Chrome does not accept
-   (`CSS.supports('-webkit-backdrop-filter', …)` is false there) — the blur
-   silently vanished in production while working in dev. */
-.glass {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.075) 0%,
-    rgba(255, 255, 255, 0.032) 100%
-  );
-  backdrop-filter: blur(28px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.085);
-  box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.13),
-    inset 0 -1px 0 0 rgba(0, 0, 0, 0.22),
-    0 8px 32px -8px rgba(0, 0, 0, 0.5);
+.t-display {
+  font-size: clamp(2.75rem, 7vw, 4.5rem);
+  line-height: 1.03;
+  letter-spacing: -0.032em;
+  font-weight: 600;
+}
+.t-title1 {
+  font-size: clamp(1.75rem, 3.4vw, 2.25rem);
+  line-height: 1.12;
+  letter-spacing: -0.024em;
+  font-weight: 600;
+}
+.t-title2 {
+  font-size: 1.375rem;
+  line-height: 1.25;
+  letter-spacing: -0.016em;
+  font-weight: 600;
+}
+.t-title3 {
+  font-size: 1.0625rem;
+  line-height: 1.3;
+  letter-spacing: -0.011em;
+  font-weight: 600;
+}
+.t-body {
+  font-size: 1rem;
+  line-height: 1.55;
+  letter-spacing: -0.006em;
+}
+.t-callout {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  letter-spacing: -0.003em;
+}
+.t-footnote {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  letter-spacing: 0;
+}
+.t-caption {
+  font-size: 0.75rem;
+  line-height: 1.35;
+  /* Positive tracking below 17pt — the small end of the optical range. */
+  letter-spacing: 0.005em;
 }
 
-.glass-subtle {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.045) 0%,
-    rgba(255, 255, 255, 0.018) 100%
-  );
-  backdrop-filter: blur(18px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+/* The one place wide tracking is correct: short all-caps labels, where it is
+   a legibility fix rather than a style. Never on sentence-case text. */
+.t-eyebrow {
+  font-size: 0.6875rem;
+  line-height: 1.2;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  font-weight: 590;
+  color: var(--color-ink-tertiary);
 }
 
-.glass-strong {
-  background: linear-gradient(
-    180deg,
-    rgba(28, 28, 32, 0.82) 0%,
-    rgba(16, 16, 19, 0.88) 100%
-  );
-  backdrop-filter: blur(40px) saturate(190%);
-  border: 1px solid rgba(255, 255, 255, 0.11);
-  box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.16),
-    0 24px 70px -12px rgba(0, 0, 0, 0.75);
-}
-
-/* Interactive glass — the lift on hover is what sells it as a surface. */
-.glass-interactive {
-  transition:
-    background 240ms cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 240ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 240ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.glass-interactive:hover {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.1) 0%,
-    rgba(255, 255, 255, 0.05) 100%
-  );
-  border-color: rgba(255, 255, 255, 0.15);
-  transform: translateY(-2px);
-  box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.18),
-    0 16px 44px -10px rgba(0, 0, 0, 0.6);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .glass-interactive,
-  .glass-interactive:hover {
-    transform: none;
-    transition: none;
-  }
+/* Figures that must not jitter as they count. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 
 .font-mono-terminal {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
+  letter-spacing: -0.01em;
+}
+
+/* ---------------------------------------------------------------------------
+   NAVIGATION LAYER — the only glass in the system.
+
+   Regular variant, per "two variants, never mix them". Regular adapts to
+   whatever is behind it; Clear needs media-rich content plus a dimming layer
+   plus bold content above, and none of those hold on a scrolling page.
+
+   Four layers make it read as glass rather than as a transparent div: a
+   vertical tint (light pools at the top), a saturating blur so colour behind
+   blooms through, a specular top edge, and an ambient shadow that lifts it.
+
+   NOTE: write ONLY the unprefixed backdrop-filter and let the build add
+   prefixes. Hand-writing the -webkit- pair made Lightning CSS collapse the
+   two into the prefixed form alone, which current Chrome rejects — the blur
+   silently vanished in production while working in dev.
+--------------------------------------------------------------------------- */
+
+.material-nav {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.07) 0%,
+    rgba(255, 255, 255, 0.028) 100%
+  );
+  backdrop-filter: blur(32px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.14),
+    0 8px 32px -10px rgba(0, 0, 0, 0.55);
+}
+
+/* Sheets and overlays: denser, because real content scrolls behind them and
+   legibility wins over showing it off. */
+.material-sheet {
+  background: linear-gradient(
+    180deg,
+    rgba(30, 30, 34, 0.86) 0%,
+    rgba(18, 18, 21, 0.92) 100%
+  );
+  backdrop-filter: blur(44px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.16),
+    0 32px 80px -16px rgba(0, 0, 0, 0.8);
+}
+
+/* Scroll edge effect: the soft variant, which is the iOS default. It keeps a
+   floating element separated from content passing beneath it. Per the rules
+   it is not decorative — only where floating UI actually exists. */
+.scroll-edge-top {
+  mask-image: linear-gradient(180deg, #000 0%, #000 72%, transparent 100%);
+}
+
+/* ---------------------------------------------------------------------------
+   CONTENT LAYER — opaque. No backdrop-filter anywhere below this line.
+--------------------------------------------------------------------------- */
+
+.surface {
+  background: var(--color-surface);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--r-card);
+}
+
+.surface-raised {
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--r-card);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.surface-sunken {
+  background: var(--color-surface-sunken);
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  border-radius: var(--r-card);
+}
+
+/* What sits ON a surface. A fill, not a surface — this is the "style them
+   with fills and vibrancy" half of the never-glass-on-glass rule, and it is
+   what the old .glass-subtle-inside-.glass pattern should always have been. */
+   Radius is deliberately NOT set here. These sheets load after Tailwind, so
+   a border-radius in .fill would beat `rounded-full` on a pill and quietly
+   square off every chip in the app. Callers pass the radius:
+   `rounded-[var(--r-inner)]` for a nested block, `rounded-full` for a
+   capsule. Only .surface* own their radius, because a card is always a card. */
+.fill {
+  background: rgba(255, 255, 255, 0.045);
+}
+.fill-strong {
+  background: rgba(255, 255, 255, 0.075);
+}
+
+/* Grouped rows — the inset-list pattern. Hairlines between, none at the ends,
+   so the group reads as one object rather than as a stack of cards. */
+.group-rows > * + * {
+  border-top: 1px solid var(--color-hairline);
+}
+
+/* ---------------------------------------------------------------------------
+   INTERACTION
+--------------------------------------------------------------------------- */
+
+.interactive {
+  transition:
+    background-color var(--dur-fast) var(--ease-smooth),
+    border-color var(--dur-fast) var(--ease-smooth),
+    transform var(--dur-fast) var(--ease-snappy),
+    opacity var(--dur-fast) var(--ease-smooth);
+}
+
+/* Apple controls acknowledge a press by shrinking, not by lifting. A hover
+   lift is a desktop-web idiom; the scale-down reads as physical and, unlike
+   hover, it also exists on touch. */
+.interactive:active {
+  transform: scale(0.972);
+}
+
+.pressable:active {
+  transform: scale(0.96);
+}
+
+/* Focus: visible, on brand, and never removed. */
+:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: var(--r-control);
+}
+
+/* ---------------------------------------------------------------------------
+   ACCESSIBILITY
+
+   Both behaviours are free at the system level on Apple platforms and have
+   to be written by hand on the web — which is why they are usually missing.
+--------------------------------------------------------------------------- */
+
+/* "Reduced Motion decreases lensing and elastic effects." */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .interactive:active,
+  .pressable:active {
+    transform: none;
+  }
+}
+
+/* "Increased Contrast renders glass elements black/white with a contrasting
+   border." Translated: drop the transparency, keep the geometry. */
+@media (prefers-contrast: more) {
+  .material-nav,
+  .material-sheet {
+    background: #000;
+    backdrop-filter: none;
+    border-color: rgba(255, 255, 255, 0.55);
+  }
+  .surface,
+  .surface-raised,
+  .surface-sunken {
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+  .fill,
+  .fill-strong {
+    background: rgba(255, 255, 255, 0.16);
+  }
 }

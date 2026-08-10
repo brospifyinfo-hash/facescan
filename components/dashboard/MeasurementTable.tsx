@@ -24,7 +24,7 @@ export function MeasurementTable({ metrics }: { metrics: Metric[] }) {
                 key={h}
                 scope="col"
                 className={cn(
-                  "pb-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500",
+                  "pb-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-ink-tertiary)]",
                   i > 0 && "text-right",
                 )}
               >
@@ -38,17 +38,17 @@ export function MeasurementTable({ metrics }: { metrics: Metric[] }) {
             <tr key={m.id} className="border-b border-white/[0.05] last:border-0">
               <th
                 scope="row"
-                className="py-3 text-[13px] font-normal text-zinc-300"
+                className="py-3 text-[13px] font-normal text-[var(--color-ink-secondary)]"
               >
                 <span className="mr-2" aria-hidden>
                   {METRIC_EMOJI[m.id]}
                 </span>
                 {t.metrics[m.id].label}
               </th>
-              <td className="py-3 text-right text-[13px] tabular-nums text-zinc-100">
+              <td className="py-3 text-right text-[13px] tabular-nums text-[var(--color-ink)]">
                 {m.display}
               </td>
-              <td className="py-3 text-right text-[13px] tabular-nums text-zinc-500">
+              <td className="py-3 text-right text-[13px] tabular-nums text-[var(--color-ink-tertiary)]">
                 {m.ideal[0]}–{m.ideal[1]}
               </td>
               <td
@@ -60,7 +60,7 @@ export function MeasurementTable({ metrics }: { metrics: Metric[] }) {
                 <span aria-hidden>{POSITION_ICON[m.position]}</span>{" "}
                 {t.statusShort[m.position]}
               </td>
-              <td className="py-3 text-right text-[13px] tabular-nums text-zinc-300">
+              <td className="py-3 text-right text-[13px] tabular-nums text-[var(--color-ink-secondary)]">
                 {m.score}
               </td>
             </tr>

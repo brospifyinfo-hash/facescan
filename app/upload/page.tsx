@@ -39,13 +39,13 @@ export default function UploadPage() {
         className="flex flex-1 flex-col justify-center py-8"
       >
         <h1 className="text-3xl font-semibold tracking-tight">{t.upload.title}</h1>
-        <p className="mt-2 text-sm text-zinc-500">{t.upload.sub}</p>
+        <p className="mt-2 text-sm text-[var(--color-ink-tertiary)]">{t.upload.sub}</p>
 
         <div className="mt-4 flex flex-wrap gap-2">
           {t.upload.tips.map((tip) => (
             <span
               key={tip}
-              className="glass flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] text-zinc-400"
+              className="fill flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] text-[var(--color-ink-secondary)]"
             >
               <Lightbulb className="h-3 w-3 text-accent" /> {tip}
             </span>
@@ -72,12 +72,12 @@ export default function UploadPage() {
           />
         </div>
 
-        <p className="mt-3 text-[11px] leading-relaxed text-zinc-500">
+        <p className="mt-3 text-[11px] leading-relaxed text-[var(--color-ink-tertiary)]">
           {t.upload.sideSkipNote}
         </p>
 
         <div className="mt-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="flex items-center gap-2 text-xs text-zinc-500">
+          <p className="flex items-center gap-2 text-xs text-[var(--color-ink-tertiary)]">
             <ShieldCheck className="h-4 w-4 shrink-0 text-accent" />
             {t.upload.privacy}
           </p>

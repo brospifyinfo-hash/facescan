@@ -12,7 +12,7 @@
  * showing a method that then fails to appear is its own trust problem.
  */
 
-const cls = "h-[18px] w-auto text-zinc-500 transition-colors";
+const cls = "h-[18px] w-auto text-[var(--color-ink-tertiary)] transition-colors";
 
 function Frame({ children, label }: { children: React.ReactNode; label: string }) {
   return (

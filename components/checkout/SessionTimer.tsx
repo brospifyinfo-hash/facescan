@@ -43,13 +43,13 @@ export function SessionTimer() {
       className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-[11px] font-medium ${
         urgent
           ? "border border-red-500/25 bg-red-500/10 text-red-300"
-          : "glass text-zinc-400"
+          : "material-nav text-[var(--color-ink-secondary)]"
       }`}
     >
       <TimerReset className="h-3.5 w-3.5" aria-hidden />
       <span>
         {t.session.notice}{" "}
-        <span className="font-mono-terminal tabular-nums text-zinc-200">
+        <span className="font-mono-terminal tabular-nums text-[var(--color-ink)]">
           {mm}:{ss}
         </span>
       </span>

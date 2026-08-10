@@ -30,7 +30,7 @@ export function FaceMesh({
 }) {
   return (
     <div
-      className={`glass relative flex items-center justify-center overflow-hidden rounded-3xl ${className ?? ""}`}
+      className={`surface-sunken relative flex items-center justify-center overflow-hidden ${className ?? ""}`}
     >
       <div
         className="relative h-full max-h-full w-full"
@@ -45,10 +45,10 @@ export function FaceMesh({
             style={{ objectFit: "fill" }}
           />
         ) : (
-          <div className="absolute inset-0 bg-zinc-900/60" />
+          <div className="absolute inset-0 bg-[var(--color-surface)]/60" />
         )}
 
-        <div className="absolute inset-0 bg-zinc-950/25" />
+        <div className="absolute inset-0 bg-[var(--color-canvas)]/25" />
 
         {mesh ? (
           <svg
@@ -129,7 +129,7 @@ export function FaceMesh({
       ))}
 
       {label ? (
-        <span className="pointer-events-none absolute bottom-2.5 left-1/2 -translate-x-1/2 rounded-full bg-zinc-950/60 px-2.5 py-0.5 text-[9px] font-medium uppercase tracking-[0.14em] text-zinc-300 backdrop-blur-sm">
+        <span className="pointer-events-none absolute bottom-2.5 left-1/2 -translate-x-1/2 rounded-full bg-[var(--color-canvas)]/60 px-2.5 py-0.5 text-[9px] font-medium uppercase tracking-[0.14em] text-[var(--color-ink-secondary)] backdrop-blur-sm">
           {label}
         </span>
       ) : null}

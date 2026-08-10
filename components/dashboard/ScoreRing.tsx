@@ -105,9 +105,9 @@ export function ScoreRing({
           value={score}
           decimals={1}
           duration={1500}
-          className="text-[46px] font-semibold leading-none tracking-tight text-zinc-50"
+          className="text-[46px] font-semibold leading-none tracking-tight text-[var(--color-ink)]"
         />
-        <span className="mt-1 text-[9px] font-medium uppercase tracking-[0.2em] text-zinc-500">
+        <span className="mt-1 text-[9px] font-medium uppercase tracking-[0.2em] text-[var(--color-ink-tertiary)]">
           {t.results.outOf}
         </span>
       </div>
@@ -171,10 +171,10 @@ export function MiniRing({
           {emoji}
         </span>
       </div>
-      <p className="text-[13px] font-semibold leading-none text-zinc-100">
+      <p className="text-[13px] font-semibold leading-none text-[var(--color-ink)]">
         <CountUp value={value} delay={delay * 1000} />
       </p>
-      <p className="text-[9px] uppercase tracking-[0.08em] text-zinc-500">
+      <p className="text-[9px] uppercase tracking-[0.08em] text-[var(--color-ink-tertiary)]">
         {label}
       </p>
     </motion.div>

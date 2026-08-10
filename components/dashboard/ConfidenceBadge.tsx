@@ -47,13 +47,13 @@ export function ConfidenceBadge({
         {low ? (
           <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-400" />
         ) : null}
-        <span className="text-[10px] uppercase tracking-[0.12em] text-zinc-500">
+        <span className="text-[10px] uppercase tracking-[0.12em] text-[var(--color-ink-tertiary)]">
           {t.quality.label}
         </span>
         <span
           className={cn(
             "ml-auto text-[13px] font-semibold tabular-nums",
-            low ? "text-amber-300" : "text-zinc-200",
+            low ? "text-amber-300" : "text-[var(--color-ink)]",
           )}
         >
           <CountUp value={pct} delay={950} />%
@@ -70,7 +70,7 @@ export function ConfidenceBadge({
       </div>
 
       {named.length > 0 ? (
-        <p className="mt-1.5 text-[10px] leading-snug text-zinc-500">
+        <p className="mt-1.5 text-[10px] leading-snug text-[var(--color-ink-tertiary)]">
           {named.join(" · ")}
         </p>
       ) : null}

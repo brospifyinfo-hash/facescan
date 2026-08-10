@@ -40,7 +40,7 @@ export function RawDiagnostics({ metrics }: { metrics: ScanMetrics }) {
   const text = JSON.stringify(payload, null, 2);
 
   return (
-    <section className="glass rounded-3xl p-4 sm:p-6">
+    <section className="surface p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-base font-semibold tracking-tight">
           🔧 Raw measurements
@@ -56,7 +56,7 @@ export function RawDiagnostics({ metrics }: { metrics: ScanMetrics }) {
               /* clipboard blocked — the text is selectable below */
             }
           }}
-          className="glass-subtle flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] text-zinc-300"
+          className="fill interactive flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] text-[var(--color-ink-secondary)]"
         >
           {copied ? (
             <>
@@ -70,7 +70,7 @@ export function RawDiagnostics({ metrics }: { metrics: ScanMetrics }) {
         </button>
       </div>
 
-      <p className="mt-2 text-[11px] leading-relaxed text-zinc-500">
+      <p className="mt-2 text-[11px] leading-relaxed text-[var(--color-ink-tertiary)]">
         Diagnostic view. Every value below is the measurement as computed from
         this photo, next to the reference band it is checked against. Send this
         block along with a rough description of the face so the bands can be
@@ -79,7 +79,7 @@ export function RawDiagnostics({ metrics }: { metrics: ScanMetrics }) {
 
       <table className="mt-4 w-full text-left text-[11px]">
         <thead>
-          <tr className="border-b border-white/10 text-zinc-500">
+          <tr className="border-b border-white/10 text-[var(--color-ink-tertiary)]">
             <th className="pb-2 font-medium">metric</th>
             <th className="pb-2 text-right font-medium">measured</th>
             <th className="pb-2 text-right font-medium">band</th>
@@ -90,7 +90,7 @@ export function RawDiagnostics({ metrics }: { metrics: ScanMetrics }) {
         <tbody className="font-mono-terminal">
           {metrics.metrics.map((m) => (
             <tr key={m.id} className="border-b border-white/[0.05] last:border-0">
-              <td className="py-1.5 text-zinc-300">{m.id}</td>
+              <td className="py-1.5 text-[var(--color-ink-secondary)]">{m.id}</td>
               <td
                 className={`py-1.5 text-right tabular-nums ${
                   m.position === "in" ? "text-accent" : "text-amber-400"
@@ -98,13 +98,13 @@ export function RawDiagnostics({ metrics }: { metrics: ScanMetrics }) {
               >
                 {m.value}
               </td>
-              <td className="py-1.5 text-right tabular-nums text-zinc-500">
+              <td className="py-1.5 text-right tabular-nums text-[var(--color-ink-tertiary)]">
                 {m.ideal[0]}–{m.ideal[1]}
               </td>
-              <td className="py-1.5 text-right text-zinc-600">
+              <td className="py-1.5 text-right text-[var(--color-ink-tertiary)]">
                 {SPECS[m.id].dir}
               </td>
-              <td className="py-1.5 text-right tabular-nums text-zinc-300">
+              <td className="py-1.5 text-right tabular-nums text-[var(--color-ink-secondary)]">
                 {m.score}
               </td>
             </tr>
@@ -112,7 +112,7 @@ export function RawDiagnostics({ metrics }: { metrics: ScanMetrics }) {
         </tbody>
       </table>
 
-      <pre className="mt-4 max-h-64 overflow-auto rounded-xl bg-black/40 p-3 text-[10px] leading-relaxed text-zinc-400">
+      <pre className="mt-4 max-h-64 overflow-auto rounded-xl bg-black/40 p-3 text-[10px] leading-relaxed text-[var(--color-ink-secondary)]">
         {text}
       </pre>
     </section>

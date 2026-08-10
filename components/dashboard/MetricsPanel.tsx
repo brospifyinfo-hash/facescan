@@ -45,12 +45,12 @@ export function MetricsPanel({ metrics }: { metrics: Metric[] }) {
   };
 
   return (
-    <section className="glass rounded-3xl p-4 sm:p-6">
+    <section className="surface p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="flex items-center gap-2 text-base font-semibold tracking-tight sm:text-lg">
           <span aria-hidden>🧬</span> {t.results.breakdown}
         </h2>
-        <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-[11px] tabular-nums text-zinc-400">
+        <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-[11px] tabular-nums text-[var(--color-ink-secondary)]">
           {inRange}/{shown.length} · {t.results.inRange}
         </span>
       </div>
@@ -67,7 +67,7 @@ export function MetricsPanel({ metrics }: { metrics: Metric[] }) {
               onClick={() => setFilter(f)}
               className={cn(
                 "relative shrink-0 rounded-full px-3 py-1.5 text-[11px] font-medium transition-colors",
-                active ? "text-zinc-950" : "text-zinc-400 hover:text-zinc-100",
+                active ? "text-[var(--color-accent-ink)]" : "text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)]",
               )}
             >
               {active ? (
@@ -88,7 +88,7 @@ export function MetricsPanel({ metrics }: { metrics: Metric[] }) {
       </div>
 
       {/* How to read the grid — stated once. */}
-      <p className="mt-3 text-[10px] leading-relaxed text-zinc-500">
+      <p className="mt-3 text-[10px] leading-relaxed text-[var(--color-ink-tertiary)]">
         {t.results.ringLegend}
       </p>
 
@@ -100,13 +100,13 @@ export function MetricsPanel({ metrics }: { metrics: Metric[] }) {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -6 }}
           transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-          className="glass-subtle mt-3 rounded-2xl p-4"
+          className="fill mt-3 rounded-[var(--r-inner)] p-4"
         >
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <span className="text-base" aria-hidden>
               {METRIC_EMOJI[selected.id]}
             </span>
-            <span className="text-sm font-semibold text-zinc-100">
+            <span className="text-sm font-semibold text-[var(--color-ink)]">
               {t.metrics[selected.id].label}
             </span>
             <span className="text-sm font-semibold tabular-nums text-accent">
@@ -127,7 +127,7 @@ export function MetricsPanel({ metrics }: { metrics: Metric[] }) {
 
           <RangeBar metric={selected} />
 
-          <p className="mt-2 text-[12px] leading-relaxed text-zinc-400">
+          <p className="mt-2 text-[12px] leading-relaxed text-[var(--color-ink-secondary)]">
             {t.metrics[selected.id].note}
           </p>
         </motion.div>

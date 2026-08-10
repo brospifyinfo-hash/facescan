@@ -95,8 +95,8 @@ export function PhotoDrop({
               className="absolute inset-0 h-full w-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/85 via-transparent to-zinc-950/20" />
-            <div className="absolute inset-0 flex items-center justify-center bg-zinc-950/60 opacity-0 backdrop-blur-[2px] transition-opacity duration-200 group-hover:opacity-100">
-              <span className="flex items-center gap-1.5 rounded-full border border-white/20 bg-zinc-950/60 px-3 py-1.5 text-[11px] font-medium">
+            <div className="absolute inset-0 flex items-center justify-center bg-[var(--color-canvas)]/60 opacity-0 backdrop-blur-[2px] transition-opacity duration-200 group-hover:opacity-100">
+              <span className="flex items-center gap-1.5 rounded-full border border-white/20 bg-[var(--color-canvas)]/60 px-3 py-1.5 text-[11px] font-medium">
                 <RotateCcw className="h-3 w-3" /> {t.upload.replace}
               </span>
             </div>
@@ -114,12 +114,12 @@ export function PhotoDrop({
               }}
             />
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-[58%] w-[58%] text-zinc-700 transition-colors duration-200 group-hover:text-zinc-600">
+              <div className="h-[58%] w-[58%] text-[var(--color-ink-quaternary)] transition-colors duration-200 group-hover:text-[var(--color-ink-tertiary)]">
                 {silhouette}
               </div>
             </div>
             <div className="absolute inset-x-0 top-4 flex justify-center">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full border border-white/12 bg-white/[0.04] text-zinc-400 transition-colors group-hover:border-accent/50 group-hover:text-accent">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full border border-white/12 bg-white/[0.04] text-[var(--color-ink-secondary)] transition-colors group-hover:border-accent/50 group-hover:text-accent">
                 <Plus className="h-3.5 w-3.5" />
               </span>
             </div>
@@ -140,24 +140,24 @@ export function PhotoDrop({
         ))}
 
         {/* Label bar */}
-        <div className="absolute inset-x-0 bottom-0 flex items-center gap-2 border-t border-white/[0.07] bg-zinc-950/55 px-3 py-2 backdrop-blur-sm">
+        <div className="absolute inset-x-0 bottom-0 flex items-center gap-2 border-t border-white/[0.07] bg-[var(--color-canvas)]/55 px-3 py-2 backdrop-blur-sm">
           {value ? (
             <Check className="h-3 w-3 shrink-0 text-accent" />
           ) : (
             <span className="h-1 w-1 shrink-0 rounded-full bg-zinc-600" />
           )}
-          <span className="truncate text-[11px] font-medium tracking-wide text-zinc-200">
+          <span className="truncate text-[11px] font-medium tracking-wide text-[var(--color-ink)]">
             {label}
           </span>
           {badge && !value ? (
-            <span className="ml-auto shrink-0 font-mono-terminal text-[9px] uppercase tracking-[0.12em] text-zinc-600">
+            <span className="ml-auto shrink-0 font-mono-terminal text-[9px] uppercase tracking-[0.12em] text-[var(--color-ink-tertiary)]">
               {badge}
             </span>
           ) : null}
         </div>
       </button>
 
-      <p className="px-0.5 text-[11px] leading-snug text-zinc-500">
+      <p className="px-0.5 text-[11px] leading-snug text-[var(--color-ink-tertiary)]">
         {value ? `${label} · ${t.upload.added}` : hint}
       </p>
       {error ? <p className="px-0.5 text-[11px] text-red-400">{error}</p> : null}

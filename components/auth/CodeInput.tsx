@@ -97,8 +97,8 @@ export function CodeInput({
             invalid
               ? "border-red-500/60 text-red-300"
               : d
-                ? "border-accent/50 text-zinc-50"
-                : "border-white/[0.10] text-zinc-50 focus:border-accent/60",
+                ? "border-accent/50 text-[var(--color-ink)]"
+                : "border-white/[0.10] text-[var(--color-ink)] focus:border-accent/60",
             disabled && "opacity-50",
           )}
         />

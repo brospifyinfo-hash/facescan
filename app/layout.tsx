@@ -30,7 +30,7 @@ export default function RootLayout({
   // `lang` is corrected on the client once the browser language is known.
   return (
     <html lang="en" className={inter.variable}>
-      <body className="min-h-dvh bg-zinc-950 font-sans text-zinc-100 antialiased">
+      <body className="min-h-dvh bg-[var(--color-canvas)] font-sans text-[var(--color-ink)] antialiased">
         {/* Ambient field — gives the glass panels something to refract. */}
         <div
           aria-hidden

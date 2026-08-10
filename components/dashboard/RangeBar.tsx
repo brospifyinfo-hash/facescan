@@ -58,7 +58,7 @@ export function RangeBar({ metric }: { metric: Metric }) {
         />
       </div>
 
-      <div className="flex items-center justify-between text-[9.5px] tabular-nums text-zinc-600">
+      <div className="flex items-center justify-between text-[9.5px] tabular-nums text-[var(--color-ink-tertiary)]">
         <span>{tick(metric.scale[0])}</span>
         <span className="text-accent/80">
           {t.results.legendBand} {tick(metric.ideal[0])}–{tick(metric.ideal[1])}

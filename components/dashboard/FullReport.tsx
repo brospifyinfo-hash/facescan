@@ -61,27 +61,27 @@ export function FullReport() {
   };
 
   return (
-    <section className="glass rounded-[30px] p-7 sm:p-9">
+    <section className="surface p-7 sm:p-9">
       <h2 className="flex items-center gap-2.5 text-xl font-semibold tracking-tight">
         <FileText className="h-5 w-5 text-accent" /> {t.report.title}
       </h2>
 
       {report ? (
-        <div className="mt-6 whitespace-pre-wrap text-sm leading-relaxed text-zinc-300">
+        <div className="mt-6 whitespace-pre-wrap text-sm leading-relaxed text-[var(--color-ink-secondary)]">
           {report}
         </div>
       ) : (
         <>
-          <p className="mt-2 text-sm text-zinc-400">{t.report.body}</p>
+          <p className="mt-2 text-sm text-[var(--color-ink-secondary)]">{t.report.body}</p>
 
-          <label className="glass-subtle mt-5 flex cursor-pointer items-start gap-3 rounded-2xl p-4">
+          <label className="fill interactive mt-5 flex cursor-pointer items-start gap-3 rounded-[var(--r-inner)] p-4">
             <input
               type="checkbox"
               checked={consent}
               onChange={(e) => setConsent(e.target.checked)}
               className="mt-0.5 h-4 w-4 accent-[#95BF47]"
             />
-            <span className="text-xs leading-relaxed text-zinc-400">
+            <span className="text-xs leading-relaxed text-[var(--color-ink-secondary)]">
               {t.report.consent}
             </span>
           </label>
@@ -96,7 +96,7 @@ export function FullReport() {
                 t.report.generate
               )}
             </Button>
-            <span className="flex items-center gap-1.5 text-[11px] text-zinc-500">
+            <span className="flex items-center gap-1.5 text-[11px] text-[var(--color-ink-tertiary)]">
               <ShieldCheck className="h-3.5 w-3.5" /> {t.report.oneTime}
             </span>
           </div>

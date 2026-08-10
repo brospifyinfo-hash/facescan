@@ -21,7 +21,7 @@ export function Collapsible({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <section className="glass overflow-hidden rounded-3xl">
+    <section className="surface overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -30,11 +30,11 @@ export function Collapsible({
       >
         <span aria-hidden>{emoji}</span>
         <span className="flex-1">
-          <span className="block text-sm font-semibold tracking-tight text-zinc-100">
+          <span className="block text-sm font-semibold tracking-tight text-[var(--color-ink)]">
             {title}
           </span>
           {hint ? (
-            <span className="mt-0.5 block text-[11px] leading-snug text-zinc-500">
+            <span className="mt-0.5 block text-[11px] leading-snug text-[var(--color-ink-tertiary)]">
               {hint}
             </span>
           ) : null}
@@ -42,7 +42,7 @@ export function Collapsible({
         <motion.span
           animate={{ rotate: open ? 180 : 0 }}
           transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-          className="text-zinc-500"
+          className="text-[var(--color-ink-tertiary)]"
         >
           <ChevronDown className="h-4 w-4" />
         </motion.span>

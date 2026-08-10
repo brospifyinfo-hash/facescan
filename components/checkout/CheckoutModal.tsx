@@ -47,7 +47,7 @@ export function CheckoutModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-zinc-950/75 p-4 backdrop-blur-md">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-[var(--color-canvas)]/75 p-4 backdrop-blur-md">
       <button
         type="button"
         aria-label={t.checkout.close}
@@ -62,7 +62,7 @@ export function CheckoutModal({
         initial={{ opacity: 0, y: 20, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-        className="glass-strong relative my-auto w-full max-w-md rounded-[26px] p-6 sm:p-7"
+        className="material-sheet relative my-auto w-full max-w-md rounded-[var(--r-window)] p-6 sm:p-7"
       >
         <div className="flex items-start justify-between">
           <div>
@@ -76,7 +76,7 @@ export function CheckoutModal({
           <button
             onClick={onClose}
             aria-label={t.checkout.close}
-            className="rounded-full p-1.5 text-zinc-500 transition-colors hover:bg-white/5 hover:text-zinc-200"
+            className="rounded-full p-1.5 text-[var(--color-ink-tertiary)] transition-colors hover:bg-white/5 hover:text-[var(--color-ink)]"
           >
             <X className="h-4 w-4" />
           </button>
@@ -102,36 +102,36 @@ export function CheckoutModal({
                     )}
                   >
                     {id === "pro" ? (
-                      <span className="absolute -top-2 right-4 rounded-full bg-accent px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-zinc-950">
+                      <span className="absolute -top-2 right-4 rounded-full bg-accent px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[var(--color-accent-ink)]">
                         {t.checkout.popular}
                       </span>
                     ) : null}
 
                     <div className="flex items-baseline justify-between gap-3">
-                      <span className="text-[15px] font-semibold text-zinc-50">
+                      <span className="text-[15px] font-semibold text-[var(--color-ink)]">
                         {copy.name}
                       </span>
                       <span
                         className={cn(
                           "text-lg font-semibold tabular-nums",
-                          active ? "text-accent" : "text-zinc-300",
+                          active ? "text-accent" : "text-[var(--color-ink-secondary)]",
                         )}
                       >
                         {formatPrice(locale, id)}
                       </span>
                     </div>
-                    <p className="mt-0.5 text-[11px] text-zinc-500">{copy.tagline}</p>
+                    <p className="mt-0.5 text-[11px] text-[var(--color-ink-tertiary)]">{copy.tagline}</p>
 
                     <ul className="mt-3 flex flex-col gap-1.5">
                       {copy.features.map((f) => (
                         <li
                           key={f}
-                          className="flex items-start gap-2 text-[12px] leading-snug text-zinc-400"
+                          className="flex items-start gap-2 text-[12px] leading-snug text-[var(--color-ink-secondary)]"
                         >
                           <Check
                             className={cn(
                               "mt-0.5 h-3.5 w-3.5 shrink-0",
-                              active ? "text-accent" : "text-zinc-600",
+                              active ? "text-accent" : "text-[var(--color-ink-tertiary)]",
                             )}
                           />
                           {f}
@@ -141,9 +141,9 @@ export function CheckoutModal({
                       {copy.excluded.map((f) => (
                         <li
                           key={f}
-                          className="flex items-start gap-2 text-[12px] leading-snug text-zinc-600"
+                          className="flex items-start gap-2 text-[12px] leading-snug text-[var(--color-ink-tertiary)]"
                         >
-                          <X className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-700" />
+                          <X className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--color-ink-quaternary)]" />
                           <span className="line-through decoration-zinc-700">{f}</span>
                         </li>
                       ))}
