@@ -1,15 +1,23 @@
 // One-time-password storage.
 //
-// ⚠️ PROTOTYPE BACKING: a module-level Map. That is fine for local work and
-// a single long-lived server, and WRONG for serverless production — every
-// cold start wipes it, and two concurrent instances do not share it, so a
-// user can receive a code from instance A and have it rejected by instance B.
+// TWO BACKINGS, CHOSEN BY THE ENVIRONMENT
 //
-// The whole surface is the `OtpStore` interface below. Swapping in Redis
-// (Upstash, Vercel KV) means writing one more implementation of it and
-// changing the export at the bottom. Nothing else in the app touches this.
+//   RedisOtpStore   used whenever Upstash credentials are present. This is
+//                   the one production needs.
+//   MemoryOtpStore  a module-level Map. Correct for local development and
+//                   for tests; WRONG for serverless, because every cold
+//                   start wipes it and two concurrent instances do not
+//                   share it — so a user receives a code from instance A
+//                   and has it rejected by instance B. The failure looks
+//                   random, which is what makes it expensive: it does not
+//                   reproduce for whoever is testing and it does reproduce
+//                   for a share of real users.
+//
+// The whole surface is the `OtpStore` interface, exactly as designed for.
+// Nothing else in the app changed to add the Redis one.
 
 import { createHash, randomInt, timingSafeEqual } from "crypto";
+import { kv, kvConfigured, kvPipeline, toHash } from "../kv";
 
 export const CODE_TTL_MS = 10 * 60 * 1000;
 export const MAX_ATTEMPTS = 5;
@@ -85,13 +93,118 @@ class MemoryOtpStore implements OtpStore {
 // code is written to one and looked up in the other, and every verification
 // fails with "expired". Hot reloads would wipe it too. globalThis is the one
 // thing both share.
+/**
+ * Redis-backed store. Survives cold starts and is shared across instances,
+ * which is the whole point.
+ *
+ * KEY LAYOUT
+ *   otp:<email>      hash {codeHash, expiresAt, attempts}, TTL = CODE_TTL_MS
+ *   otpsend:<email>  JSON array of send timestamps, TTL = SEND_WINDOW_MS
+ *
+ * Redis expiry does the cleanup, so nothing accumulates and no sweeper is
+ * needed. The in-code expiry check stays anyway: TTL eviction is not
+ * instant, and a code that Redis has not got round to deleting must still
+ * be treated as dead.
+ */
+class RedisOtpStore implements OtpStore {
+  private codeKey = (email: string) => `otp:${email}`;
+  private sendKey = (email: string) => `otpsend:${email}`;
+
+  async put(email: string, rec: OtpRecord) {
+    const key = this.codeKey(email);
+    await kvPipeline(
+      ["DEL", key],
+      ["HSET", key, "codeHash", rec.codeHash, "expiresAt", String(rec.expiresAt), "attempts", String(rec.attempts)],
+      // A little past the logical TTL: expiry is enforced in code, and a key
+      // that vanishes a second early would turn a valid code into "expired".
+      ["PEXPIRE", key, String(CODE_TTL_MS + 60_000)],
+    );
+  }
+
+  async get(email: string) {
+    const hash = toHash(await kv("HGETALL", this.codeKey(email)));
+    if (!hash?.codeHash) return null;
+    const rec: OtpRecord = {
+      codeHash: hash.codeHash,
+      expiresAt: Number(hash.expiresAt),
+      attempts: Number(hash.attempts) || 0,
+    };
+    if (!Number.isFinite(rec.expiresAt) || Date.now() > rec.expiresAt) {
+      await this.delete(email);
+      return null;
+    }
+    return rec;
+  }
+
+  async delete(email: string) {
+    await kv("DEL", this.codeKey(email));
+  }
+
+  /**
+   * HINCRBY rather than read-modify-write.
+   *
+   * The memory implementation reads, adds one and writes back. Over a
+   * shared store that races: two parallel guesses both read 4, both write
+   * 5, and the fifth attempt never trips the limit. HINCRBY is atomic
+   * server-side, so the count is exact no matter how many instances are
+   * guessing at once — which is the entire value of a brute-force limit.
+   */
+  async bumpAttempts(email: string) {
+    const key = this.codeKey(email);
+    const exists = await kv("EXISTS", key);
+    if (!exists) return MAX_ATTEMPTS;
+    const attempts = Number(await kv("HINCRBY", key, "attempts", 1));
+    if (attempts >= MAX_ATTEMPTS) await kv("DEL", key);
+    return attempts;
+  }
+
+  async recordSend(email: string) {
+    const key = this.sendKey(email);
+    const timestamps = await this.sendsInWindow(email);
+    timestamps.push(Date.now());
+    await kv("SET", key, JSON.stringify(timestamps), "PX", String(SEND_WINDOW_MS));
+  }
+
+  async sendsInWindow(email: string) {
+    const raw = await kv("GET", this.sendKey(email));
+    if (typeof raw !== "string") return [];
+    try {
+      const cutoff = Date.now() - SEND_WINDOW_MS;
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed)
+        ? parsed.filter((t: unknown) => typeof t === "number" && t > cutoff)
+        : [];
+    } catch {
+      // A corrupt value is a throttle counter, not an account. Treating it
+      // as empty costs at most a few extra sends; throwing would lock the
+      // user out of signing in entirely.
+      return [];
+    }
+  }
+}
+
+// Pinned to globalThis, not a plain module constant.
+//
+// Next.js loads route handlers in separate module graphs, so a module-level
+// `new MemoryOtpStore()` gives request-code and verify-code a Map each: the
+// code is written to one and looked up in the other, and every verification
+// fails with "expired". Hot reloads would wipe it too. globalThis is the one
+// thing both share. (Irrelevant for the Redis store, which shares by
+// definition — but the selection still happens once.)
 declare global {
   // eslint-disable-next-line no-var
   var __facescanOtpStore: OtpStore | undefined;
 }
 
 export const otpStore: OtpStore =
-  globalThis.__facescanOtpStore ?? (globalThis.__facescanOtpStore = new MemoryOtpStore());
+  globalThis.__facescanOtpStore ??
+  (globalThis.__facescanOtpStore = kvConfigured()
+    ? new RedisOtpStore()
+    : new MemoryOtpStore());
+
+/** Which backing is live. Surfaced by the health check, never to a user. */
+export const otpBacking = (): "redis" | "memory" =>
+  kvConfigured() ? "redis" : "memory";
 
 /** Normalise so "A@B.com " and "a@b.com" are the same account. */
 export function normalizeEmail(raw: string): string {

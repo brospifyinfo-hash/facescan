@@ -1,14 +1,18 @@
 // What a given address has paid for.
 //
-// ⚠️ PROTOTYPE BACKING: a globalThis Map, same caveat as the OTP store —
-// a cold start wipes it and two serverless instances do not share it, so a
-// customer can pay and then find the purchase gone. Everything the app needs
-// is the `EntitlementStore` interface; swapping in Postgres or Redis means
-// one more implementation and changing the export at the bottom.
+// TWO BACKINGS, CHOSEN BY THE ENVIRONMENT — same arrangement as the OTP
+// store, and here the memory one is worse: a cold start wipes it and two
+// serverless instances do not share it, so a customer pays and then finds
+// the purchase gone. Stripe has their money and the app has no record.
+//
+// Entitlements have NO expiry. A purchase is permanent, so unlike an OTP
+// nothing here is written with a TTL — except the processed-event set,
+// which only needs to outlive Stripe's retry schedule.
 //
 // The webhook is the ONLY writer. The client never grants itself anything.
 
 import type { PlanId } from "@/lib/pricing";
+import { kv, kvConfigured } from "@/lib/kv";
 
 export interface Entitlement {
   plan: PlanId;
@@ -47,6 +51,55 @@ class MemoryEntitlementStore implements EntitlementStore {
   }
 }
 
+/**
+ * Redis-backed store. A purchase written here survives the deploy, the cold
+ * start and the instance that handled the webhook.
+ *
+ * KEY LAYOUT
+ *   ent:<email>        JSON Entitlement, no TTL — a purchase is permanent
+ *   stripeevt:<id>     idempotency marker, 30-day TTL
+ *
+ * Thirty days on the marker because that is comfortably past Stripe's
+ * retry schedule (roughly three days). Keeping them forever would grow
+ * without bound to defend against a replay that can no longer happen.
+ */
+class RedisEntitlementStore implements EntitlementStore {
+  private key = (email: string) => `ent:${email}`;
+  private eventKey = (id: string) => `stripeevt:${id}`;
+
+  async grant(email: string, ent: Entitlement) {
+    // Read-then-write, deliberately not atomic. The only writer is the
+    // Stripe webhook, and the rank guard below makes a concurrent replay
+    // of the SAME event idempotent anyway. Two genuinely different
+    // purchases arriving in the same millisecond would be a race — and the
+    // higher tier winning is the outcome we want in either interleaving.
+    const existing = await this.get(email);
+    if (existing && RANK[existing.plan] >= RANK[ent.plan]) return;
+    await kv("SET", this.key(email), JSON.stringify(ent));
+  }
+
+  async get(email: string) {
+    const raw = await kv("GET", this.key(email));
+    if (typeof raw !== "string") return null;
+    try {
+      const parsed = JSON.parse(raw) as Entitlement;
+      // A record that does not name a known plan cannot be honoured, and
+      // guessing one would hand out access nobody paid for.
+      return parsed && parsed.plan in RANK ? parsed : null;
+    } catch {
+      return null;
+    }
+  }
+
+  async hasProcessed(eventId: string) {
+    return (await kv("EXISTS", this.eventKey(eventId))) === 1;
+  }
+
+  async markProcessed(eventId: string) {
+    await kv("SET", this.eventKey(eventId), "1", "EX", String(30 * 24 * 60 * 60));
+  }
+}
+
 declare global {
   // eslint-disable-next-line no-var
   var __facescanEntitlements: EntitlementStore | undefined;
@@ -54,4 +107,10 @@ declare global {
 
 export const entitlements: EntitlementStore =
   globalThis.__facescanEntitlements ??
-  (globalThis.__facescanEntitlements = new MemoryEntitlementStore());
+  (globalThis.__facescanEntitlements = kvConfigured()
+    ? new RedisEntitlementStore()
+    : new MemoryEntitlementStore());
+
+/** Which backing is live. Surfaced by the health check, never to a user. */
+export const entitlementBacking = (): "redis" | "memory" =>
+  kvConfigured() ? "redis" : "memory";
