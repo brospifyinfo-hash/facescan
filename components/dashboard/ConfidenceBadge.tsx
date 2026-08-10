@@ -47,7 +47,7 @@ export function ConfidenceBadge({
         {low ? (
           <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-400" />
         ) : null}
-        <span className="text-[10px] uppercase tracking-[0.12em] text-[var(--color-ink-tertiary)]">
+        <span className="t-eyebrow text-[var(--color-ink-tertiary)]">
           {t.quality.label}
         </span>
         <span
@@ -70,13 +70,13 @@ export function ConfidenceBadge({
       </div>
 
       {named.length > 0 ? (
-        <p className="mt-1.5 text-[10px] leading-snug text-[var(--color-ink-tertiary)]">
+        <p className="mt-1.5 t-caption leading-snug text-[var(--color-ink-tertiary)]">
           {named.join(" · ")}
         </p>
       ) : null}
 
       {low ? (
-        <p className="mt-1.5 text-[10px] leading-relaxed text-amber-300/85">
+        <p className="mt-1.5 t-caption leading-relaxed text-amber-300/85">
           {t.quality.low}
         </p>
       ) : null}

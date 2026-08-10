@@ -93,7 +93,7 @@ export function PercentileBadge({
                 token="n"
                 value={top}
                 delay={850}
-                className="rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-semibold text-accent"
+                className="rounded-full bg-accent/15 px-2 py-0.5 t-caption font-semibold text-accent"
               />
             ) : null}
           </div>
@@ -121,7 +121,7 @@ export function PercentileBadge({
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             className="relative overflow-hidden"
           >
-            <p className="mt-2 text-[10px] leading-relaxed text-[var(--color-ink-tertiary)]">
+            <p className="mt-2 t-caption leading-relaxed text-[var(--color-ink-tertiary)]">
               {t.results.percentileWhat}
             </p>
           </motion.div>

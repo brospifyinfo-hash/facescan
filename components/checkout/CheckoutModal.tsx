@@ -66,7 +66,7 @@ export function CheckoutModal({
       >
         <div className="flex items-start justify-between">
           <div>
-            <p className="font-mono-terminal text-[10px] uppercase tracking-[0.2em] text-accent">
+            <p className="font-mono-terminal t-eyebrow text-accent">
               {t.checkout.eyebrow}
             </p>
             <h2 className="mt-2 text-xl font-semibold tracking-tight">
@@ -102,7 +102,7 @@ export function CheckoutModal({
                     )}
                   >
                     {id === "pro" ? (
-                      <span className="absolute -top-2 right-4 rounded-full bg-accent px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[var(--color-accent-ink)]">
+                      <span className="absolute -top-2 right-4 rounded-full bg-accent px-2 py-0.5 t-eyebrow font-bold tracking-wider text-[var(--color-accent-ink)]">
                         {t.checkout.popular}
                       </span>
                     ) : null}

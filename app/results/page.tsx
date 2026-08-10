@@ -29,6 +29,7 @@ import { fetchSession } from "@/lib/auth/client";
 import { bandFor } from "@/lib/tiers";
 import { fill, useI18n, useT } from "@/lib/i18n";
 import { useFunnel } from "@/lib/store";
+import { cn } from "@/lib/cn";
 
 export default function ResultsPage() {
   const router = useRouter();
@@ -98,7 +99,7 @@ export default function ResultsPage() {
             </span>
           </DevUnlock>
           {metrics.demo ? (
-            <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[9px] font-medium text-amber-300">
+            <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 t-caption font-medium text-amber-300">
               🧪 {t.results.demoData}
             </span>
           ) : null}
@@ -121,13 +122,22 @@ export default function ResultsPage() {
       >
         {/* Front + side side by side when both exist; a single centred panel
             when the optional side photo was skipped. Each keeps its own
-            aspect ratio so the landmark mesh stays aligned. */}
+            aspect ratio so the landmark mesh stays aligned.
+
+            ORDERED SECOND ON A PHONE. In one column the photo came first and
+            filled the entire first screen, so the user landed on their result
+            page and had to scroll past a picture they had just taken to reach
+            the number they came for. The photo is supporting evidence; the
+            score is the payoff, and on the narrow layout it goes first. The
+            two-column desktop layout is unaffected — there the photo sits on
+            the left and both are visible at once. */}
         <div
-          className={
+          className={cn(
+            "order-2 lg:order-1",
             photos.side
               ? "grid grid-cols-2 gap-3"
-              : "mx-auto w-full max-w-[300px]"
-          }
+              : "mx-auto w-full max-w-[240px] sm:max-w-[300px]",
+          )}
         >
           <FaceMesh
             src={photos.front?.dataUrl}
@@ -148,7 +158,7 @@ export default function ResultsPage() {
         </div>
 
         {/* Score card */}
-        <div className="surface-raised relative overflow-hidden p-5 sm:p-6">
+        <div className="surface-raised relative order-1 overflow-hidden p-5 sm:p-6 lg:order-2">
           <div
             aria-hidden
             className="pointer-events-none absolute -right-20 -top-20 h-52 w-52 rounded-full blur-3xl"
@@ -159,7 +169,7 @@ export default function ResultsPage() {
             <ScoreRing score={metrics.overall} color={band.color} />
 
             <div className="min-w-0 flex-1 text-center sm:text-left">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--color-ink-tertiary)]">
+              <p className="t-eyebrow text-[var(--color-ink-tertiary)]">
                 {t.results.overall}
               </p>
               <motion.div
@@ -200,7 +210,7 @@ export default function ResultsPage() {
                   ["✅", t.results.inRange, `${inRange}/${metrics.metrics.length}`],
                 ].map(([emoji, label, value]) => (
                   <div key={label} className="text-center sm:text-left">
-                    <dt className="text-[9px] uppercase tracking-[0.08em] text-[var(--color-ink-tertiary)]">
+                    <dt className="t-eyebrow text-[var(--color-ink-tertiary)]">
                       <span aria-hidden>{emoji}</span> {label}
                     </dt>
                     <dd className="mt-0.5 text-[13px] font-semibold tabular-nums text-[var(--color-ink)]">
@@ -338,7 +348,7 @@ export default function ResultsPage() {
                   {t.results.unlockChips.map((chip) => (
                     <li
                       key={chip}
-                      className="fill rounded-full px-2 py-0.5 text-[10px] text-[var(--color-ink-secondary)]"
+                      className="fill rounded-full px-2 py-0.5 t-caption text-[var(--color-ink-secondary)]"
                     >
                       {chip}
                     </li>
@@ -350,7 +360,7 @@ export default function ResultsPage() {
                   {t.results.unlockCta}
                 </Button>
 
-                <p className="mt-2.5 text-[10px] text-[var(--color-ink-tertiary)]">
+                <p className="mt-2.5 t-caption text-[var(--color-ink-tertiary)]">
                   {t.results.unlockNote}
                 </p>
               </motion.div>
@@ -365,7 +375,7 @@ export default function ResultsPage() {
         </div>
       ) : null}
 
-      <p className="mx-auto mt-8 max-w-xl text-center text-[10px] leading-relaxed text-[var(--color-ink-tertiary)]">
+      <p className="mx-auto mt-8 max-w-xl text-center t-caption leading-relaxed text-[var(--color-ink-tertiary)]">
         {t.results.disclaimer}
       </p>
 

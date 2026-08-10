@@ -178,7 +178,7 @@ export function PaymentForm({
     <div className="flex flex-col gap-5">
       {/* ---------- Order summary ---------- */}
       <section className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
-        <h3 className="font-mono-terminal text-[10px] uppercase tracking-[0.18em] text-[var(--color-ink-tertiary)]">
+        <h3 className="font-mono-terminal t-eyebrow text-[var(--color-ink-tertiary)]">
           {t.pay.summaryTitle}
         </h3>
         <dl className="mt-3 flex flex-col gap-1.5 text-[13px]">
@@ -210,7 +210,7 @@ export function PaymentForm({
           </div>
         </dl>
         {isEur ? (
-          <p className="mt-1 text-right text-[10px] text-[var(--color-ink-tertiary)]">
+          <p className="mt-1 text-right t-caption text-[var(--color-ink-tertiary)]">
             {fill(t.pay.inclVat, { rate })}
           </p>
         ) : null}
@@ -326,7 +326,7 @@ export function PaymentForm({
 
       <PaymentIcons />
 
-      <p className="flex items-center justify-center gap-1.5 text-center text-[10px] leading-relaxed text-[var(--color-ink-tertiary)]">
+      <p className="flex items-center justify-center gap-1.5 text-center t-caption leading-relaxed text-[var(--color-ink-tertiary)]">
         <ShieldCheck className="h-3 w-3 shrink-0 text-accent" />
         {t.pay.securedBy}
       </p>

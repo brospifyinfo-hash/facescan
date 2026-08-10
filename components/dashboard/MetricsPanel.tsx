@@ -47,10 +47,10 @@ export function MetricsPanel({ metrics }: { metrics: Metric[] }) {
   return (
     <section className="surface p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="flex items-center gap-2 text-base font-semibold tracking-tight sm:text-lg">
+        <h2 className="t-title2 flex items-center gap-2">
           <span aria-hidden>🧬</span> {t.results.breakdown}
         </h2>
-        <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-[11px] tabular-nums text-[var(--color-ink-secondary)]">
+        <span className="fill tnum t-caption rounded-full px-2.5 py-1 text-[var(--color-ink-secondary)]">
           {inRange}/{shown.length} · {t.results.inRange}
         </span>
       </div>
@@ -66,7 +66,7 @@ export function MetricsPanel({ metrics }: { metrics: Metric[] }) {
               type="button"
               onClick={() => setFilter(f)}
               className={cn(
-                "relative shrink-0 rounded-full px-3 py-1.5 text-[11px] font-medium transition-colors",
+                "t-footnote relative shrink-0 rounded-full px-3 py-1.5 font-medium transition-colors",
                 active ? "text-[var(--color-accent-ink)]" : "text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)]",
               )}
             >
@@ -88,7 +88,7 @@ export function MetricsPanel({ metrics }: { metrics: Metric[] }) {
       </div>
 
       {/* How to read the grid — stated once. */}
-      <p className="mt-3 text-[10px] leading-relaxed text-[var(--color-ink-tertiary)]">
+      <p className="t-caption mt-3 text-[var(--color-ink-tertiary)]">
         {t.results.ringLegend}
       </p>
 
@@ -106,18 +106,21 @@ export function MetricsPanel({ metrics }: { metrics: Metric[] }) {
             <span className="text-base" aria-hidden>
               {METRIC_EMOJI[selected.id]}
             </span>
-            <span className="text-sm font-semibold text-[var(--color-ink)]">
+            <span className="t-title3 text-[var(--color-ink)]">
               {t.metrics[selected.id].label}
             </span>
-            <span className="text-sm font-semibold tabular-nums text-accent">
+            {/* The measured figure, not tinted: the accent belongs to the
+                primary action, and a number is not an action. It already
+                stands out through weight and ink level. */}
+            <span className="tnum t-title3 text-[var(--color-ink)]">
               {selected.display}
             </span>
             <span
               className={cn(
-                "ml-auto flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium",
+                "t-caption ml-auto flex items-center gap-1 rounded-full px-2 py-0.5 font-medium",
                 selected.position === "in"
-                  ? "bg-accent/12 text-accent"
-                  : "bg-amber-400/12 text-amber-300",
+                  ? "bg-[var(--color-accent)]/12 text-[var(--color-accent)]"
+                  : "bg-[var(--color-caution)]/12 text-[var(--color-caution)]",
               )}
             >
               <span aria-hidden>{POSITION_ICON[selected.position]}</span>
@@ -127,7 +130,7 @@ export function MetricsPanel({ metrics }: { metrics: Metric[] }) {
 
           <RangeBar metric={selected} />
 
-          <p className="mt-2 text-[12px] leading-relaxed text-[var(--color-ink-secondary)]">
+          <p className="t-footnote mt-2.5 text-[var(--color-ink-secondary)]">
             {t.metrics[selected.id].note}
           </p>
         </motion.div>

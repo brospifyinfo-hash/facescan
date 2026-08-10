@@ -103,7 +103,12 @@ export function RadarChart({
             textAnchor="middle"
             dominantBaseline="middle"
             className="fill-zinc-400"
-            style={{ fontSize: 10, letterSpacing: "0.08em" }}
+            // SVG text takes its size from an attribute or an inline style,
+            // never from a Tailwind class — which is why these five axis
+            // labels were the last sub-11px text on the page after every
+            // class-based size had been lifted onto the scale. 11px and the
+            // eyebrow's tracking, matching .t-eyebrow exactly.
+            style={{ fontSize: 11, letterSpacing: "0.09em" }}
           >
             {a.label.toUpperCase()}
           </text>

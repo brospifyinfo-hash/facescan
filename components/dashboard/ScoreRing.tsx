@@ -177,7 +177,7 @@ export function MiniRing({
       <p className="text-[13px] font-semibold leading-none text-[var(--color-ink)]">
         <CountUp value={value} delay={delay * 1000} />
       </p>
-      <p className="text-[9px] uppercase tracking-[0.08em] text-[var(--color-ink-tertiary)]">
+      <p className="t-eyebrow text-[var(--color-ink-tertiary)]">
         {label}
       </p>
     </motion.div>

@@ -81,7 +81,7 @@ export default function QuizPage() {
       </div>
 
       <div className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center px-6 pb-16">
-        <p className="font-mono-terminal text-[11px] uppercase tracking-[0.18em] text-[var(--color-ink-tertiary)]">
+        <p className="font-mono-terminal text-[11px] text-[var(--color-ink-tertiary)]">
           {fill(t.quiz.progress, { n: step + 1, total })}
         </p>
 
@@ -159,7 +159,7 @@ export default function QuizPage() {
                   className="mt-7 w-full accent-[var(--color-accent)]"
                   aria-label={copy.title}
                 />
-                <div className="mt-1 flex justify-between font-mono-terminal text-[10px] tabular-nums text-[var(--color-ink-tertiary)]">
+                <div className="mt-1 flex justify-between font-mono-terminal t-caption tabular-nums text-[var(--color-ink-tertiary)]">
                   <span>
                     {spec.min} {spec.unit}
                   </span>

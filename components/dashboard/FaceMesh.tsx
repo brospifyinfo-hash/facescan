@@ -130,7 +130,7 @@ export function FaceMesh({
       ))}
 
       {label ? (
-        <span className="pointer-events-none absolute bottom-2.5 left-1/2 -translate-x-1/2 rounded-full bg-[var(--color-canvas)]/60 px-2.5 py-0.5 text-[9px] font-medium uppercase tracking-[0.14em] text-[var(--color-ink-secondary)] backdrop-blur-sm">
+        <span className="pointer-events-none absolute bottom-2.5 left-1/2 -translate-x-1/2 rounded-full bg-[var(--color-canvas)]/60 px-2.5 py-0.5 t-eyebrow text-[var(--color-ink-secondary)] backdrop-blur-sm">
           {label}
         </span>
       ) : null}

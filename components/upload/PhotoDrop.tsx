@@ -150,7 +150,7 @@ export function PhotoDrop({
             {label}
           </span>
           {badge && !value ? (
-            <span className="ml-auto shrink-0 font-mono-terminal text-[9px] uppercase tracking-[0.12em] text-[var(--color-ink-tertiary)]">
+            <span className="ml-auto shrink-0 font-mono-terminal t-eyebrow text-[var(--color-ink-tertiary)]">
               {badge}
             </span>
           ) : null}

@@ -178,7 +178,7 @@ export function TierLadder({ current }: { current: BandId }) {
               </div>
               <span
                 className={cn(
-                  "mt-1 line-clamp-2 text-center text-[8.5px] font-medium leading-tight sm:text-[10px]",
+                  "mt-1 line-clamp-2 text-center t-caption font-medium leading-tight sm:t-caption",
                   active ? "text-accent" : "text-[var(--color-ink-tertiary)]",
                 )}
               >
@@ -198,7 +198,7 @@ export function TierLadder({ current }: { current: BandId }) {
       <p className="mt-4 text-[11px] leading-relaxed text-[var(--color-ink-tertiary)]">
         {t.bands[current].blurb}
       </p>
-      <p className="mt-2 text-[10px] leading-relaxed text-[var(--color-ink-tertiary)]">
+      <p className="mt-2 t-caption leading-relaxed text-[var(--color-ink-tertiary)]">
         {t.results.tierNote}
       </p>
     </section>

@@ -72,7 +72,7 @@ export function MonthlyProgram({
               ) : (
                 <span className="absolute inset-0 rounded-xl bg-white/[0.04]" />
               )}
-              <span className="relative block text-[10px] uppercase tracking-[0.12em] opacity-70">
+              <span className="relative block t-eyebrow opacity-70">
                 {t.monthly.weekLabel}
               </span>
               <span className="relative block text-base font-semibold tabular-nums">
@@ -103,7 +103,7 @@ export function MonthlyProgram({
               <div className="min-w-0 flex-1">
                 <p className="flex flex-wrap items-center gap-x-2 text-[13px] font-medium text-[var(--color-ink)]">
                   {copy.title}
-                  <span className="rounded-md bg-accent/15 px-1.5 py-0.5 text-[10px] text-accent">
+                  <span className="rounded-md bg-accent/15 px-1.5 py-0.5 t-caption text-accent">
                     {copy.cadence}
                   </span>
                 </p>
@@ -126,7 +126,7 @@ export function MonthlyProgram({
                 {entry.emoji}
               </span>
               <span className="flex-1 text-[12px] text-[var(--color-ink-secondary)]">{copy.title}</span>
-              <span className="text-[10px] tabular-nums text-[var(--color-ink-tertiary)]">
+              <span className="t-caption tabular-nums text-[var(--color-ink-tertiary)]">
                 {copy.cadence}
               </span>
             </li>

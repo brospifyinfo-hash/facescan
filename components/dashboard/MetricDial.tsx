@@ -2,7 +2,6 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { METRIC_EMOJI, type Metric } from "@/lib/metrics";
-import { CountUp } from "./CountUp";
 import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/cn";
 import { BRAND } from "@/lib/theme";
@@ -11,12 +10,29 @@ import { BRAND } from "@/lib/theme";
  * One measurement as a compact ring.
  *
  * Every ring means the SAME thing: how close this measurement sits to its
- * reference range, 0-100. That is the whole point of the change — the
- * previous version drew each dial on its own scale with its own unit, so
- * fifteen of them side by side could not be compared at a glance and every
- * one had to be decoded separately. Now the grid answers "which areas are
+ * reference range, 0-100. That is the point — the version before this drew
+ * each dial on its own scale with its own unit, so fifteen side by side
+ * could not be compared at a glance. Now the grid answers "which areas are
  * strong and which are not" instantly, and the exact position inside the
  * band lives in the detail strip below, where there is room to label it.
+ *
+ * WHAT CAME OUT OF THE RING, AND WHY
+ *
+ * It used to hold three things: an emoji, the measured value, and the 0-100
+ * score as an 8px numeral. Two problems, both real:
+ *
+ *   * 8px, and a 9.5px label under it. Apple's smallest text style is 11pt
+ *     and its whole Dynamic Type ladder starts there. Text that small is not
+ *     a dense-UI style, it is text a large share of people cannot read, and
+ *     no amount of design intent changes that.
+ *   * The number was REDUNDANT. The arc already encodes the score — that is
+ *     the entire job of the arc. Printing it again inside the same 68px
+ *     circle spent the scarcest space in the component restating what the
+ *     ring had just said.
+ *
+ * Dropping it leaves room for the measured value to sit at a legible size,
+ * which is the one figure the ring genuinely cannot show. The score is still
+ * announced to screen readers, where it costs no space at all.
  */
 export function MetricDial({
   metric,
@@ -52,20 +68,25 @@ export function MetricDial({
         delay: reduce ? 0 : index * 0.03,
         ease: [0.22, 1, 0.36, 1],
       }}
-      whileHover={reduce ? undefined : { y: -3 }}
       className={cn(
-        "group flex flex-col items-center rounded-2xl px-1 py-2.5 transition-colors duration-200",
-        selected ? "bg-white/[0.09] ring-1 ring-accent/45" : "hover:bg-white/[0.05]",
+        "group interactive flex flex-col items-center rounded-[var(--r-control)] px-1 py-2.5",
+        // A press, not a hover lift. The lift was a desktop-web idiom that
+        // simply did not exist on touch, so on a phone — most of this
+        // product's traffic — the dial had no pressed state at all.
+        selected
+          ? "bg-white/[0.09] ring-1 ring-inset"
+          : "hover:bg-white/[0.05]",
       )}
+      style={selected ? { boxShadow: `inset 0 0 0 1px ${color}66` } : undefined}
     >
       <div className="relative" style={{ width: size, height: size }}>
-        <svg width={size} height={size} className="-rotate-90">
+        <svg width={size} height={size} className="-rotate-90" aria-hidden>
           <circle
             cx={size / 2}
             cy={size / 2}
             r={r}
             fill="none"
-            stroke="rgba(255,255,255,0.08)"
+            stroke={BRAND.track}
             strokeWidth={stroke}
           />
           <motion.circle
@@ -87,25 +108,21 @@ export function MetricDial({
           />
         </svg>
 
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-[12px] leading-none" aria-hidden>
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5">
+          <span className="text-[13px] leading-none" aria-hidden>
             {METRIC_EMOJI[metric.id]}
           </span>
-          <span className="mt-0.5 text-[12px] font-semibold leading-none tracking-tight text-[var(--color-ink)]">
+          {/* The one figure the arc cannot express: the measured value in its
+              own unit. Tabular so a column of dials does not jitter. */}
+          <span className="tnum text-[13px] font-semibold leading-none tracking-[-0.01em] text-[var(--color-ink)]">
             {metric.display}
-          </span>
-          <span
-            className="mt-0.5 text-[8px] font-medium leading-none tabular-nums"
-            style={{ color }}
-          >
-            <CountUp value={metric.score} delay={200 + index * 30} />
           </span>
         </div>
       </div>
 
-      {/* Fixed two-line box keeps every grid row exactly the same height */}
-      <span className="mt-1.5 flex min-h-[24px] items-start justify-center">
-        <span className="line-clamp-2 text-center text-[9.5px] font-medium leading-[1.3] text-[var(--color-ink-secondary)]">
+      {/* Fixed two-line box keeps every grid row exactly the same height. */}
+      <span className="mt-2 flex min-h-[28px] items-start justify-center">
+        <span className="t-caption line-clamp-2 text-center text-[var(--color-ink-secondary)]">
           {t.metrics[metric.id].label}
         </span>
       </span>

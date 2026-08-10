@@ -43,7 +43,7 @@ export function ActionPlan({
             {done.size}
             <span className="text-[var(--color-ink-tertiary)]"> / {plan.length}</span>
           </p>
-          <p className="text-[10px] uppercase tracking-[0.12em] text-[var(--color-ink-tertiary)]">
+          <p className="t-eyebrow text-[var(--color-ink-tertiary)]">
             {t.results.completed}
           </p>
         </div>
@@ -93,7 +93,7 @@ export function ActionPlan({
                     >
                       {copy.title}
                     </span>
-                    <span className="rounded-md bg-accent/12 px-2 py-0.5 text-[10px] font-medium text-accent">
+                    <span className="rounded-md bg-accent/12 px-2 py-0.5 t-caption font-medium text-accent">
                       {copy.cadence}
                     </span>
                   </span>
@@ -102,7 +102,7 @@ export function ActionPlan({
                   </span>
                 </span>
 
-                <span className="hidden shrink-0 rounded-full border border-white/[0.08] px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-[var(--color-ink-tertiary)] sm:block">
+                <span className="hidden shrink-0 rounded-full border border-white/[0.08] px-2.5 py-1 t-eyebrow tracking-wider text-[var(--color-ink-tertiary)] sm:block">
                   {copy.tag}
                 </span>
               </button>

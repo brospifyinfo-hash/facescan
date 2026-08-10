@@ -196,7 +196,7 @@ export function AuthModal({
             ) : null}
 
             {devFallback ? (
-              <p className="mt-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-2.5 text-[10px] leading-relaxed text-amber-300/90">
+              <p className="mt-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-2.5 t-caption leading-relaxed text-amber-300/90">
                 {t.auth.devHint}
               </p>
             ) : null}

@@ -90,7 +90,7 @@ function Faq({ q, a, index }: { q: string; a: string; index: number }) {
         aria-expanded={open}
         className="flex w-full items-center gap-5 py-4 text-left"
       >
-        <span className="font-mono-terminal text-[10px] tabular-nums text-[var(--color-ink-tertiary)]">
+        <span className="font-mono-terminal t-caption tabular-nums text-[var(--color-ink-tertiary)]">
           {String(index + 1).padStart(2, "0")}
         </span>
         <span className="flex-1 text-[14px] font-medium text-[var(--color-ink)]">{q}</span>
@@ -178,7 +178,7 @@ export default function LandingPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            <div className="flex items-center gap-2.5 font-mono-terminal text-[10px] uppercase tracking-[0.2em] text-[var(--color-ink-tertiary)]">
+            <div className="flex items-center gap-2.5 font-mono-terminal t-eyebrow text-[var(--color-ink-tertiary)]">
               <span className="h-px w-6 bg-accent" />
               {t.landing.badge}
             </div>
@@ -218,7 +218,7 @@ export default function LandingPage() {
           >
             <div className="rounded-2xl border border-white/[0.09] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),transparent)] p-3">
               <HeroMesh className="aspect-square w-full" />
-              <div className="flex items-center justify-between border-t border-white/[0.07] px-1 pt-2.5 font-mono-terminal text-[9px] uppercase tracking-[0.14em] text-[var(--color-ink-tertiary)]">
+              <div className="flex items-center justify-between border-t border-white/[0.07] px-1 pt-2.5 font-mono-terminal t-eyebrow text-[var(--color-ink-tertiary)]">
                 <span>MediaPipe FaceLandmarker</span>
                 <span className="tabular-nums text-accent">478</span>
               </div>
@@ -276,7 +276,7 @@ export default function LandingPage() {
                     <span className="text-[13px] font-semibold text-[var(--color-ink)]">
                       {categoryLabel[cat]}
                     </span>
-                    <span className="font-mono-terminal text-[10px] tabular-nums text-[var(--color-ink-tertiary)]">
+                    <span className="font-mono-terminal t-caption tabular-nums text-[var(--color-ink-tertiary)]">
                       {String(ids.length).padStart(2, "0")}
                     </span>
                   </div>
@@ -308,7 +308,7 @@ export default function LandingPage() {
                 transition={{ duration: 0.45, delay: i * 0.06 }}
                 className="bg-[var(--color-canvas)] p-5"
               >
-                <span className="font-mono-terminal text-[10px] tabular-nums text-accent">
+                <span className="font-mono-terminal t-caption tabular-nums text-accent">
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <h3 className="mt-2.5 text-[13px] font-semibold">
@@ -345,7 +345,7 @@ export default function LandingPage() {
                 transition={{ duration: 0.45, delay: i * 0.07 }}
                 className="bg-[var(--color-canvas)] p-5 text-[12px] leading-relaxed text-[var(--color-ink-secondary)]"
               >
-                <span className="font-mono-terminal mb-2.5 block text-[10px] tabular-nums text-accent">
+                <span className="font-mono-terminal mb-2.5 block t-caption tabular-nums text-accent">
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 {p}
@@ -400,7 +400,7 @@ export default function LandingPage() {
         <div className="mx-auto flex w-full max-w-4xl flex-col gap-5 px-5 sm:px-8">
           <div className="flex items-center gap-2.5">
             <ScanFace className="h-3.5 w-3.5 text-accent" />
-            <span className="text-[10px] font-semibold tracking-[0.16em] text-[var(--color-ink-tertiary)]">
+            <span className="t-caption font-semibold tracking-[0.16em] text-[var(--color-ink-tertiary)]">
               FACESCAN
             </span>
           </div>

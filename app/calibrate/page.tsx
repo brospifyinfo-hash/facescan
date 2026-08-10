@@ -291,7 +291,7 @@ export default function CalibratePage() {
             <h2 className="text-[13px] font-semibold text-[var(--color-ink)]">
               Gemessener Versatz je Metrik (in Standardabweichungen)
             </h2>
-            <p className="mt-1 text-[10px] leading-relaxed text-[var(--color-ink-tertiary)]">
+            <p className="mt-1 t-caption leading-relaxed text-[var(--color-ink-tertiary)]">
               Median über alle Gesichter. Ein Wert weit von 0 heißt: der Mesh
               misst diese Größe für <em>jeden</em> anders als die Zirkel-Norm —
               das ist der Definitionsunterschied, nicht das Gesicht.
@@ -336,7 +336,7 @@ export default function CalibratePage() {
             {copied ? "Kopiert" : "Kalibrierung kopieren"}
           </button>
 
-          <pre className="mt-4 max-h-80 overflow-auto rounded-xl bg-black/40 p-3 text-[10px] leading-relaxed text-[var(--color-ink-secondary)]">
+          <pre className="mt-4 max-h-80 overflow-auto rounded-xl bg-black/40 p-3 t-caption leading-relaxed text-[var(--color-ink-secondary)]">
             {block}
           </pre>
         </>

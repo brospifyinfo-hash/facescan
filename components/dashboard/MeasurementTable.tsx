@@ -24,7 +24,7 @@ export function MeasurementTable({ metrics }: { metrics: Metric[] }) {
                 key={h}
                 scope="col"
                 className={cn(
-                  "pb-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-ink-tertiary)]",
+                  "pb-3 t-eyebrow text-[var(--color-ink-tertiary)]",
                   i > 0 && "text-right",
                 )}
               >

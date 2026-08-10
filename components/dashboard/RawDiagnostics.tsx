@@ -112,7 +112,7 @@ export function RawDiagnostics({ metrics }: { metrics: ScanMetrics }) {
         </tbody>
       </table>
 
-      <pre className="mt-4 max-h-64 overflow-auto rounded-xl bg-black/40 p-3 text-[10px] leading-relaxed text-[var(--color-ink-secondary)]">
+      <pre className="mt-4 max-h-64 overflow-auto rounded-xl bg-black/40 p-3 t-caption leading-relaxed text-[var(--color-ink-secondary)]">
         {text}
       </pre>
     </section>
