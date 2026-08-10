@@ -5,6 +5,7 @@ import { METRIC_EMOJI, type Metric } from "@/lib/metrics";
 import { CountUp } from "./CountUp";
 import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/cn";
+import { BRAND } from "@/lib/theme";
 
 /**
  * One measurement as a compact ring.
@@ -36,7 +37,7 @@ export function MetricDial({
   const stroke = 6;
   const r = (size - stroke) / 2 - 1;
   const c = 2 * Math.PI * r;
-  const color = inRange ? "#95BF47" : "#E0A83E";
+  const color = inRange ? BRAND.accent : BRAND.caution;
 
   return (
     <motion.button

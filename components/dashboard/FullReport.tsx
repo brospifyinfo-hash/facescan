@@ -79,7 +79,7 @@ export function FullReport() {
               type="checkbox"
               checked={consent}
               onChange={(e) => setConsent(e.target.checked)}
-              className="mt-0.5 h-4 w-4 accent-[#95BF47]"
+              className="mt-0.5 h-4 w-4 accent-[var(--color-accent)]"
             />
             <span className="text-xs leading-relaxed text-[var(--color-ink-secondary)]">
               {t.report.consent}

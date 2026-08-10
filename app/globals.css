@@ -290,7 +290,8 @@ body {
 
 /* What sits ON a surface. A fill, not a surface — this is the "style them
    with fills and vibrancy" half of the never-glass-on-glass rule, and it is
-   what the old .glass-subtle-inside-.glass pattern should always have been. */
+   what the old .glass-subtle-inside-.glass pattern should always have been.
+
    Radius is deliberately NOT set here. These sheets load after Tailwind, so
    a border-radius in .fill would beat `rounded-full` on a pill and quietly
    square off every chip in the app. Callers pass the radius:

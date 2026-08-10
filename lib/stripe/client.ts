@@ -6,6 +6,7 @@
 
 import { loadStripe, type Appearance, type Stripe } from "@stripe/stripe-js";
 import type { PlanId } from "@/lib/pricing";
+import { BRAND } from "../theme";
 
 export const VAT_RATE_PERCENT = 19;
 
@@ -36,12 +37,12 @@ export function isStripeAvailable(): boolean {
  * Stripe renders its fields in a cross-origin iframe, so they cannot inherit
  * the page's CSS — every value the form should share has to be restated here.
  * These mirror the app's tokens: zinc-950 surfaces, hairline borders, Inter,
- * and #95BF47 for focus and accents.
+ * and the brand accent for focus and accents.
  */
 export const appearance: Appearance = {
   theme: "night",
   variables: {
-    colorPrimary: "#95BF47",
+    colorPrimary: BRAND.accent,
     colorBackground: "#0d0d0f",
     colorText: "#fafafa",
     colorTextSecondary: "#a1a1aa",
@@ -80,9 +81,9 @@ export const appearance: Appearance = {
     ".Tab--selected": {
       backgroundColor: "rgba(149,191,71,0.08)",
       border: "1px solid rgba(149,191,71,0.5)",
-      color: "#95BF47",
+      color: BRAND.accent,
     },
-    ".TabIcon--selected": { fill: "#95BF47" },
+    ".TabIcon--selected": { fill: BRAND.accent },
     ".Error": { fontSize: "12px" },
   },
 };

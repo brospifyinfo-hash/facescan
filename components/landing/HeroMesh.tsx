@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
+import { BRAND } from "@/lib/theme";
 
 /**
  * Animated landmark mesh over an abstract face.
@@ -110,8 +111,8 @@ export function HeroMesh({ className }: { className?: string }) {
       <svg viewBox={`0 0 ${S} ${S}`} className="h-full w-full" aria-hidden>
         <defs>
           <radialGradient id="heroGlow" cx="50%" cy="45%" r="55%">
-            <stop offset="0%" stopColor="#95BF47" stopOpacity="0.16" />
-            <stop offset="100%" stopColor="#95BF47" stopOpacity="0" />
+            <stop offset="0%" stopColor={BRAND.accent} stopOpacity="0.16" />
+            <stop offset="100%" stopColor={BRAND.accent} stopOpacity="0" />
           </radialGradient>
         </defs>
 
@@ -124,7 +125,7 @@ export function HeroMesh({ className }: { className?: string }) {
             y1={pts[a].y * S}
             x2={pts[b].x * S}
             y2={pts[b].y * S}
-            stroke="#95BF47"
+            stroke={BRAND.accent}
             strokeWidth={0.6}
             initial={reduce ? { opacity: 0.16 } : { pathLength: 0, opacity: 0 }}
             animate={{ pathLength: 1, opacity: 0.16 }}
@@ -144,7 +145,7 @@ export function HeroMesh({ className }: { className?: string }) {
               cx={p.x * S}
               cy={p.y * S}
               r={isFeature ? 2.6 : 1.3}
-              fill={isFeature ? "#CFF08A" : "#95BF47"}
+              fill={isFeature ? BRAND.accentBright : BRAND.accent}
               initial={reduce ? { opacity: 1 } : { opacity: 0, scale: 0 }}
               animate={{ opacity: isFeature ? 0.95 : 0.6, scale: 1 }}
               transition={{

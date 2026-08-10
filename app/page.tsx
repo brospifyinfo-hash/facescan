@@ -62,18 +62,17 @@ function SectionHead({
       className="border-t border-white/[0.09] pt-6"
     >
       <div className="flex items-baseline gap-4">
-        <span className="font-mono-terminal text-[11px] tabular-nums text-accent">
+        {/* The index is a counter, not an action, so it is no longer tinted.
+            The accent marks primary actions only — spending it on section
+            numbers is what left the actual buttons with nothing. */}
+        <span className="font-mono-terminal tnum t-caption text-[var(--color-ink-quaternary)]">
           {index}
         </span>
-        <span className="font-mono-terminal text-[10px] uppercase tracking-[0.22em] text-[var(--color-ink-tertiary)]">
-          {eyebrow}
-        </span>
+        <span className="t-eyebrow">{eyebrow}</span>
       </div>
-      <h2 className="mt-4 max-w-2xl text-[26px] font-semibold leading-[1.15] tracking-tight sm:text-[34px]">
-        {title}
-      </h2>
+      <h2 className="t-title1 mt-4 max-w-2xl">{title}</h2>
       {sub ? (
-        <p className="mt-3 max-w-xl text-[14px] leading-relaxed text-[var(--color-ink-secondary)]">
+        <p className="t-callout mt-3 max-w-xl text-[var(--color-ink-secondary)]">
           {sub}
         </p>
       ) : null}
@@ -184,12 +183,18 @@ export default function LandingPage() {
               {t.landing.badge}
             </div>
 
-            <h1 className="mt-6 text-[2.7rem] font-semibold leading-[1.02] tracking-[-0.02em] sm:text-[4rem]">
+            {/* The accent on half the headline was the largest tinted area
+                on the page, competing with the one control that needed to be
+                found. Emphasis now comes from weight and ink level, which is
+                what the type scale is for. */}
+            <h1 className="t-display mt-6">
               {t.landing.headline}{" "}
-              <span className="text-accent">{t.landing.headlineAccent}</span>
+              <span className="text-[var(--color-ink-secondary)]">
+                {t.landing.headlineAccent}
+              </span>
             </h1>
 
-            <p className="mt-6 max-w-md text-[16px] leading-relaxed text-[var(--color-ink-secondary)]">
+            <p className="t-body mt-6 max-w-md text-[var(--color-ink-secondary)]">
               {t.landing.sub}
             </p>
 

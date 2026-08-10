@@ -156,7 +156,7 @@ export default function QuizPage() {
                   step={spec.step}
                   value={numberValue}
                   onChange={(e) => setAnswer(spec.field, Number(e.target.value))}
-                  className="mt-7 w-full accent-[#95BF47]"
+                  className="mt-7 w-full accent-[var(--color-accent)]"
                   aria-label={copy.title}
                 />
                 <div className="mt-1 flex justify-between font-mono-terminal text-[10px] tabular-nums text-[var(--color-ink-tertiary)]">

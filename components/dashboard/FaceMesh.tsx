@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import type { MeshPaths } from "@/lib/store";
+import { BRAND } from "@/lib/theme";
 
 /**
  * Biometric overlay drawn from the REAL 478 MediaPipe landmarks, in
@@ -60,7 +61,7 @@ export function FaceMesh({
             <motion.path
               d={mesh.tesselation}
               fill="none"
-              stroke="#95BF47"
+              stroke={BRAND.accent}
               strokeWidth={0.0007}
               opacity={0.22}
               initial={{ pathLength: 0 }}
@@ -70,7 +71,7 @@ export function FaceMesh({
             <motion.path
               d={mesh.contours}
               fill="none"
-              stroke="#95BF47"
+              stroke={BRAND.accent}
               strokeWidth={0.0022}
               strokeLinecap="round"
               opacity={0.85}
@@ -81,7 +82,7 @@ export function FaceMesh({
             <motion.path
               d={mesh.dots}
               fill="none"
-              stroke="#CFF08A"
+              stroke={BRAND.accentBright}
               strokeWidth={0.0035}
               strokeLinecap="round"
               initial={{ opacity: 0 }}

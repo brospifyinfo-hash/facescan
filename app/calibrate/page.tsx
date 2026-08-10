@@ -177,7 +177,7 @@ export default function CalibratePage() {
             step={1}
             value={rating}
             onChange={(e) => setRating(Number(e.target.value))}
-            className="w-40 accent-[#95BF47]"
+            className="w-40 accent-[var(--color-accent)]"
           />
           <span className="w-10 text-center text-[15px] font-semibold tabular-nums text-[var(--color-ink)]">
             {rating}

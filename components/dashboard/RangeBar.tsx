@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import type { Metric } from "@/lib/metrics";
 import { useT } from "@/lib/i18n";
+import { BRAND } from "@/lib/theme";
 
 const pct = (v: number, [lo, hi]: [number, number]) =>
   Math.max(0, Math.min(100, ((v - lo) / (hi - lo)) * 100));
@@ -25,7 +26,7 @@ export function RangeBar({ metric }: { metric: Metric }) {
   const bandL = pct(metric.ideal[0], metric.scale);
   const bandR = pct(metric.ideal[1], metric.scale);
   const marker = pct(metric.value, metric.scale);
-  const color = inRange ? "#95BF47" : "#E0A83E";
+  const color = inRange ? BRAND.accent : BRAND.caution;
 
   return (
     <div className="pt-1">

@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { BRAND } from "@/lib/theme";
 
 export interface RadarAxis {
   label: string;
@@ -76,7 +77,7 @@ export function RadarChart({
       <motion.path
         d={shape}
         fill="rgba(149,191,71,0.18)"
-        stroke="#95BF47"
+        stroke={BRAND.accent}
         strokeWidth={2}
         strokeLinejoin="round"
         initial={{ opacity: animate ? 0 : 1, scale: animate ? 0.6 : 1 }}
@@ -88,7 +89,7 @@ export function RadarChart({
       {/* Vertices */}
       {axes.map((a, i) => {
         const [x, y] = pointAt(i, a.value / 100);
-        return <circle key={a.label} cx={x} cy={y} r={3.5} fill="#95BF47" />;
+        return <circle key={a.label} cx={x} cy={y} r={3.5} fill={BRAND.accent} />;
       })}
 
       {/* Labels */}

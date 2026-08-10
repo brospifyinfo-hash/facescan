@@ -272,7 +272,7 @@ export function PaymentForm({
               type="checkbox"
               checked={row.checked}
               onChange={(e) => row.set(e.target.checked)}
-              className="mt-0.5 h-4 w-4 shrink-0 accent-[#95BF47]"
+              className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--color-accent)]"
             />
             <span>{row.node}</span>
           </label>

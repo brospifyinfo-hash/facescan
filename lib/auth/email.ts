@@ -10,6 +10,7 @@
 // run in production.
 
 import { Resend } from "resend";
+import { BRAND } from "@/lib/theme";
 
 const FROM = process.env.AUTH_FROM_EMAIL ?? "FaceScan <onboarding@resend.dev>";
 
@@ -27,15 +28,15 @@ function template(code: string) {
       "It expires in 10 minutes and can only be used once.",
       "If you didn't request it, you can ignore this email — no account was created.",
     ].join("\n"),
-    html: `<!doctype html><html><body style="margin:0;background:#09090b;font-family:ui-sans-serif,system-ui,-apple-system,sans-serif;color:#e4e4e7">
+    html: `<!doctype html><html><body style="margin:0;background:${BRAND.canvas};font-family:ui-sans-serif,system-ui,-apple-system,sans-serif;color:${BRAND.inkSecondary}">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:40px 16px">
     <tr><td align="center">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:440px;background:#111113;border:1px solid #27272a;border-radius:16px;padding:32px">
-        <tr><td style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#95BF47;padding-bottom:20px">FaceScan</td></tr>
-        <tr><td style="font-size:19px;font-weight:600;color:#fafafa;padding-bottom:8px">Your sign-in code</td></tr>
-        <tr><td style="font-size:14px;line-height:1.6;color:#a1a1aa;padding-bottom:24px">Enter this code to open your analysis. It expires in 10 minutes.</td></tr>
-        <tr><td align="center" style="padding:18px 0;background:#0b0b0d;border:1px solid #27272a;border-radius:12px;font-size:30px;font-weight:600;letter-spacing:.35em;color:#fafafa">${spaced}</td></tr>
-        <tr><td style="font-size:12px;line-height:1.6;color:#71717a;padding-top:24px">If you didn't request this, ignore it — no account was created.</td></tr>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:440px;background:${BRAND.surface};border:1px solid #27272a;border-radius:16px;padding:32px">
+        <tr><td style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:${BRAND.accent};padding-bottom:20px">FaceScan</td></tr>
+        <tr><td style="font-size:19px;font-weight:600;color:${BRAND.ink};padding-bottom:8px">Your sign-in code</td></tr>
+        <tr><td style="font-size:14px;line-height:1.6;color:${BRAND.inkSecondary};padding-bottom:24px">Enter this code to open your analysis. It expires in 10 minutes.</td></tr>
+        <tr><td align="center" style="padding:18px 0;background:${BRAND.canvas};border:1px solid #27272a;border-radius:12px;font-size:30px;font-weight:600;letter-spacing:.35em;color:${BRAND.ink}">${spaced}</td></tr>
+        <tr><td style="font-size:12px;line-height:1.6;color:${BRAND.inkTertiary};padding-top:24px">If you didn't request this, ignore it — no account was created.</td></tr>
       </table>
     </td></tr>
   </table>

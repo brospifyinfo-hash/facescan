@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { CountUp } from "./CountUp";
 import { useT } from "@/lib/i18n";
+import { BRAND } from "@/lib/theme";
 
 /**
  * The hero figure. Exactly one per view, in the body sans.
@@ -11,7 +12,7 @@ import { useT } from "@/lib/i18n";
  */
 export function ScoreRing({
   score,
-  color = "#95BF47",
+  color = BRAND.accent,
   size = 168,
 }: {
   score: number; // 0–10
@@ -101,15 +102,17 @@ export function ScoreRing({
       </svg>
 
       <div className="absolute inset-0 flex flex-col items-center justify-center">
+        {/* Display size, so tracking goes NEGATIVE — San Francisco tightens
+            above 28pt and a hero figure set at default tracking reads loose.
+            Proportional figures, not tabular: tabular-nums pads the "7" in
+            "7.1" to the width of a "0" and opens a visible gap at this size. */}
         <CountUp
           value={score}
           decimals={1}
           duration={1500}
-          className="text-[46px] font-semibold leading-none tracking-tight text-[var(--color-ink)]"
+          className="text-[46px] font-semibold leading-none tracking-[-0.03em] text-[var(--color-ink)]"
         />
-        <span className="mt-1 text-[9px] font-medium uppercase tracking-[0.2em] text-[var(--color-ink-tertiary)]">
-          {t.results.outOf}
-        </span>
+        <span className="t-eyebrow mt-1.5">{t.results.outOf}</span>
       </div>
     </div>
   );
@@ -147,7 +150,7 @@ export function MiniRing({
             cy={size / 2}
             r={r}
             fill="none"
-            stroke="rgba(255,255,255,0.08)"
+            stroke={BRAND.track}
             strokeWidth={stroke}
           />
           <motion.circle
@@ -155,7 +158,7 @@ export function MiniRing({
             cy={size / 2}
             r={r}
             fill="none"
-            stroke="#95BF47"
+            stroke={BRAND.accent}
             strokeWidth={stroke}
             strokeLinecap="round"
             strokeDasharray={c}

@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { TIER_ORDER, type BandId } from "@/lib/metrics";
 import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/cn";
+import { BRAND } from "@/lib/theme";
 
 /**
  * Neutral parametric face.
@@ -33,7 +34,7 @@ function FaceGlyph({ t, active }: { t: number; active: boolean }) {
   const browLift = 3.6 + 2.4 * t;
   const cheekbone = Math.max(0, t * 1.4 - 0.35); // only emerges high up
 
-  const stroke = active ? "#95BF47" : "rgba(255,255,255,0.38)";
+  const stroke = active ? BRAND.accent : "rgba(255,255,255,0.38)";
 
   const head = [
     `M${cx - cheekW} ${gonialY - 8}`,
