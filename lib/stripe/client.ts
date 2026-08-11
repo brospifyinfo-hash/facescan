@@ -6,7 +6,7 @@
 
 import { loadStripe, type Appearance, type Stripe } from "@stripe/stripe-js";
 import type { PlanId } from "@/lib/pricing";
-import { BRAND } from "../theme";
+import { alpha, BRAND } from "../theme";
 
 export const VAT_RATE_PERCENT = 19;
 
@@ -62,8 +62,8 @@ export const appearance: Appearance = {
       padding: "12px 14px",
     },
     ".Input:focus": {
-      border: "1px solid rgba(149,191,71,0.6)",
-      boxShadow: "0 0 0 3px rgba(149,191,71,0.12)",
+      border: `1px solid ${alpha(BRAND.accent, 0.6)}`,
+      boxShadow: `0 0 0 3px ${alpha(BRAND.accent, 0.12)}`,
     },
     ".Input--invalid": { border: "1px solid rgba(248,113,113,0.6)" },
     ".Label": {
@@ -79,8 +79,8 @@ export const appearance: Appearance = {
     },
     ".Tab:hover": { backgroundColor: "rgba(255,255,255,0.05)" },
     ".Tab--selected": {
-      backgroundColor: "rgba(149,191,71,0.08)",
-      border: "1px solid rgba(149,191,71,0.5)",
+      backgroundColor: alpha(BRAND.accent, 0.08),
+      border: `1px solid ${alpha(BRAND.accent, 0.5)}`,
       color: BRAND.accent,
     },
     ".TabIcon--selected": { fill: BRAND.accent },

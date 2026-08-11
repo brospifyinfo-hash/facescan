@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { BRAND } from "@/lib/theme";
+import { alpha, BRAND } from "@/lib/theme";
 
 export interface RadarAxis {
   label: string;
@@ -76,7 +76,7 @@ export function RadarChart({
       {/* Value polygon */}
       <motion.path
         d={shape}
-        fill="rgba(149,191,71,0.18)"
+        fill={alpha(BRAND.accent, 0.18)}
         stroke={BRAND.accent}
         strokeWidth={2}
         strokeLinejoin="round"

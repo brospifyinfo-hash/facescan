@@ -284,6 +284,42 @@ export const de: Dict = {
     tierSub: "Sieben Stufen nach Proportionstreue",
     tierNote:
       "Die Gesichter unterscheiden sich nur in den Proportionen, die der Scan misst — Kieferverjüngung, Kinnlänge, Mittelgesichtshöhe. Sie sind keine Attraktivitätsskala.",
+
+    confidential: "Vertraulich",
+    faceDetected: "Gesicht erkannt",
+    scanId: "Scan-ID",
+    scanDate: "Datum",
+    detailed: "Detaillierte Analyse",
+    notMeasured: "Nicht messbar",
+    strengthsTitle: "Deine Stärken",
+    optimizeTitle: "Optimierungspotenzial",
+    potential: "Potenzial-Score",
+    potentialBody:
+      "Erreichbar, wenn die beeinflussbaren Messwerte auf ihrem Referenzwert lägen.",
+    potentialWhat:
+      "Kein geschätzter Wert: derselbe Score, neu gerechnet mit jedem Messwert auf seinem Referenzwert, den Verhalten, Pflege, Haltung oder die Aufnahme selbst tatsächlich bewegen. Knochen bleibt, wo er ist — die Differenz kommt ausschließlich aus dem, was du beeinflussen kannst.",
+    tipTitle: "Tipp für dich",
+    tipBody:
+      "Konsistenz ist der Schlüssel. Kleine tägliche Verbesserungen führen zu großen Ergebnissen.",
+    moreTips: "Mehr Tipps",
+    tabsLabel: "Report-Navigation",
+    tabs: {
+      result: "Ergebnis",
+      analysis: "Analyse",
+      strengths: "Stärken",
+      tips: "Tipps",
+    },
+    modules: {
+      symmetry: "Symmetrie",
+      eyes: "Augenbereich",
+      jaw: "Kieferlinie",
+      proportions: "Proportionen",
+      nose: "Nasenform",
+      lips: "Lippen",
+      skin: "Hautqualität",
+      faceShape: "Gesichtsform",
+      midface: "Mittelgesicht",
+    },
   },
   checkout: {
     eyebrow: "Einmalige Freischaltung",

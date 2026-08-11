@@ -283,6 +283,42 @@ export const en: Dict = {
     tierSub: "Seven bands by proportion conformity",
     tierNote:
       "The faces differ only in the proportions the scan measures — jaw taper, chin length, midface height. They are not a scale of attractiveness.",
+
+    confidential: "Confidential",
+    faceDetected: "Face detected",
+    scanId: "Scan ID",
+    scanDate: "Date",
+    detailed: "Detailed analysis",
+    notMeasured: "Not measurable",
+    strengthsTitle: "Your strengths",
+    optimizeTitle: "Room to improve",
+    potential: "Potential score",
+    potentialBody:
+      "Reachable if the measurements you can influence sat at their reference.",
+    potentialWhat:
+      "Not an estimate: the same score, recomputed with every measurement that behaviour, grooming, posture or the photograph itself genuinely moves set to its reference value. Bone stays where it is — the difference comes only from what you can actually change.",
+    tipTitle: "Your tip",
+    tipBody:
+      "Consistency is the lever. Small daily improvements compound into large results.",
+    moreTips: "More tips",
+    tabsLabel: "Report navigation",
+    tabs: {
+      result: "Result",
+      analysis: "Analysis",
+      strengths: "Strengths",
+      tips: "Tips",
+    },
+    modules: {
+      symmetry: "Symmetry",
+      eyes: "Eye region",
+      jaw: "Jawline",
+      proportions: "Proportions",
+      nose: "Nose shape",
+      lips: "Lips",
+      skin: "Skin quality",
+      faceShape: "Face shape",
+      midface: "Midface",
+    },
   },
   checkout: {
     eyebrow: "One-time unlock",

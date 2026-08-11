@@ -284,6 +284,42 @@ export const es: Dict = {
     tierSub: "Siete niveles por conformidad de proporciones",
     tierNote:
       "Los rostros solo difieren en las proporciones que mide el escaneo: afilado mandibular, longitud del mentón, altura del tercio medio. No son una escala de atractivo.",
+
+    confidential: "Confidencial",
+    faceDetected: "Rostro detectado",
+    scanId: "ID de escaneo",
+    scanDate: "Fecha",
+    detailed: "Análisis detallado",
+    notMeasured: "No medible",
+    strengthsTitle: "Tus fortalezas",
+    optimizeTitle: "Margen de mejora",
+    potential: "Puntuación potencial",
+    potentialBody:
+      "Alcanzable si las medidas que puedes influir estuvieran en su referencia.",
+    potentialWhat:
+      "No es una estimación: la misma puntuación, recalculada con cada medida que el comportamiento, el cuidado, la postura o la propia foto sí mueven, situada en su valor de referencia. El hueso se queda donde está: la diferencia sale solo de lo que puedes cambiar.",
+    tipTitle: "Tu consejo",
+    tipBody:
+      "La constancia es la palanca. Las pequeñas mejoras diarias se acumulan en grandes resultados.",
+    moreTips: "Más consejos",
+    tabsLabel: "Navegación del informe",
+    tabs: {
+      result: "Resultado",
+      analysis: "Análisis",
+      strengths: "Fortalezas",
+      tips: "Consejos",
+    },
+    modules: {
+      symmetry: "Simetría",
+      eyes: "Zona ocular",
+      jaw: "Línea mandibular",
+      proportions: "Proporciones",
+      nose: "Forma de la nariz",
+      lips: "Labios",
+      skin: "Calidad de la piel",
+      faceShape: "Forma del rostro",
+      midface: "Tercio medio",
+    },
   },
   checkout: {
     eyebrow: "Desbloqueo único",

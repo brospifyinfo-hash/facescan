@@ -40,37 +40,51 @@
      One accent, and per the tint rule it marks PRIMARY ACTIONS ONLY:
      "When every element is tinted, nothing stands out." The old build tinted
      eyebrows, step numbers, icons, borders and rules as well, which left the
-     actual buttons with nothing to distinguish them. */
-  --color-accent: #9ecb4f;
-  --color-accent-bright: #b4de69;
-  --color-accent-press: #85ae3f;
-  --color-accent-ink: #0a0a0b;
+     actual buttons with nothing to distinguish them.
+
+     The scanner green. Saturated enough to read as an instrument readout and
+     desaturated enough not to read as neon — the difference between a green
+     that says "measured" and one that says "gaming rig" is almost entirely
+     how much blue is left in it. */
+  --color-accent: #5fe38a;
+  --color-accent-bright: #73f59a;
+  --color-accent-press: #4ac874;
+  --color-accent-ink: #05080d;
+  /* The accent at surface density. A 12%-alpha wash of the bright green
+     cannot carry ink at full contrast; this can, so filled chips and icon
+     plates use it instead of yet another translucent layer. */
+  --color-accent-deep: #123b27;
 
   /* ---- Content-layer surfaces --------------------------------------------
-     A deliberate value ladder. Each step is small — roughly 3% lightness —
-     because in a dark interface that is already a clear edge, and anything
-     larger reads as a different colour rather than a different height. */
-  --color-canvas: #0a0a0b;
-  --color-surface: #131316;
-  --color-surface-raised: #1a1a1f;
-  --color-surface-sunken: #0e0e10;
+     A deliberate value ladder in near-black with a blue-green undertone —
+     never #000, because a true black leaves nothing below it and every
+     surface then has to read as raised. Each step is small (~2% lightness):
+     in a dark interface that is already a clear edge, and anything larger
+     reads as a different colour rather than a different height. */
+  --color-canvas: #05080d;
+  --color-surface: #090e14;
+  --color-surface-raised: #0b1118;
+  --color-surface-sunken: #04070b;
 
   /* ---- Ink ----------------------------------------------------------------
      Four levels, mirroring Apple's label / secondaryLabel / tertiaryLabel /
      quaternaryLabel. Hierarchy comes from these plus size — not from colour. */
-  --color-ink: #f5f5f7;
-  --color-ink-secondary: #a1a1a8;
-  --color-ink-tertiary: #6e6e76;
-  --color-ink-quaternary: #48484f;
+  --color-ink: #f5f7f8;
+  --color-ink-secondary: #9aa4ae;
+  --color-ink-tertiary: #66717c;
+  --color-ink-quaternary: #454e57;
 
   /* ---- Separators ---------------------------------------------------------
      Hairlines, not borders. Opaque enough to read, faint enough to disappear
      when you are not looking for them. */
-  --color-hairline: rgba(255, 255, 255, 0.08);
-  --color-hairline-strong: rgba(255, 255, 255, 0.14);
+  --color-hairline: rgba(255, 255, 255, 0.1);
+  --color-hairline-strong: rgba(255, 255, 255, 0.16);
 
-  --color-positive: #9ecb4f;
-  --color-caution: #e0a33c;
+  --color-positive: #5fe38a;
+  /* Amber, and it does double duty: an out-of-range reading, and the
+     optimisation column. Both mean "there is something here", neither means
+     "something is wrong", which is exactly why it is not red. */
+  --color-caution: #f2b83f;
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
     "SF Pro Text", "Segoe UI", sans-serif;
@@ -87,12 +101,26 @@
      catches it as a wobble even when nobody can name what is wrong.
      --r-inner is the derived value: use it on anything nested one level. */
   --r-window: 28px;
-  --r-card: 20px;
+  --r-card: 22px;
   --r-control: 14px;
   --r-chip: 999px;
   --pad-card: 24px;
   --pad-tight: 14px;
   --r-inner: calc(var(--r-card) - var(--pad-tight));
+
+  /* The report's own panel geometry. Concentric would put a nested block at
+     22 − 18 = 4px, which is a square corner in practice — so the report's
+     panels deliberately hold no nested rounded blocks, and the pair below is
+     all the geometry they need. */
+  --r-panel: 22px;
+  --pad-panel: 18px;
+
+  /* Widget geometry. 26px against a ~180px small tile is the ~1:7 ratio iOS
+     uses, and it stays 26 at every tile size — a radius that scales with the
+     tile is the thing that stops reading as a widget. */
+  --r-widget: 26px;
+  --pad-widget: 18px;
+  --gap-board: 12px;
 
   /* ---- Motion -------------------------------------------------------------
      Approximations of SwiftUI's three named springs. CSS springs need
@@ -102,13 +130,28 @@
 
        smooth  no overshoot at all — for anything showing information
        snappy  a hint of overshoot — for controls acknowledging a press
-       bouncy  visible overshoot — sparingly, for a real moment */
+       bouncy  visible overshoot — sparingly, for a real moment
+
+     THESE USED TO LIVE INSIDE `@media (min-width: 768px)`, and not inside a
+     selector within it — bare declarations directly in an at-rule body,
+     which is invalid and dropped by every parser. So every
+     `transition: … var(--dur-fast) var(--ease-smooth)` in the app resolved
+     to nothing and no interactive transition ran, at any width. Motion
+     tokens are not a breakpoint concern; they belong in the root. */
   --ease-smooth: cubic-bezier(0.32, 0.72, 0, 1);
   --ease-snappy: cubic-bezier(0.28, 0.9, 0.3, 1.06);
   --ease-bouncy: cubic-bezier(0.3, 1.4, 0.5, 1);
   --dur-fast: 180ms;
   --dur-base: 280ms;
   --dur-slow: 520ms;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --pad-widget: 22px;
+    --gap-board: 16px;
+    --pad-panel: 22px;
+  }
 }
 
 html {
@@ -266,6 +309,131 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
+   WIDGETS — the content layer's primary object.
+
+   WHY A WIDGET AND NOT A CARD
+   ---------------------------
+   A web "card" is a bordered box: a 1px outline, a modest radius, content
+   stacked inside it, and usually several ideas per box. An iOS widget is a
+   different object, and the differences are what make it read as Apple:
+
+     NO BORDER. A widget is a solid tile. Depth comes from a shadow beneath
+       and a bright catch along the top edge, the way a physical object sits
+       on a surface. A hairline outline is a drawing convention; an object
+       does not have one.
+     BIG, CONSTANT RADIUS. Roughly a seventh of the tile's width, and the
+       same value whether the tile is small or large. This is the single
+       strongest signal — a 12px radius reads as a web card at any size.
+     CONTINUOUS CORNERS. Apple's corners are squircles: curvature ramps in
+       gradually instead of switching from straight to arc at a tangent
+       point. `corner-shape` does this natively where it exists; elsewhere
+       the radius alone is close enough that only a designer would catch it.
+     ONE IDEA. A weather widget shows a temperature. It does not have
+       subsections. Anything needing a second heading is a second widget.
+     THE NUMBER DOMINATES. A widget is mostly empty space around one figure.
+       Label small and secondary, value large. That ratio is the look.
+     GENEROUS, UNIFORM MARGINS — over a tenth of the tile's width.
+
+   The board below is the other half: tiles on a strict column grid with
+   equal gutters, spanning 1, 2 or 4 columns. Tiles align; they do not flow.
+--------------------------------------------------------------------------- */
+
+.widget {
+  position: relative;
+  background: linear-gradient(180deg, #1c1c21 0%, #161619 100%);
+  border-radius: var(--r-widget);
+  padding: var(--pad-widget);
+  box-shadow:
+    /* Top-edge catch — where light lands on a raised object. */
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.055),
+    /* Contact shadow: tight, dark, sells the tile as resting on something. */
+    0 2px 6px -2px rgba(0, 0, 0, 0.55),
+    /* Ambient: wide and soft, the lift off the canvas. */
+    0 16px 40px -16px rgba(0, 0, 0, 0.85);
+}
+
+/* Squircle where supported. Progressive: the radius already carries the
+   shape, and this only refines how the curvature ramps into it. */
+@supports (corner-shape: squircle) {
+  .widget,
+  .widget-inner {
+    corner-shape: squircle;
+  }
+}
+
+/* A tile that is itself a control. Presses like one. */
+.widget-tappable {
+  cursor: pointer;
+  transition:
+    transform var(--dur-fast) var(--ease-snappy),
+    background var(--dur-fast) var(--ease-smooth);
+}
+.widget-tappable:active {
+  transform: scale(0.975);
+}
+@media (prefers-reduced-motion: reduce) {
+  .widget-tappable:active {
+    transform: none;
+  }
+}
+
+/* Nested block inside a widget — concentric, so the inner curve is parallel
+   to the outer one rather than fighting it. */
+.widget-inner {
+  border-radius: calc(var(--r-widget) - var(--pad-widget));
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ---- The board -----------------------------------------------------------
+   Two columns on a phone, four from tablet up — the same doubling the iOS
+   home screen uses. Spans are declared by the tile, so a layout change is a
+   class change rather than a rewrite of the grid. */
+.widget-board {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gap-board);
+  align-items: start;
+}
+@media (min-width: 768px) {
+  .widget-board {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Small tiles are SQUARE, and that is deliberate: the square is what makes a
+   stat read as a widget rather than as a box with a number in it. Only the
+   small ones — forcing a ratio on a tile holding a paragraph would either
+   clip the text or strand it in dead space. */
+.w-sm {
+  grid-column: span 1;
+  aspect-ratio: 1;
+}
+.w-md {
+  grid-column: span 2;
+}
+.w-lg {
+  grid-column: span 2;
+}
+@media (min-width: 768px) {
+  .w-lg {
+    grid-column: span 4;
+  }
+}
+/* Two columns wide and two rows tall — the hero tile. */
+.w-hero {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+/* One column, two rows — a portrait tile. The photo is 3:4, and a portrait
+   subject in a square tile is either letterboxed or cropped through the
+   chin; neither is acceptable when the crop IS the measurement. */
+.w-tall {
+  grid-column: span 1;
+  grid-row: span 2;
+}
+
+/* ---------------------------------------------------------------------------
    CONTENT LAYER — opaque. No backdrop-filter anywhere below this line.
 --------------------------------------------------------------------------- */
 
@@ -308,6 +476,147 @@ body {
    so the group reads as one object rather than as a stack of cards. */
 .group-rows > * + * {
   border-top: 1px solid var(--color-hairline);
+}
+
+/* ---------------------------------------------------------------------------
+   THE REPORT PANEL — the scanner readout's content object.
+
+   A widget (above) is a solid tile with no border, which is the iOS home
+   screen's object. The report needs the other one: a near-black plate with a
+   HAIRLINE that catches light, because the whole page is near-black and a
+   borderless tile at 4% lightness above the canvas disappears. The border is
+   doing the work the widget's shadow does.
+
+   Four layers, and the restraint is the point — one gradient so the plate is
+   not flat, one hairline, one specular top edge, one soft drop. No blur, no
+   heavy glassmorphism: the material has to hold small type at 12px, and a
+   backdrop-filter under scrolling content is where small type goes to die.
+--------------------------------------------------------------------------- */
+
+.panel {
+  position: relative;
+  background: linear-gradient(
+    180deg,
+    rgba(13, 20, 28, 0.92) 0%,
+    rgba(9, 14, 20, 0.92) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--r-panel);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.05),
+    0 10px 40px rgba(0, 0, 0, 0.25);
+}
+
+@supports (corner-shape: squircle) {
+  .panel {
+    corner-shape: squircle;
+  }
+}
+
+/* Two panels that must read as a PAIR with opposite meanings — strengths and
+   optimisation. The tint is a wash at the top edge only, at an alpha low
+   enough that it reads as light falling on the plate rather than as a
+   coloured card. Anything stronger and the tint rule breaks: the accent has
+   to keep meaning "act here", and a fully tinted panel outshouts the button. */
+.panel-lit-accent::before,
+.panel-lit-amber::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.panel-lit-accent::before {
+  background: radial-gradient(
+    120% 70% at 0% 0%,
+    rgba(95, 227, 138, 0.07) 0%,
+    transparent 62%
+  );
+}
+.panel-lit-amber::before {
+  background: radial-gradient(
+    120% 70% at 100% 0%,
+    rgba(242, 184, 63, 0.07) 0%,
+    transparent 62%
+  );
+}
+
+/* ---- Scanner furniture ---------------------------------------------------
+   Corner brackets, not a frame. A closed rectangle around a face is a border;
+   four corners are a viewfinder, and the difference is entirely that the eye
+   completes the second one itself. */
+
+.scan-corner {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border-color: var(--color-accent);
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+/* The status dot. The glow is a real box-shadow rather than a blurred
+   sibling — one element, and it cannot drift out of alignment. */
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(95, 227, 138, 0.14), 0 0 10px rgba(95, 227, 138, 0.7);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .status-dot {
+    animation: status-pulse 2.6s var(--ease-smooth, ease-in-out) infinite;
+  }
+}
+
+@keyframes status-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px rgba(95, 227, 138, 0.14), 0 0 10px rgba(95, 227, 138, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(95, 227, 138, 0.05), 0 0 14px rgba(95, 227, 138, 0.45);
+  }
+}
+
+/* ---- Bars ----------------------------------------------------------------
+   Rounded ends on BOTH the track and the fill. A square-ended fill inside a
+   rounded track is the single most common tell of a hand-built progress bar. */
+
+.bar-track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--color-accent-press) 0%,
+    var(--color-accent) 100%
+  );
+}
+
+/* ---- Tab bar -------------------------------------------------------------
+   Navigation layer, so this one IS allowed the glass material — it floats
+   over content and moves independently of it, which is the whole test. */
+
+.tabbar {
+  background: linear-gradient(
+    180deg,
+    rgba(12, 18, 26, 0.82) 0%,
+    rgba(6, 10, 15, 0.92) 100%
+  );
+  backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.09),
+    0 12px 36px -10px rgba(0, 0, 0, 0.85);
 }
 
 /* ---------------------------------------------------------------------------

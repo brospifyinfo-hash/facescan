@@ -284,6 +284,42 @@ export const fr: Dict = {
     tierSub: "Sept paliers selon la conformité des proportions",
     tierNote:
       "Les visages ne diffèrent que par les proportions que le scan mesure — effilé de la mâchoire, longueur du menton, hauteur de l'étage moyen. Ce n'est pas une échelle de beauté.",
+
+    confidential: "Confidentiel",
+    faceDetected: "Visage détecté",
+    scanId: "ID du scan",
+    scanDate: "Date",
+    detailed: "Analyse détaillée",
+    notMeasured: "Non mesurable",
+    strengthsTitle: "Vos points forts",
+    optimizeTitle: "Marge de progression",
+    potential: "Score potentiel",
+    potentialBody:
+      "Atteignable si les mesures que vous pouvez influencer étaient à leur référence.",
+    potentialWhat:
+      "Pas une estimation : le même score, recalculé avec chaque mesure que le comportement, les soins, la posture ou la photo elle-même déplacent réellement, ramenée à sa valeur de référence. L'os reste où il est — l'écart ne vient que de ce que vous pouvez changer.",
+    tipTitle: "Votre conseil",
+    tipBody:
+      "La régularité est le levier. De petites améliorations quotidiennes produisent de grands résultats.",
+    moreTips: "Plus de conseils",
+    tabsLabel: "Navigation du rapport",
+    tabs: {
+      result: "Résultat",
+      analysis: "Analyse",
+      strengths: "Points forts",
+      tips: "Conseils",
+    },
+    modules: {
+      symmetry: "Symétrie",
+      eyes: "Zone des yeux",
+      jaw: "Ligne de mâchoire",
+      proportions: "Proportions",
+      nose: "Forme du nez",
+      lips: "Lèvres",
+      skin: "Qualité de peau",
+      faceShape: "Forme du visage",
+      midface: "Étage moyen",
+    },
   },
   checkout: {
     eyebrow: "Déblocage unique",

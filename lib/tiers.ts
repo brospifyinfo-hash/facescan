@@ -26,18 +26,26 @@ export interface Band {
 // (median 5.8), so the ladder is populated the way the scale implies rather
 // than dumping half of everyone in the bottom tier. Resulting shares:
 // Sub 3 ~8%, Sub 5 ~17%, LTN ~25%, MTN ~25%, HTN ~17%, Chad ~7%, True Adam ~1%.
+// Colours ramp from the accent green to the caution amber, and the ramp is
+// the only thing the band's colour says: near the reference, or further from
+// it. It stops short of red at both the palette level and the semantic one —
+// a measurement outside a reference band is unusual, not an error.
+//
+// THRESHOLDS ARE UNCHANGED by the redesign. Only the hexes moved, because the
+// old ramp was olive-to-ochre against an olive accent and reads as dirt
+// against the scanner green.
 const THRESHOLDS: Array<[number, BandId, string]> = [
   [8.5, "elite", BRAND.accent],
   [7.6, "exceptional", BRAND.accent],
-  [6.8, "strong", "#9DC44F"],
-  [5.9, "solid", "#A8C55F"],
-  [4.7, "reference", "#C8BC5E"],
-  [3.1, "emerging", "#D4B057"],
+  [6.8, "strong", "#7cd98a"],
+  [5.9, "solid", "#a6cf7e"],
+  [4.7, "reference", "#ccc46b"],
+  [3.1, "emerging", "#e0b555"],
 ];
 
 export function bandFor(overall: number): Band {
   for (const [min, id, color] of THRESHOLDS) {
     if (overall >= min) return { id, color };
   }
-  return { id: "developing", color: "#D9A552" };
+  return { id: "developing", color: BRAND.caution };
 }

@@ -11,6 +11,29 @@
 
 export type CategoryId = "eyes" | "jaw" | "proportions" | "midface";
 
+/**
+ * The rows of the detailed analysis on the report.
+ *
+ * These are the ANALYSIS RESPONSE'S MODULES, not the four categories above —
+ * eight of the nine, dropping `hair`, which is declared unimplemented and
+ * would be an empty row on every scan. `midface` is the ninth id and appears
+ * only on the demo path, where the five stored composites are all there is.
+ *
+ * It lives here rather than beside the mapping in lib/report-model.ts so the
+ * dictionaries can key their labels off it without pulling the store — and
+ * with it zustand — into the i18n module graph.
+ */
+export type RowId =
+  | "symmetry"
+  | "eyes"
+  | "jaw"
+  | "proportions"
+  | "nose"
+  | "lips"
+  | "skin"
+  | "faceShape"
+  | "midface";
+
 // 15 metrics, not 16: `eyeSpacing` (intercanthal / eye width) measured
 // essentially the same thing as `esr` (interpupillary / face width) with a
 // weaker reference basis, and 15 fills a 3- or 5-column grid exactly.

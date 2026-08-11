@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#09090b",
+  themeColor: "#05080d",
 };
 
 export default function RootLayout({
@@ -31,13 +31,17 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body className="min-h-dvh bg-[var(--color-canvas)] font-sans text-[var(--color-ink)] antialiased">
-        {/* Ambient field — gives the glass panels something to refract. */}
+        {/* Ambient field — gives the glass panels something to refract, and
+            keeps the canvas from reading as flat black behind the report's
+            near-black plates. Weaker than the previous pass: at the new
+            surface values a 10% wash was visible AS a gradient rather than as
+            depth, which is the point at which it stops being ambient. */}
         <div
           aria-hidden
           className="pointer-events-none fixed inset-0 -z-10"
           style={{
             background:
-              "radial-gradient(1100px 620px at 50% -12%, rgba(149,191,71,0.10), transparent 62%), radial-gradient(800px 500px at 88% 8%, rgba(120,160,220,0.055), transparent 60%), radial-gradient(700px 420px at 6% 32%, rgba(149,191,71,0.045), transparent 60%)",
+              "radial-gradient(1100px 620px at 50% -12%, rgba(95,227,138,0.07), transparent 62%), radial-gradient(800px 500px at 88% 8%, rgba(84,140,214,0.05), transparent 60%), radial-gradient(700px 420px at 6% 32%, rgba(95,227,138,0.03), transparent 60%)",
           }}
         />
         <I18nProvider>{children}</I18nProvider>

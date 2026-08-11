@@ -1,4 +1,4 @@
-import type { BandId, CategoryId, MetricId, PlanId } from "@/lib/metrics";
+import type { BandId, CategoryId, MetricId, PlanId, RowId } from "@/lib/metrics";
 
 // Adding a language = write one dictionary file against the `Dict` type,
 // register it in ./index.ts, and add it here. Nothing else changes; the
@@ -135,6 +135,31 @@ export interface Dict {
     tierTitle: string;
     tierSub: string;
     tierNote: string;
+
+    /* ---- The redesigned report ------------------------------------------ */
+    /** Header pill. States a property of the page, not an action. */
+    confidential: string;
+    faceDetected: string;
+    scanId: string;
+    scanDate: string;
+    detailed: string;
+    /** Shown in place of a score when a module could not be evaluated. */
+    notMeasured: string;
+    strengthsTitle: string;
+    optimizeTitle: string;
+    potential: string;
+    /** One line under the ring: what the figure is. */
+    potentialBody: string;
+    /** The full derivation, revealed by the info control. */
+    potentialWhat: string;
+    tipTitle: string;
+    tipBody: string;
+    moreTips: string;
+    /** Accessible name for the floating tab bar. */
+    tabsLabel: string;
+    tabs: Record<"result" | "analysis" | "strengths" | "tips", string>;
+    /** Row labels for the detailed analysis. */
+    modules: Record<RowId, string>;
   };
   plans: Record<
     "raw" | "pro" | "blueprint",

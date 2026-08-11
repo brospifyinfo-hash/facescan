@@ -302,7 +302,7 @@ export function PaymentForm({
         disabled={busy || !stripe || phase === "done"}
         className={cn(
           "flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 text-[15px] font-semibold transition-all duration-200",
-          "bg-accent text-[var(--color-accent-ink)] shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_8px_24px_-8px_rgba(149,191,71,0.55)]",
+          "bg-accent text-[var(--color-accent-ink)] shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_8px_24px_-8px_rgba(95,227,138,0.55)]",
           "hover:bg-accent-bright active:scale-[0.99]",
           "disabled:cursor-not-allowed disabled:opacity-50",
         )}

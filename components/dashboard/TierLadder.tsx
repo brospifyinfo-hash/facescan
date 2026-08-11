@@ -4,7 +4,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { TIER_ORDER, type BandId } from "@/lib/metrics";
 import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/cn";
-import { BRAND } from "@/lib/theme";
+import { alpha, BRAND } from "@/lib/theme";
 
 /**
  * Neutral parametric face.
@@ -74,13 +74,13 @@ function FaceGlyph({ t, active }: { t: number; active: boolean }) {
           : // long curtain framing the face, centre-parted
             `M${cx - cheekW * 1.14} ${chinY - 4} Q${cx - cheekW * 1.3} 22 ${cx - cheekW * 0.8} 6 Q${cx} -2 ${cx + cheekW * 0.8} 6 Q${cx + cheekW * 1.3} 22 ${cx + cheekW * 1.14} ${chinY - 4} Q${cx + cheekW * 0.92} ${chinY - 22} ${cx + cheekW * 0.62} 14 Q${cx + cheekW * 0.2} 9 ${cx} 15 Q${cx - cheekW * 0.2} 9 ${cx - cheekW * 0.62} 14 Q${cx - cheekW * 0.92} ${chinY - 22} ${cx - cheekW * 1.14} ${chinY - 4} Z`;
 
-  const hairFill = active ? "rgba(149,191,71,0.30)" : "rgba(255,255,255,0.15)";
+  const hairFill = active ? alpha(BRAND.accent, 0.3) : "rgba(255,255,255,0.15)";
 
   return (
     <svg viewBox="0 0 60 76" className="h-full w-full" aria-hidden>
       <path
         d={head}
-        fill={active ? "rgba(149,191,71,0.10)" : "rgba(255,255,255,0.03)"}
+        fill={active ? alpha(BRAND.accent, 0.1) : "rgba(255,255,255,0.03)"}
         stroke={stroke}
         strokeWidth={1.7}
         strokeLinejoin="round"

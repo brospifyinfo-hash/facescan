@@ -80,7 +80,7 @@ export function PhotoDrop({
           "group relative flex aspect-[3/4] w-full flex-col overflow-hidden rounded-2xl border transition-all duration-200",
           "bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.012))]",
           dragging
-            ? "border-accent/70 shadow-[0_0_0_3px_rgba(149,191,71,0.12)]"
+            ? "border-accent/70 shadow-[0_0_0_3px_rgba(95,227,138,0.12)]"
             : value
               ? "border-white/[0.14]"
               : "border-white/[0.10] hover:border-white/25",
