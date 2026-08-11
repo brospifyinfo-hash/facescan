@@ -437,6 +437,20 @@ export const fr: Dict = {
       occluded: "visage partiellement masqué",
     },
   },
+  account: {
+    title: "Votre compte",
+    loading: "Chargement…",
+    signedOutBody:
+      "Connectez-vous avec votre e-mail. Vos scans et vos achats vivent sous cette adresse — sans mot de passe, nous vous envoyons un code.",
+    signIn: "Se connecter",
+    signOut: "Se déconnecter",
+    scansTitle: "Vos scans",
+    noScans:
+      "Aucun scan enregistré pour l'instant. Un scan est archivé ici une fois débloqué ; avant cela il ne quitte pas votre navigateur.",
+    paymentsTitle: "Paiements",
+    noPayments: "Aucun paiement pour l'instant.",
+    newScan: "Lancer un nouveau scan",
+  },
   products: {
     title: "En lien avec votre résultat",
     topBadge: "Recommandé pour vous",

@@ -436,6 +436,20 @@ export const en: Dict = {
       occluded: "face partly covered",
     },
   },
+  account: {
+    title: "Your account",
+    loading: "Loading…",
+    signedOutBody:
+      "Sign in with your email. Your scans and purchases live under that address — no password, we send you a code.",
+    signIn: "Sign in",
+    signOut: "Sign out",
+    scansTitle: "Your scans",
+    noScans:
+      "No saved scans yet. A scan is filed here once you unlock it — before that it never leaves your browser.",
+    paymentsTitle: "Payments",
+    noPayments: "No payments yet.",
+    newScan: "Start a new scan",
+  },
   products: {
     title: "Matched to your result",
     topBadge: "Top pick for you",

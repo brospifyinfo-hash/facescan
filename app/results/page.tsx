@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Lock } from "lucide-react";
@@ -85,6 +85,36 @@ export default function ResultsPage() {
     }
     setShowRaw(sessionStorage.getItem("facescan.raw") === "1");
   }, []);
+
+  // Save this scan to the customer's history — once, and only once both
+  // conditions hold: they are signed in (so there is an address to file it
+  // under) and they have unlocked (so a free scan is never stored, which is
+  // what keeps the privacy claim on the landing page true).
+  //
+  // The ref is what makes it once. Without it, every re-render that touches
+  // `unlocked` or `metrics` would append the same scan again, and the history
+  // would fill with duplicates of a single reading.
+  const saved = useRef(false);
+  useEffect(() => {
+    if (saved.current || !unlocked || !signedInAs || !metrics) return;
+    saved.current = true;
+    void fetch("/api/history", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        overall: metrics.overall,
+        band: bandFor(metrics.overall).id,
+        symmetry: metrics.symmetry,
+        eyesScore: metrics.eyesScore,
+        jawScore: metrics.jawScore,
+        proportionsScore: metrics.proportionsScore,
+        midfaceScore: metrics.midfaceScore,
+        source: metrics.scoreSource ?? "geometry",
+      }),
+      // A failed save must not interrupt the report the customer just paid
+      // for. It is recoverable — the next scan writes again.
+    }).catch(() => {});
+  }, [unlocked, signedInAs, metrics]);
 
   // Owner access code — unlocks every gated section with no visible marker,
   // so the paid experience can be reviewed exactly as a customer sees it.

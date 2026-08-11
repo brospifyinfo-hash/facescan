@@ -67,6 +67,15 @@ export async function POST(req: Request) {
           paymentIntentId: intent.id,
           grantedAt: Date.now(),
         });
+        // The receipt line. Separate from the grant because an upgrade
+        // overwrites what you own but must never overwrite what you paid.
+        await entitlements.recordPayment(email, {
+          plan,
+          paymentIntentId: intent.id,
+          amount: typeof intent.amount === "number" ? intent.amount : null,
+          currency: intent.currency ?? null,
+          at: Date.now(),
+        });
         console.info(`[stripe] granted ${plan} to ${email} (${intent.id})`);
         break;
       }

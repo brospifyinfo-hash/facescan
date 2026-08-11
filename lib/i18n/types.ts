@@ -286,6 +286,19 @@ export interface Dict {
       string
     >;
   };
+  /** The customer profile at /konto. */
+  account: {
+    title: string;
+    loading: string;
+    signedOutBody: string;
+    signIn: string;
+    signOut: string;
+    scansTitle: string;
+    noScans: string;
+    paymentsTitle: string;
+    noPayments: string;
+    newScan: string;
+  };
   /** The affiliate block on the paid report. */
   products: {
     title: string;

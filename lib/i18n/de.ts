@@ -444,6 +444,20 @@ export const de: Dict = {
       occluded: "Gesicht teils verdeckt",
     },
   },
+  account: {
+    title: "Dein Konto",
+    loading: "Wird geladen…",
+    signedOutBody:
+      "Melde dich mit deiner E-Mail an. Deine Scans und Käufe liegen unter dieser Adresse — ohne Passwort, wir schicken dir einen Code.",
+    signIn: "Anmelden",
+    signOut: "Abmelden",
+    scansTitle: "Deine Scans",
+    noScans:
+      "Noch keine gespeicherten Scans. Ein Scan wird hier abgelegt, sobald du ihn freigeschaltet hast — vorher verlässt er deinen Browser nicht.",
+    paymentsTitle: "Zahlungen",
+    noPayments: "Noch keine Zahlungen.",
+    newScan: "Neuen Scan starten",
+  },
   products: {
     title: "Passend zu deinem Ergebnis",
     topBadge: "Top-Empfehlung für dich",

@@ -437,6 +437,20 @@ export const es: Dict = {
       occluded: "cara parcialmente tapada",
     },
   },
+  account: {
+    title: "Tu cuenta",
+    loading: "Cargando…",
+    signedOutBody:
+      "Inicia sesión con tu correo. Tus escaneos y compras viven bajo esa dirección: sin contraseña, te enviamos un código.",
+    signIn: "Iniciar sesión",
+    signOut: "Cerrar sesión",
+    scansTitle: "Tus escaneos",
+    noScans:
+      "Todavía no hay escaneos guardados. Un escaneo se archiva aquí cuando lo desbloqueas; antes no sale de tu navegador.",
+    paymentsTitle: "Pagos",
+    noPayments: "Todavía no hay pagos.",
+    newScan: "Iniciar un nuevo escaneo",
+  },
   products: {
     title: "Según tu resultado",
     topBadge: "Recomendado para ti",

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { currentAdmin } from "@/lib/admin";
+import { isAdmin } from "@/lib/admin";
 import { products, productBacking } from "@/lib/products/store";
 import { validateProduct } from "@/lib/products/types";
 
@@ -7,16 +7,15 @@ export const runtime = "nodejs";
 
 // The catalogue editor's API.
 //
-// EVERY handler re-checks currentAdmin(). The admin page also checks, but
-// that only decides whether a form is drawn; these are the routes anyone can
-// POST to with curl, so this is the check that actually matters.
+// EVERY handler re-checks isAdmin(). The admin page also checks, but that
+// only decides whether a form is drawn; these are the routes anyone can POST
+// to with curl, so this is the check that actually matters.
 //
-// 401 for "not an admin", deliberately not 403 or 404: the caller is either
-// signed out or signed in as someone else, and both are fixed by signing in
-// as an admin. Nothing here reveals whether a given address is on the list.
+// 401 for "not an admin": the caller has no valid admin cookie, which is
+// fixed by entering the code. Nothing here reveals anything about the code.
 
 export async function GET() {
-  if (!(await currentAdmin())) {
+  if (!(await isAdmin())) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
   // The admin list includes inactive products; the public one does not.
@@ -27,7 +26,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  if (!(await currentAdmin())) {
+  if (!(await isAdmin())) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 

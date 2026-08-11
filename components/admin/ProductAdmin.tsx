@@ -29,7 +29,7 @@ const EMPTY = {
 
 type Draft = typeof EMPTY;
 
-export function ProductAdmin({ admin }: { admin: string }) {
+export function ProductAdmin() {
   const t = useT();
   const [items, setItems] = useState<Product[]>([]);
   const [backing, setBacking] = useState<"redis" | "memory">("memory");
@@ -116,7 +116,7 @@ export function ProductAdmin({ admin }: { admin: string }) {
         <div>
           <h1 className="t-title2">{t.admin.title}</h1>
           <p className="t-caption mt-1 text-[var(--color-ink-tertiary)]">
-            {admin} · {items.length} {t.admin.productsLabel}
+            {items.length} {t.admin.productsLabel}
           </p>
         </div>
         {draft === null ? (

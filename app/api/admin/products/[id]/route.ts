@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { currentAdmin } from "@/lib/admin";
+import { isAdmin } from "@/lib/admin";
 import { products } from "@/lib/products/store";
 import { validateProduct } from "@/lib/products/types";
 
@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 type Ctx = { params: Promise<{ id: string }> };
 
 export async function PUT(request: Request, ctx: Ctx) {
-  if (!(await currentAdmin())) {
+  if (!(await isAdmin())) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
   const { id } = await ctx.params;
@@ -37,7 +37,7 @@ export async function PUT(request: Request, ctx: Ctx) {
 }
 
 export async function DELETE(_request: Request, ctx: Ctx) {
-  if (!(await currentAdmin())) {
+  if (!(await isAdmin())) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
   const { id } = await ctx.params;

@@ -20,19 +20,43 @@ export interface Entitlement {
   grantedAt: number;
 }
 
+/**
+ * One line of the customer's receipt list.
+ *
+ * Kept separately from the Entitlement because they answer different
+ * questions. The entitlement is "what does this address own NOW", and an
+ * upgrade overwrites it; the payments are "what was actually charged", and
+ * nothing may ever overwrite those — an upgrade adds a second line.
+ */
+export interface Payment {
+  plan: PlanId;
+  paymentIntentId: string;
+  /** Minor units, as Stripe reports it. Null when the event did not carry it. */
+  amount: number | null;
+  currency: string | null;
+  at: number;
+}
+
 export interface EntitlementStore {
   grant(email: string, ent: Entitlement): Promise<void>;
   get(email: string): Promise<Entitlement | null>;
+  /** Append-only. The customer's receipts, newest first. */
+  recordPayment(email: string, payment: Payment): Promise<void>;
+  payments(email: string): Promise<Payment[]>;
   /** Idempotency: Stripe retries webhooks, so replays must be no-ops. */
   hasProcessed(eventId: string): Promise<boolean>;
   markProcessed(eventId: string): Promise<void>;
 }
+
+/** Plenty for a one-off purchase product, and bounds the key. */
+const MAX_PAYMENTS = 50;
 
 /** Higher tiers win, so an upgrade never downgrades what was already bought. */
 const RANK: Record<PlanId, number> = { raw: 1, pro: 2, blueprint: 3 };
 
 class MemoryEntitlementStore implements EntitlementStore {
   private byEmail = new Map<string, Entitlement>();
+  private paid = new Map<string, Payment[]>();
   private events = new Set<string>();
 
   async grant(email: string, ent: Entitlement) {
@@ -42,6 +66,14 @@ class MemoryEntitlementStore implements EntitlementStore {
   }
   async get(email: string) {
     return this.byEmail.get(email) ?? null;
+  }
+  async recordPayment(email: string, payment: Payment) {
+    const list = this.paid.get(email) ?? [];
+    if (list.some((p) => p.paymentIntentId === payment.paymentIntentId)) return;
+    this.paid.set(email, [payment, ...list].slice(0, MAX_PAYMENTS));
+  }
+  async payments(email: string) {
+    return this.paid.get(email) ?? [];
   }
   async hasProcessed(eventId: string) {
     return this.events.has(eventId);
@@ -65,6 +97,7 @@ class MemoryEntitlementStore implements EntitlementStore {
  */
 class RedisEntitlementStore implements EntitlementStore {
   private key = (email: string) => `ent:${email}`;
+  private payKey = (email: string) => `pay:${email}`;
   private eventKey = (id: string) => `stripeevt:${id}`;
 
   async grant(email: string, ent: Entitlement) {
@@ -89,6 +122,34 @@ class RedisEntitlementStore implements EntitlementStore {
     } catch {
       return null;
     }
+  }
+
+  /**
+   * Append-only, and deduplicated by payment intent.
+   *
+   * The event id already makes the webhook idempotent, but that marker has a
+   * 30-day TTL while a receipt does not — so a Stripe replay after the marker
+   * expired would otherwise add the same charge to the list a second time.
+   */
+  async recordPayment(email: string, payment: Payment) {
+    const existing = await this.payments(email);
+    if (existing.some((p) => p.paymentIntentId === payment.paymentIntentId)) return;
+    await kv("LPUSH", this.payKey(email), JSON.stringify(payment));
+    await kv("LTRIM", this.payKey(email), "0", String(MAX_PAYMENTS - 1));
+  }
+
+  async payments(email: string) {
+    const rows = await kv("LRANGE", this.payKey(email), "0", String(MAX_PAYMENTS - 1));
+    if (!Array.isArray(rows)) return [];
+    return rows
+      .map((r) => {
+        try {
+          return JSON.parse(String(r)) as Payment;
+        } catch {
+          return null;
+        }
+      })
+      .filter((p): p is Payment => p !== null && p.plan in RANK);
   }
 
   async hasProcessed(eventId: string) {
