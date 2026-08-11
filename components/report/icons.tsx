@@ -140,6 +140,40 @@ export function IconBulb(p: IconProps) {
   );
 }
 
+/** Scan id — a head inside a frame, the reference's badge glyph. */
+export function IconScanId(p: IconProps) {
+  return (
+    <Glyph {...p}>
+      <rect x="3.4" y="4.2" width="17.2" height="15.6" rx="3" />
+      <circle cx="9.6" cy="10.4" r="2.1" />
+      <path d="M6.1 16.4c.7-1.9 2-2.8 3.5-2.8s2.8.9 3.5 2.8" />
+      <path d="M15.4 9.4h3M15.4 12.6h3" />
+    </Glyph>
+  );
+}
+
+/** Date — the calendar, with the two rings the reference draws on top. */
+export function IconCalendar(p: IconProps) {
+  return (
+    <Glyph {...p}>
+      <rect x="3.6" y="5.4" width="16.8" height="14.6" rx="3" />
+      <path d="M3.6 9.8h16.8" />
+      <path d="M8.4 3.4v3.4M15.6 3.4v3.4" />
+    </Glyph>
+  );
+}
+
+/** History — a clock with a counter-clockwise arrow, for the fourth tab. */
+export function IconHistory(p: IconProps) {
+  return (
+    <Glyph {...p}>
+      <path d="M3.6 12a8.4 8.4 0 1 0 2.6-6.1" />
+      <path d="M3.4 4.2v4h4" />
+      <path d="M12 7.6V12l3 1.8" />
+    </Glyph>
+  );
+}
+
 /** Header mark — the scan frame around a face, matching the viewfinder. */
 export function IconScanMark(p: IconProps) {
   return (

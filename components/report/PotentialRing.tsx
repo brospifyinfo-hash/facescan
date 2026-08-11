@@ -7,41 +7,43 @@ import { BRAND } from "@/lib/theme";
 /**
  * The potential figure, as an arc.
  *
- * A ring rather than a second big numeral, because the page already has one
- * hero number and two numerals at the same weight would read as two headline
- * scores with no way to tell which is the result. An arc says "of a maximum"
- * on sight, which is exactly what a potential is.
+ * A ring rather than a second big numeral: the page already has one hero
+ * number, and two numerals at the same weight would read as two headline
+ * scores with no way to tell which one is yours.
  *
- * The gradient runs along the stroke so the lit part has a direction — a flat
- * fill reads as a chart, a graded one reads as a readout.
+ * FLUID, NOT FIXED. It used to take a `size` in pixels, which meant the
+ * score panel could only be two columns above a breakpoint — at 320px a
+ * 126px ring left the headline 125px of column to live in. Driving it from
+ * a viewBox lets the ring take whatever half the panel is, so the reference's
+ * side-by-side layout holds at every width instead of collapsing on the
+ * narrow phones this product is mostly read on.
  */
 export function PotentialRing({
   value,
-  size = 126,
   label,
+  className,
 }: {
   /** 0–10. */
   value: number;
-  size?: number;
   label: string;
+  className?: string;
 }) {
   const reduce = useReducedMotion();
-  const stroke = 8;
-  const r = (size - stroke) / 2 - 2;
+  const r = 42;
   const c = 2 * Math.PI * r;
   const ratio = Math.max(0, Math.min(1, value / 10));
 
   return (
-    <div className="relative shrink-0" style={{ width: size, height: size }}>
-      {/* The one glow on this panel. Sized to the ring's inside so the bloom
-          comes off the arc rather than out of the tile's corners. */}
+    <div className={`relative aspect-square w-full ${className ?? ""}`}>
+      {/* The one glow on this panel, sized to the ring's inside so the bloom
+          comes off the arc rather than out of the corners of the tile. */}
       <div
         aria-hidden
-        className="absolute inset-4 rounded-full blur-2xl"
-        style={{ background: `${BRAND.accent}24` }}
+        className="absolute inset-[14%] rounded-full blur-2xl"
+        style={{ background: `${BRAND.accent}2b` }}
       />
 
-      <svg width={size} height={size} className="relative -rotate-90">
+      <svg viewBox="0 0 100 100" className="relative h-full w-full -rotate-90">
         <defs>
           <linearGradient id="potentialArc" x1="0" y1="1" x2="1" y2="0">
             <stop offset="0%" stopColor={BRAND.accentPress} />
@@ -49,21 +51,14 @@ export function PotentialRing({
           </linearGradient>
         </defs>
 
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          fill="none"
-          stroke={BRAND.track}
-          strokeWidth={stroke}
-        />
+        <circle cx="50" cy="50" r={r} fill="none" stroke={BRAND.track} strokeWidth="6" />
         <motion.circle
-          cx={size / 2}
-          cy={size / 2}
+          cx="50"
+          cy="50"
           r={r}
           fill="none"
           stroke="url(#potentialArc)"
-          strokeWidth={stroke}
+          strokeWidth="6"
           strokeLinecap="round"
           strokeDasharray={c}
           initial={reduce ? false : { strokeDashoffset: c }}
@@ -78,9 +73,9 @@ export function PotentialRing({
           decimals={1}
           duration={1400}
           delay={300}
-          className="text-[34px] font-semibold leading-none tracking-[-0.03em] text-[var(--color-accent)]"
+          className="text-[clamp(1.75rem,9vw,2.5rem)] font-semibold leading-none tracking-[-0.03em] text-[var(--color-accent)]"
         />
-        <span className="mt-1.5 text-[11px] font-medium text-[var(--color-ink-tertiary)]">
+        <span className="mt-1 text-[11px] font-medium text-[var(--color-ink-tertiary)]">
           {label}
         </span>
       </div>

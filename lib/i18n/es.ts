@@ -238,7 +238,9 @@ export const es: Dict = {
   },
   results: {
     overall: "Puntuación global",
-    outOf: "sobre 10",
+    // The reference sets the unit as "/ 10" beside the numeral rather than
+    // spelling it out. Notation, so it is the same in every locale.
+    outOf: "/ 10",
     demoData: "Datos de demo",
     landmarks: "Puntos",
     measured: "Medidas",
@@ -286,6 +288,7 @@ export const es: Dict = {
       "Los rostros solo difieren en las proporciones que mide el escaneo: afilado mandibular, longitud del mentón, altura del tercio medio. No son una escala de atractivo.",
 
     confidential: "Confidencial",
+    status: "Estado",
     faceDetected: "Rostro detectado",
     scanId: "ID de escaneo",
     scanDate: "Fecha",
@@ -306,14 +309,17 @@ export const es: Dict = {
     tabs: {
       result: "Resultado",
       analysis: "Análisis",
-      strengths: "Fortalezas",
       tips: "Consejos",
+      history: "Historial",
     },
+    historyBody:
+      "Este escaneo es el único que existe. Tus fotos y medidas viven solo en esta pestaña y se descartan al expirar la sesión: por eso aquí no puede aparecer nada anterior.",
+    newScan: "Nuevo escaneo",
     modules: {
       symmetry: "Simetría",
       eyes: "Zona ocular",
       jaw: "Línea mandibular",
-      proportions: "Proporciones",
+      proportions: "Propor­ciones",
       nose: "Forma de la nariz",
       lips: "Labios",
       skin: "Calidad de la piel",
@@ -564,6 +570,7 @@ export const es: Dict = {
         "La definición facial es sobre todo cuestión de grasa corporal. Acercarte al 12–18 % hará más por tu mandíbula y tus pómulos que cualquier aparato o truco del mercado.",
       tag: "Mandíbula",
       cadence: "Continuo",
+      short: "Bajar el porcentaje graso",
     },
     guaSha: {
       title: "Gua sha en la mandíbula y bajo los ojos",
@@ -571,6 +578,7 @@ export const es: Dict = {
         "Dos sesiones por semana, poco aceite, pasadas suaves del mentón a la oreja. Moviliza linfa: espera un efecto descongestivo de horas, no una remodelación ósea.",
       tag: "Mandíbula",
       cadence: "2× / semana",
+      short: "Gua sha en la mandíbula",
     },
     tonguePosture: {
       title: "Hábito diario de postura lingual",
@@ -578,6 +586,7 @@ export const es: Dict = {
         "Lengua completa contra el paladar, labios cerrados, respiración nasal. La evidencia de cambio óseo en adultos es débil: trátalo como trabajo postural. Mastica por igual en ambos lados.",
       tag: "Mandíbula",
       cadence: "A diario",
+      short: "Corregir la postura lingual",
     },
     retinoid: {
       title: "Retinoide de noche, 3 noches por semana",
@@ -585,6 +594,7 @@ export const es: Dict = {
         "Empieza con adapaleno 0,1 % o retinol 0,3 % sobre piel seca tras la limpieza, hidratante encima. Sube a diario en 8–12 semanas. Ir más fuerte y más rápido solo compra irritación.",
       tag: "Piel",
       cadence: "3 noches / semana",
+      short: "Retinoide por la noche",
     },
     spf: {
       title: "SPF 30+ todas las mañanas",
@@ -592,6 +602,7 @@ export const es: Dict = {
         "La intervención cutánea con mayor retorno, y la que todo el mundo se salta. Protege todo lo demás que hagas, incluido el retinoide, que vuelve la piel sensible al sol.",
       tag: "Piel",
       cadence: "A diario",
+      short: "Protección solar diaria",
     },
     asymmetry: {
       title: "Revisa las causas de tu asimetría",
@@ -599,6 +610,7 @@ export const es: Dict = {
         "Alterna el lado de masticación, deja de dormir boca abajo sobre la misma mejilla y ajusta la altura de la pantalla para no inclinar la cabeza ocho horas al día. Palancas pequeñas, pero las que controlas.",
       tag: "Simetría",
       cadence: "Continuo",
+      short: "Compensar la asimetría",
     },
     depuff: {
       title: "Rutina antihinchazón para la zona ocular",
@@ -606,6 +618,7 @@ export const es: Dict = {
         "Menos sodio por la noche, 7,5 h o más de sueño, alcohol moderado y dormir con la cabeza algo elevada. La mayoría de quejas de la zona ocular son retención de líquidos, no estructura ósea.",
       tag: "Ojos",
       cadence: "A diario",
+      short: "Deshinchar el contorno de ojos",
     },
     proportions: {
       title: "Peina según tus proporciones, no contra ellas",
@@ -613,6 +626,7 @@ export const es: Dict = {
         "Las proporciones verticales son hueso y no cambian. Un corte con la altura adecuada y una línea de barba que alargue o ensanche el tercio inferior cambian la lectura mucho más que cualquier ejercicio.",
       tag: "Proporciones",
       cadence: "Próximo corte",
+      short: "Peinado según la forma del rostro",
     },
     hair: {
       title: "Caída del pelo: actúa pronto, consulta a un médico",
@@ -620,6 +634,7 @@ export const es: Dict = {
         "Minoxidil y finasterida son las únicas intervenciones con evidencia sólida, y ambas funcionan mejor antes de que la pérdida sea visible. Pide cita en vez de experimentar con suplementos.",
       tag: "Pelo",
       cadence: "Este mes",
+      short: "Nacimiento del pelo y peinado",
     },
     grooming: {
       title: "Sesión con un buen barbero",
@@ -627,6 +642,7 @@ export const es: Dict = {
         "Un corte acorde a tu forma de cara, cejas aseadas en vez de esculpidas y una línea de barba constante. El cambio más barato, rápido y visible de esta lista.",
       tag: "Cuidado",
       cadence: "Cada 4 semanas",
+      short: "Definir las cejas",
     },
     smoking: {
       title: "Deja la nicotina",
@@ -634,6 +650,7 @@ export const es: Dict = {
         "Fumar y vapear degradan el colágeno y apagan el tono bajo los ojos. Se nota en un par de años y es en parte reversible: nada más de esta lista se deshace tan rápido por seguir.",
       tag: "Piel",
       cadence: "Desde ya",
+      short: "Reducir el tabaco",
     },
     training: {
       title: "Mete fuerza en tu semana",
@@ -641,6 +658,7 @@ export const es: Dict = {
         "Dos o tres sesiones por semana son el mínimo para que una definición aguante. Entrenar conserva el músculo que si no perderías, y eso es lo que mantiene el dibujo de mandíbula y pómulos.",
       tag: "Cuerpo",
       cadence: "3× / semana",
+      short: "Empezar a entrenar fuerza",
     },
     sleep: {
       title: "El sueño es el multiplicador",
@@ -648,6 +666,7 @@ export const es: Dict = {
         "7,5–9 horas con horario constante. La reparación de la piel, el equilibrio de líquidos y la frescura facial dependen más del sueño que de cualquier producto de tu armario.",
       tag: "Estilo de vida",
       cadence: "Cada noche",
+      short: "Dormir más y mejor",
     },
   },
 };

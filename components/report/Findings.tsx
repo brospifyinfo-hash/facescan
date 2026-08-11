@@ -7,21 +7,20 @@ import { IconBolt, IconCrown } from "./icons";
 import { useT } from "@/lib/i18n";
 import type { MetricId, PlanId } from "@/lib/metrics";
 
-// Strengths and optimisation — a pair, and they read as one because they are
-// built from one primitive with two tints.
+// Strengths and optimisation — a pair, side by side, built from one primitive
+// with two tints so they read as two halves of one statement.
 //
-// THEY STACK. ALWAYS. The reference puts them in two columns at phone width,
-// which works for the four-word English bullets in a mock. The real strings
-// are German plan titles — "Frisur an Gesichtsform anpassen", "Körperfett
-// Richtung 12–18 % senken" — and a column narrow enough to fit two of these
-// side by side breaks every one of them across three lines.
+// THE OPTIMISATION LIST USES plan[].short, NOT plan[].title. A half-width
+// card is ~137px of text column on a 375px phone, and the full titles are
+// sentences — "Gua Sha entlang Kiefer und unter den Augen" is four lines
+// there. The short forms are the same advice named in three words; the full
+// title, the detail and the cadence are all still on the action plan below.
 //
-// A `min-[560px]:grid-cols-2` was tried and is the wrong tool regardless of
-// the number: Tailwind's breakpoints are VIEWPORT queries, and the report is
-// inside a `max-w-md` column, so past 560px of viewport the rule kept firing
-// against a container that had stopped growing at 448px. The result was two
-// 202px columns on a wide desktop — the exact layout the rule existed to
-// avoid. Full width is the only width these panels ever get.
+// THE WIREFRAME IS A BACKGROUND, not a column. In the reference it sits to
+// the right of the checkmarks, which works because the mock's card is wide.
+// Reserving 45% of a 137px column for it would leave the strengths list four
+// characters wide, so it is placed behind the list at low opacity instead —
+// same composition, same visual weight, no space taken from the text.
 
 function PanelHead({
   icon,
@@ -34,12 +33,15 @@ function PanelHead({
 }) {
   const color = tone === "accent" ? "var(--color-accent)" : "var(--color-caution)";
   return (
-    <div className="flex items-center gap-2">
-      <span style={{ color }} aria-hidden>
+    <div className="flex items-center gap-1.5">
+      <span className="shrink-0" style={{ color }} aria-hidden>
         {icon}
       </span>
+      {/* "OPTIMIERUNGSPOTENZIAL" is twenty-one characters with no break
+          opportunity in it, and the card is 124px wide. Without hyphens it
+          does not wrap — it overflows and gets clipped mid-word. */}
       <h2
-        className="text-[12px] font-semibold uppercase tracking-[0.1em]"
+        className="min-w-0 hyphens-auto break-words text-[9.5px] font-semibold uppercase leading-tight tracking-[0.06em]"
         style={{ color }}
       >
         {title}
@@ -57,80 +59,79 @@ export function StrengthsPanel({
   const reduce = useReducedMotion();
 
   return (
-    <section className="panel panel-lit-accent relative overflow-hidden p-[var(--pad-panel)]">
-      <div className="relative flex items-start gap-3">
-        <div className="min-w-0 flex-1">
-          <PanelHead
-            icon={<IconCrown className="h-4 w-4" />}
-            title={t.results.strengthsTitle}
-            tone="accent"
-          />
+    <section className="panel panel-lit-accent relative overflow-hidden p-3.5">
+      {/* Bottom right, fully inside the card. Two things were wrong before:
+          at half opacity it washed out to a smudge and stopped reading as a
+          mesh at all — the reference's wireframe is plainly drawn, not a
+          watermark — and a negative bottom offset cut the neck off at the
+          card edge, which turns a profile into an unidentifiable shape. */}
+      <FaceWireframe className="pointer-events-none absolute bottom-1.5 right-0 h-[60%] w-auto" />
 
-          <ul className="mt-3.5 space-y-2.5">
-            {items.map((item, i) => (
-              <motion.li
-                key={item.id}
-                initial={reduce ? false : { opacity: 0, x: -6 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.35, delay: reduce ? 0 : 0.1 + i * 0.07 }}
-                className="flex items-start gap-2"
-              >
-                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent)]/15">
-                  <Check
-                    className="h-2.5 w-2.5 text-[var(--color-accent)]"
-                    strokeWidth={3}
-                    aria-hidden
-                  />
-                </span>
-                <span className="min-w-0 text-[12.5px] leading-snug text-[var(--color-ink-secondary)]">
-                  {t.metrics[item.id].label}
-                </span>
-              </motion.li>
-            ))}
-          </ul>
-        </div>
+      <div className="relative">
+        <PanelHead
+          icon={<IconCrown className="h-3.5 w-3.5" />}
+          title={t.results.strengthsTitle}
+          tone="accent"
+        />
 
-        <FaceWireframe className="h-auto w-[100px] shrink-0 self-center min-[380px]:w-[124px]" />
+        <ul className="mt-3 space-y-2">
+          {items.map((item, i) => (
+            <motion.li
+              key={item.id}
+              initial={reduce ? false : { opacity: 0, x: -6 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.35, delay: reduce ? 0 : 0.1 + i * 0.07 }}
+              className="flex items-start gap-1.5"
+            >
+              <span className="mt-px flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent)]/15">
+                <Check
+                  className="h-2 w-2 text-[var(--color-accent)]"
+                  strokeWidth={3.5}
+                  aria-hidden
+                />
+              </span>
+              <span className="min-w-0 text-[11px] leading-[1.3] text-[var(--color-ink-secondary)]">
+                {t.metrics[item.id].label}
+              </span>
+            </motion.li>
+          ))}
+        </ul>
       </div>
     </section>
   );
 }
 
-export function OptimizePanel({
-  items,
-}: {
-  items: Array<{ id: PlanId }>;
-}) {
+export function OptimizePanel({ items }: { items: Array<{ id: PlanId }> }) {
   const t = useT();
   const reduce = useReducedMotion();
 
   return (
-    <section className="panel panel-lit-amber relative overflow-hidden p-[var(--pad-panel)]">
+    <section className="panel panel-lit-amber relative overflow-hidden p-3.5">
       <div className="relative">
         <PanelHead
-          icon={<IconBolt className="h-4 w-4" />}
+          icon={<IconBolt className="h-3.5 w-3.5" />}
           title={t.results.optimizeTitle}
           tone="amber"
         />
 
-        <ul className="mt-3.5 space-y-2.5">
+        <ul className="mt-3 space-y-2">
           {items.map((item, i) => (
             <motion.li
               key={item.id}
               initial={reduce ? false : { opacity: 0, x: -6 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.35, delay: reduce ? 0 : 0.1 + i * 0.06 }}
-              className="flex items-start gap-2"
+              className="flex items-start gap-1.5"
             >
               {/* An arrow, not a cross. The list is what to do next, and a
                   cross beside someone's face is a verdict. */}
               <ArrowUp
-                className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--color-caution)]"
-                strokeWidth={2.4}
+                className="mt-px h-3 w-3 shrink-0 text-[var(--color-caution)]"
+                strokeWidth={2.6}
                 aria-hidden
               />
-              <span className="min-w-0 text-[12.5px] leading-snug text-[var(--color-ink-secondary)]">
-                {t.plan[item.id].title}
+              <span className="min-w-0 text-[11px] leading-[1.3] text-[var(--color-ink-secondary)]">
+                {t.plan[item.id].short}
               </span>
             </motion.li>
           ))}

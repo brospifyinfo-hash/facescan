@@ -24,6 +24,7 @@ import { ScorePanel } from "@/components/report/ScorePanel";
 import { AnalysisGrid } from "@/components/report/AnalysisGrid";
 import { OptimizePanel, StrengthsPanel } from "@/components/report/Findings";
 import { TipCard } from "@/components/report/TipCard";
+import { HistoryCard } from "@/components/report/HistoryCard";
 import { TabBar } from "@/components/report/TabBar";
 import { can, formatPrice } from "@/lib/pricing";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -172,8 +173,11 @@ export default function ResultsPage() {
               </div>
             </LockedSection>
 
+            {/* Side by side, per the reference. They fit at phone width
+                because the optimisation column uses plan[].short — see the
+                note in Findings.tsx. */}
             <LockedSection locked={locked}>
-              <div id="strengths" className="grid scroll-mt-4 gap-3">
+              <div className="grid grid-cols-2 items-stretch gap-3">
                 <StrengthsPanel items={strengths} />
                 <OptimizePanel items={optimisations} />
               </div>
@@ -293,6 +297,16 @@ export default function ResultsPage() {
             that is actually readable before payment. */}
         <div id="tips" className="mt-3 scroll-mt-4">
           <TipCard onMore={goToPlan} />
+        </div>
+
+        {/* What the Verlauf tab opens. Outside the locked region: it is the
+            record of this session, not part of the analysis being sold. */}
+        <div id="history" className="mt-3 scroll-mt-4">
+          <HistoryCard
+            reference={scanRef(metrics)}
+            date={scanDate}
+            score={metrics.overall}
+          />
         </div>
 
         {unlocked ? (

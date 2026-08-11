@@ -238,7 +238,9 @@ export const fr: Dict = {
   },
   results: {
     overall: "Score global",
-    outOf: "sur 10",
+    // The reference sets the unit as "/ 10" beside the numeral rather than
+    // spelling it out. Notation, so it is the same in every locale.
+    outOf: "/ 10",
     demoData: "Données de démo",
     landmarks: "Points",
     measured: "Mesures",
@@ -286,6 +288,7 @@ export const fr: Dict = {
       "Les visages ne diffèrent que par les proportions que le scan mesure — effilé de la mâchoire, longueur du menton, hauteur de l'étage moyen. Ce n'est pas une échelle de beauté.",
 
     confidential: "Confidentiel",
+    status: "Statut",
     faceDetected: "Visage détecté",
     scanId: "ID du scan",
     scanDate: "Date",
@@ -306,14 +309,17 @@ export const fr: Dict = {
     tabs: {
       result: "Résultat",
       analysis: "Analyse",
-      strengths: "Points forts",
       tips: "Conseils",
+      history: "Historique",
     },
+    historyBody:
+      "Ce scan est le seul qui existe. Vos photos et vos mesures ne vivent que dans cet onglet et sont effacées à l'expiration de la session — c'est pourquoi rien de plus ancien ne peut apparaître ici.",
+    newScan: "Nouveau scan",
     modules: {
       symmetry: "Symétrie",
       eyes: "Zone des yeux",
       jaw: "Ligne de mâchoire",
-      proportions: "Proportions",
+      proportions: "Propor­tions",
       nose: "Forme du nez",
       lips: "Lèvres",
       skin: "Qualité de peau",
@@ -564,6 +570,7 @@ export const fr: Dict = {
         "La définition du visage est avant tout une affaire de masse grasse. Aller vers 12–18 % fera plus pour votre mâchoire et vos pommettes que n'importe quel appareil ou astuce du marché.",
       tag: "Mâchoire",
       cadence: "En continu",
+      short: "Baisser le taux de graisse",
     },
     guaSha: {
       title: "Gua sha le long de la mâchoire et sous les yeux",
@@ -571,6 +578,7 @@ export const fr: Dict = {
         "Deux séances par semaine, peu d'huile, mouvements doux du menton vers l'oreille. Cela draine la lymphe : attendez un effet décongestionnant de quelques heures, pas un remodelage osseux.",
       tag: "Mâchoire",
       cadence: "2× / semaine",
+      short: "Gua sha le long de la mâchoire",
     },
     tonguePosture: {
       title: "Posture linguale quotidienne",
@@ -578,6 +586,7 @@ export const fr: Dict = {
         "Langue à plat contre le palais, lèvres closes, respiration nasale. Les preuves d'un changement osseux chez l'adulte sont minces : traitez cela comme un travail postural. Mâchez également des deux côtés.",
       tag: "Mâchoire",
       cadence: "Quotidien",
+      short: "Corriger la posture de langue",
     },
     retinoid: {
       title: "Rétinoïde le soir, 3 nuits par semaine",
@@ -585,6 +594,7 @@ export const fr: Dict = {
         "Commencez par l'adapalène 0,1 % ou le rétinol 0,3 % sur peau sèche après nettoyage, hydratant par-dessus. Passez au quotidien en 8–12 semaines. Aller plus fort plus vite n'achète que de l'irritation.",
       tag: "Peau",
       cadence: "3 nuits / semaine",
+      short: "Rétinoïde le soir",
     },
     spf: {
       title: "SPF 30+ tous les matins",
@@ -592,6 +602,7 @@ export const fr: Dict = {
         "L'intervention cutanée au meilleur rendement, et celle que tout le monde saute. Elle protège tout le reste, y compris le rétinoïde qui rend la peau sensible au soleil.",
       tag: "Peau",
       cadence: "Quotidien",
+      short: "Protection solaire quotidienne",
     },
     asymmetry: {
       title: "Passez en revue les causes de votre asymétrie",
@@ -599,6 +610,7 @@ export const fr: Dict = {
         "Alternez le côté de mastication, cessez de dormir sur la même joue et réglez la hauteur d'écran pour ne pas incliner la tête huit heures par jour. De petits leviers — mais les seuls que vous maîtrisez.",
       tag: "Symétrie",
       cadence: "En continu",
+      short: "Compenser l'asymétrie",
     },
     depuff: {
       title: "Routine anti-gonflement du contour des yeux",
@@ -606,6 +618,7 @@ export const fr: Dict = {
         "Moins de sel le soir, 7,5 h de sommeil minimum, alcool modéré et tête légèrement surélevée la nuit. La plupart des plaintes sur le contour des yeux relèvent de la rétention d'eau, pas de l'os.",
       tag: "Yeux",
       cadence: "Quotidien",
+      short: "Dégonfler le contour des yeux",
     },
     proportions: {
       title: "Coiffez-vous avec vos proportions, pas contre elles",
@@ -613,6 +626,7 @@ export const fr: Dict = {
         "Les proportions verticales sont osseuses et ne changeront pas. Une coupe à la bonne hauteur et une ligne de barbe qui allonge ou élargit l'étage inférieur changent la lecture bien plus que n'importe quel exercice.",
       tag: "Proportions",
       cadence: "Prochaine coupe",
+      short: "Coiffure adaptée au visage",
     },
     hair: {
       title: "Chute de cheveux : agir tôt, voir un médecin",
@@ -620,6 +634,7 @@ export const fr: Dict = {
         "Le minoxidil et le finastéride sont les seules interventions à preuves solides, et les deux marchent mieux avant que la perte soit visible. Prenez rendez-vous plutôt que d'expérimenter avec des compléments.",
       tag: "Cheveux",
       cadence: "Ce mois-ci",
+      short: "Implantation et coiffage",
     },
     grooming: {
       title: "Passage chez un vrai barbier",
@@ -627,6 +642,7 @@ export const fr: Dict = {
         "Une coupe adaptée à la forme de votre visage, des sourcils nettoyés plutôt que dessinés et une ligne de barbe régulière. Le changement le moins cher, le plus rapide et le plus visible de cette liste.",
       tag: "Soin",
       cadence: "Toutes les 4 semaines",
+      short: "Définir les sourcils",
     },
     smoking: {
       title: "Arrêter la nicotine",
@@ -634,6 +650,7 @@ export const fr: Dict = {
         "Le tabac et la vape dégradent le collagène et ternissent le contour des yeux. Cela se voit en deux ou trois ans et reste en partie réversible — rien d'autre sur cette liste ne s'annule aussi vite en continuant.",
       tag: "Peau",
       cadence: "Dès maintenant",
+      short: "Réduire le tabac",
     },
     training: {
       title: "Mettre de la musculation dans la semaine",
@@ -641,6 +658,7 @@ export const fr: Dict = {
         "Deux à trois séances par semaine sont le minimum pour qu'une sèche tienne. Soulever préserve le muscle que vous perdriez sinon, et c'est lui qui maintient le dessin de la mâchoire et des pommettes.",
       tag: "Corps",
       cadence: "3× / semaine",
+      short: "Commencer la musculation",
     },
     sleep: {
       title: "Le sommeil est le multiplicateur",
@@ -648,6 +666,7 @@ export const fr: Dict = {
         "7,5–9 heures à horaires réguliers. Réparation cutanée, équilibre hydrique et fraîcheur du visage suivent le sommeil de bien plus près que n'importe quel produit de votre placard.",
       tag: "Hygiène de vie",
       cadence: "Chaque nuit",
+      short: "Dormir plus et mieux",
     },
   },
 };

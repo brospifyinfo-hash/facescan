@@ -237,8 +237,10 @@ export const de: Dict = {
     side: "Profilbild",
   },
   results: {
-    overall: "Gesamtwert",
-    outOf: "von 10",
+    overall: "Gesamt Score",
+    // The reference sets the unit as "/ 10" beside the numeral rather than
+    // spelling it out. Notation, so it is the same in every locale.
+    outOf: "/ 10",
     demoData: "Demo-Daten",
     landmarks: "Landmarken",
     measured: "Gemessen",
@@ -286,14 +288,15 @@ export const de: Dict = {
       "Die Gesichter unterscheiden sich nur in den Proportionen, die der Scan misst — Kieferverjüngung, Kinnlänge, Mittelgesichtshöhe. Sie sind keine Attraktivitätsskala.",
 
     confidential: "Vertraulich",
+    status: "Status",
     faceDetected: "Gesicht erkannt",
     scanId: "Scan-ID",
     scanDate: "Datum",
     detailed: "Detaillierte Analyse",
     notMeasured: "Nicht messbar",
     strengthsTitle: "Deine Stärken",
-    optimizeTitle: "Optimierungspotenzial",
-    potential: "Potenzial-Score",
+    optimizeTitle: "Optimierungs­potenzial",
+    potential: "Potenzial Score",
     potentialBody:
       "Erreichbar, wenn die beeinflussbaren Messwerte auf ihrem Referenzwert lägen.",
     potentialWhat:
@@ -306,19 +309,29 @@ export const de: Dict = {
     tabs: {
       result: "Ergebnis",
       analysis: "Analyse",
-      strengths: "Stärken",
       tips: "Tipps",
+      history: "Verlauf",
     },
+    historyBody:
+      "Dieser Scan ist der einzige, den es gibt. Deine Fotos und Messwerte liegen nur in diesem Browser-Tab und werden beim Ablauf der Sitzung verworfen — deshalb kann hier nichts Älteres stehen.",
+    newScan: "Neuer Scan",
+    // ­ is a SOFT HYPHEN: invisible until the word has to break, then it
+    // becomes a hyphen at exactly this point. German compounds have no space
+    // to wrap at, and an analysis tile is ~48px of label column, so without
+    // these the browser breaks mid-syllable — "Symmetri / e", "Augenber /
+    // eich". `hyphens: auto` is the proper mechanism and is set on the label,
+    // but it depends on the engine shipping a German hyphenation dictionary
+    // and plenty do not, so the breaks are placed here rather than hoped for.
     modules: {
-      symmetry: "Symmetrie",
-      eyes: "Augenbereich",
-      jaw: "Kieferlinie",
-      proportions: "Proportionen",
-      nose: "Nasenform",
+      symmetry: "Sym­metrie",
+      eyes: "Augen­bereich",
+      jaw: "Kiefer­linie",
+      proportions: "Propor­tionen",
+      nose: "Nasen­form",
       lips: "Lippen",
-      skin: "Hautqualität",
-      faceShape: "Gesichtsform",
-      midface: "Mittelgesicht",
+      skin: "Haut­qualität",
+      faceShape: "Gesichts­form",
+      midface: "Mittel­gesicht",
     },
   },
   checkout: {
@@ -564,6 +577,7 @@ export const de: Dict = {
         "Definition im Gesicht ist vor allem eine Körperfett-Frage. Der Weg Richtung 12–18 % bringt deinem Kiefer und deinen Wangenknochen mehr als jedes Gerät oder jeder Trick auf dem Markt.",
       tag: "Kieferlinie",
       cadence: "Dauerhaft",
+      short: "Niedrigerer Körperfettanteil",
     },
     guaSha: {
       title: "Gua Sha entlang Kiefer und unter den Augen",
@@ -571,6 +585,7 @@ export const de: Dict = {
         "Zwei Einheiten pro Woche, wenig Öl, sanfte Züge vom Kinn zum Ohr. Es bewegt Lymphflüssigkeit — erwarte einen abschwellenden Effekt für Stunden, keinen Knochenumbau.",
       tag: "Kieferlinie",
       cadence: "2× / Woche",
+      short: "Gua Sha für die Kieferlinie",
     },
     tonguePosture: {
       title: "Tägliche Zungenhaltung",
@@ -578,6 +593,7 @@ export const de: Dict = {
         "Zunge vollflächig am Gaumen, Lippen geschlossen, Nasenatmung. Belege für Knochenveränderung bei Erwachsenen sind dünn — behandle es als Haltungsarbeit. Kau gleichmäßig auf beiden Seiten.",
       tag: "Kieferlinie",
       cadence: "Täglich",
+      short: "Zungenhaltung korrigieren",
     },
     retinoid: {
       title: "Retinoid abends, 3 Nächte pro Woche",
@@ -585,6 +601,7 @@ export const de: Dict = {
         "Starte mit Adapalen 0,1 % oder Retinol 0,3 % auf trockener Haut nach der Reinigung, Feuchtigkeitspflege darüber. Über 8–12 Wochen auf täglich steigern. Schneller und stärker bringt nur Reizung.",
       tag: "Haut",
       cadence: "3 Nächte / Woche",
+      short: "Retinoid-Routine abends",
     },
     spf: {
       title: "LSF 30+ an jedem einzelnen Morgen",
@@ -592,6 +609,7 @@ export const de: Dict = {
         "Die Hautmaßnahme mit dem höchsten Ertrag — und die, die alle auslassen. Sie schützt alles andere, was du tust, auch das Retinoid, das die Haut lichtempfindlich macht.",
       tag: "Haut",
       cadence: "Täglich",
+      short: "Täglicher Sonnenschutz",
     },
     asymmetry: {
       title: "Prüfe die Ursachen deiner Asymmetrie",
@@ -599,6 +617,7 @@ export const de: Dict = {
         "Wechsle die Kauseite, schlaf nicht immer auf derselben Wange, und stell die Bildschirmhöhe so ein, dass dein Kopf nicht acht Stunden am Tag geneigt ist. Kleine Hebel — aber die, die du in der Hand hast.",
       tag: "Symmetrie",
       cadence: "Dauerhaft",
+      short: "Asymmetrie ausgleichen",
     },
     depuff: {
       title: "Abschwell-Routine für die Augenpartie",
@@ -606,6 +625,7 @@ export const de: Dict = {
         "Abends weniger Salz, mindestens 7,5 Stunden Schlaf, Alkohol maßvoll, und mit leicht erhöhtem Kopf schlafen. Die meisten Beschwerden an der Augenpartie sind Wassereinlagerung, keine Knochenstruktur.",
       tag: "Augen",
       cadence: "Täglich",
+      short: "Augenpartie abschwellen",
     },
     proportions: {
       title: "Style um deine Proportionen herum, kämpf nicht dagegen",
@@ -613,6 +633,7 @@ export const de: Dict = {
         "Senkrechte Proportionen sind Knochen und ändern sich nicht. Ein Schnitt mit der richtigen Höhe und eine Bartlinie, die das untere Drittel streckt oder verbreitert, verschieben den Eindruck weit mehr als jede Übung.",
       tag: "Proportionen",
       cadence: "Nächster Termin",
+      short: "Frisur an Gesichtsform anpassen",
     },
     hair: {
       title: "Haarausfall: früh handeln, zum Arzt gehen",
@@ -620,6 +641,7 @@ export const de: Dict = {
         "Minoxidil und Finasterid sind die einzigen Mittel mit belastbarer Evidenz, und beide wirken am besten vor sichtbarer Ausdünnung. Vereinbare einen Termin, statt mit Nahrungsergänzung zu experimentieren.",
       tag: "Haar",
       cadence: "Diesen Monat",
+      short: "Haaransatz und Styling",
     },
     grooming: {
       title: "Grooming-Termin bei einem guten Barbier",
@@ -627,6 +649,7 @@ export const de: Dict = {
         "Ein Schnitt passend zu deiner Gesichtsform, aufgeräumte statt gezupfter Brauen und eine saubere Bartlinie. Die günstigste, schnellste und sichtbarste Veränderung auf dieser Liste.",
       tag: "Grooming",
       cadence: "Alle 4 Wochen",
+      short: "Augenbrauen definieren",
     },
     smoking: {
       title: "Nikotin weglassen",
@@ -634,6 +657,7 @@ export const de: Dict = {
         "Rauchen und Dampfen bauen Kollagen ab und trüben den Ton unter den Augen. Das ist innerhalb weniger Jahre sichtbar und teilweise umkehrbar — nichts sonst auf dieser Liste wird durch Weitermachen so schnell zunichtegemacht.",
       tag: "Haut",
       cadence: "Ab sofort",
+      short: "Rauchen reduzieren",
     },
     training: {
       title: "Krafttraining in die Woche bringen",
@@ -641,6 +665,7 @@ export const de: Dict = {
         "Zwei bis drei Einheiten pro Woche sind das Minimum, damit eine Diät hält. Training bewahrt die Muskulatur, die du sonst verlierst — und genau die erhält die Definition an Kiefer und Wangen, für die du abnimmst.",
       tag: "Körper",
       cadence: "3× / Woche",
+      short: "Krafttraining aufnehmen",
     },
     sleep: {
       title: "Schlaf ist der Multiplikator",
@@ -648,6 +673,7 @@ export const de: Dict = {
         "7,5–9 Stunden nach festem Rhythmus. Hautregeneration, Flüssigkeitshaushalt und die allgemeine Frische im Gesicht hängen enger am Schlaf als an jedem Produkt in deinem Schrank.",
       tag: "Lebensstil",
       cadence: "Jede Nacht",
+      short: "Mehr und besserer Schlaf",
     },
   },
 };

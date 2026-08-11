@@ -139,6 +139,8 @@ export interface Dict {
     /* ---- The redesigned report ------------------------------------------ */
     /** Header pill. States a property of the page, not an action. */
     confidential: string;
+    /** Label above the detection state, on the scan stage. */
+    status: string;
     faceDetected: string;
     scanId: string;
     scanDate: string;
@@ -157,7 +159,10 @@ export interface Dict {
     moreTips: string;
     /** Accessible name for the floating tab bar. */
     tabsLabel: string;
-    tabs: Record<"result" | "analysis" | "strengths" | "tips", string>;
+    tabs: Record<"result" | "analysis" | "tips" | "history", string>;
+    /** Why there is only ever one scan in the history. */
+    historyBody: string;
+    newScan: string;
     /** Row labels for the detailed analysis. */
     modules: Record<RowId, string>;
   };
@@ -289,6 +294,17 @@ export interface Dict {
   bands: Record<BandId, { label: string; blurb: string }>;
   plan: Record<
     PlanId,
-    { title: string; detail: string; tag: string; cadence: string }
+    {
+      title: string;
+      detail: string;
+      tag: string;
+      cadence: string;
+      /**
+       * Two to four words, for the optimisation column on the report, where
+       * a half-width card cannot hold the full title. Same advice, not a
+       * different one — the long form is still what the action plan shows.
+       */
+      short: string;
+    }
   >;
 }

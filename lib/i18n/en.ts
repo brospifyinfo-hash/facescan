@@ -237,7 +237,9 @@ export const en: Dict = {
   },
   results: {
     overall: "Overall Score",
-    outOf: "out of 10",
+    // The reference sets the unit as "/ 10" beside the numeral rather than
+    // spelling it out. Notation, so it is the same in every locale.
+    outOf: "/ 10",
     demoData: "Demo data",
     landmarks: "Landmarks",
     measured: "Measured",
@@ -285,6 +287,7 @@ export const en: Dict = {
       "The faces differ only in the proportions the scan measures — jaw taper, chin length, midface height. They are not a scale of attractiveness.",
 
     confidential: "Confidential",
+    status: "Status",
     faceDetected: "Face detected",
     scanId: "Scan ID",
     scanDate: "Date",
@@ -305,14 +308,17 @@ export const en: Dict = {
     tabs: {
       result: "Result",
       analysis: "Analysis",
-      strengths: "Strengths",
       tips: "Tips",
+      history: "History",
     },
+    historyBody:
+      "This scan is the only one there is. Your photos and measurements live in this browser tab alone and are discarded when the session expires — which is why nothing older can appear here.",
+    newScan: "New scan",
     modules: {
       symmetry: "Symmetry",
       eyes: "Eye region",
       jaw: "Jawline",
-      proportions: "Proportions",
+      proportions: "Propor­tions",
       nose: "Nose shape",
       lips: "Lips",
       skin: "Skin quality",
@@ -567,6 +573,7 @@ export const en: Dict = {
         "Facial definition is mostly a body-fat story. Moving toward 12–18% will do more for your jaw and cheekbones than any device or hack on the market.",
       tag: "Jawline",
       cadence: "Ongoing",
+      short: "Lower body fat",
     },
     guaSha: {
       title: "Gua sha along the jaw and under the eyes",
@@ -574,6 +581,7 @@ export const en: Dict = {
         "Two sessions a week, light oil, gentle upward strokes from chin to ear. It moves lymphatic fluid — expect a de-puffing effect that lasts hours, not bone remodelling.",
       tag: "Jawline",
       cadence: "2× / week",
+      short: "Gua sha along the jaw",
     },
     tonguePosture: {
       title: "Daily tongue-posture habit",
@@ -581,6 +589,7 @@ export const en: Dict = {
         "Full tongue on the palate, lips closed, nasal breathing. Evidence for adult bone change is thin — treat it as posture work. Chew evenly on both sides.",
       tag: "Jawline",
       cadence: "Daily",
+      short: "Correct tongue posture",
     },
     retinoid: {
       title: "Retinoid at night, 3 nights a week",
@@ -588,6 +597,7 @@ export const en: Dict = {
         "Start with adapalene 0.1% or retinol 0.3% on dry skin after cleansing, moisturizer on top. Build to nightly over 8–12 weeks. Going stronger faster only buys irritation.",
       tag: "Skin",
       cadence: "3 nights / week",
+      short: "Evening retinoid routine",
     },
     spf: {
       title: "SPF 30+ every single morning",
@@ -595,6 +605,7 @@ export const en: Dict = {
         "The highest-return skin intervention there is, and the one people skip. It protects everything else you do — including the retinoid, which makes skin sun-sensitive.",
       tag: "Skin",
       cadence: "Daily",
+      short: "Daily sun protection",
     },
     asymmetry: {
       title: "Audit your asymmetry drivers",
@@ -602,6 +613,7 @@ export const en: Dict = {
         "Alternate your chewing side, stop sleeping face-down on the same cheek, and fix screen height so your head isn't tilted for eight hours a day. Small levers — but the ones you control.",
       tag: "Symmetry",
       cadence: "Ongoing",
+      short: "Even out asymmetry",
     },
     depuff: {
       title: "De-puff protocol for the eye area",
@@ -609,6 +621,7 @@ export const en: Dict = {
         "Cut evening sodium, hold 7.5h+ of sleep, moderate alcohol, and sleep with your head slightly elevated. Most eye-area complaints are fluid retention, not bone structure.",
       tag: "Eyes",
       cadence: "Daily",
+      short: "De-puff the eye area",
     },
     proportions: {
       title: "Style around your proportions, don't fight them",
@@ -616,6 +629,7 @@ export const en: Dict = {
         "Vertical proportions are bone and won't change. A haircut with the right height and a beard line that lengthens or widens the lower third shifts the read far more than any exercise.",
       tag: "Proportions",
       cadence: "Next cut",
+      short: "Match hair to face shape",
     },
     hair: {
       title: "Hair loss: act early, see a doctor",
@@ -623,6 +637,7 @@ export const en: Dict = {
         "Minoxidil and finasteride are the only interventions with solid evidence, and both work best before visible thinning. Book a consult rather than experimenting with supplements.",
       tag: "Hair",
       cadence: "This month",
+      short: "Hairline and styling",
     },
     grooming: {
       title: "Grooming pass with a real barber",
@@ -630,6 +645,7 @@ export const en: Dict = {
         "A cut matched to your face shape, brows cleaned up rather than sculpted, and a consistent beard line. Cheapest, fastest, most visible change on this list.",
       tag: "Grooming",
       cadence: "Every 4 weeks",
+      short: "Define the brows",
     },
     smoking: {
       title: "Drop the nicotine",
@@ -637,6 +653,7 @@ export const en: Dict = {
         "Smoking and vaping degrade collagen and dull under-eye tone. It shows within a couple of years and is partly reversible — nothing else on this list gets undone as fast by carrying on.",
       tag: "Skin",
       cadence: "Starting now",
+      short: "Cut down on smoking",
     },
     training: {
       title: "Get resistance training into the week",
@@ -644,6 +661,7 @@ export const en: Dict = {
         "Two to three sessions a week is the floor that makes a cut hold. Lifting keeps the muscle you'd otherwise lose, and that's what preserves the jaw and cheek definition you're cutting for.",
       tag: "Body",
       cadence: "3× / week",
+      short: "Start strength training",
     },
     sleep: {
       title: "Sleep is the multiplier",
@@ -651,6 +669,7 @@ export const en: Dict = {
         "7.5–9 hours on a consistent schedule. Skin repair, fluid balance, and general facial freshness all track sleep more tightly than any product in your cabinet.",
       tag: "Lifestyle",
       cadence: "Nightly",
+      short: "More and better sleep",
     },
   },
 };
