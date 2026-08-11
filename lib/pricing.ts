@@ -25,11 +25,20 @@ export const AMOUNTS: Record<PlanId, number> = {
   blueprint: 18.95,
 };
 
-/** Capability flags — the UI asks these, never the plan id directly. */
+/**
+ * Capability flags — the UI asks these, never the plan id directly.
+ *
+ * `products` is the affiliate recommendation block. It rides with the action
+ * plan and above, because the recommendations ARE the action plan pointed at
+ * things you can buy: the ranking comes from the same buildPlan() weights, so
+ * a tier that cannot see the plan has nothing to hang them on. Expressed here
+ * rather than as `plan === "pro"` in the component, so adding a tier later is
+ * still a change to this file and nothing else.
+ */
 export const CAPABILITIES = {
-  raw: { metrics: true, actionPlan: false, history: false, blueprint: false },
-  pro: { metrics: true, actionPlan: true, history: true, blueprint: false },
-  blueprint: { metrics: true, actionPlan: true, history: true, blueprint: true },
+  raw: { metrics: true, actionPlan: false, history: false, blueprint: false, products: false },
+  pro: { metrics: true, actionPlan: true, history: true, blueprint: false, products: true },
+  blueprint: { metrics: true, actionPlan: true, history: true, blueprint: true, products: true },
 } as const satisfies Record<PlanId, Record<string, boolean>>;
 
 export type Capability = keyof (typeof CAPABILITIES)["raw"];

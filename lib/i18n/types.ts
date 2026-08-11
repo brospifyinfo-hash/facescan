@@ -286,6 +286,46 @@ export interface Dict {
       string
     >;
   };
+  /** The affiliate block on the paid report. */
+  products: {
+    title: string;
+    topBadge: string;
+    othersTitle: string;
+    /** Contains {host} — the merchant, read off the link. */
+    cta: string;
+    ctaGeneric: string;
+    matchedFor: string;
+    priceNote: string;
+    /** Advertising disclosure. Legally required, not decorative. */
+    disclosure: string;
+  };
+  /** The catalogue editor. Owner-facing, but typed like everything else. */
+  admin: {
+    title: string;
+    productsLabel: string;
+    newProduct: string;
+    editProduct: string;
+    save: string;
+    saving: string;
+    cancel: string;
+    edit: string;
+    delete: string;
+    confirmDelete: string;
+    loading: string;
+    empty: string;
+    inactive: string;
+    memoryWarning: string;
+    fieldTitle: string;
+    fieldDescription: string;
+    fieldPrice: string;
+    priceHint: string;
+    fieldImage: string;
+    fieldLink: string;
+    fieldTags: string;
+    tagsHint: string;
+    fieldActive: string;
+    activeHint: string;
+  };
   session: { notice: string };
   status: Record<"in" | "below" | "above", string>;
   statusShort: Record<"in" | "below" | "above", string>;

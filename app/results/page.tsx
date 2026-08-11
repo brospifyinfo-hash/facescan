@@ -24,6 +24,7 @@ import { ScorePanel } from "@/components/report/ScorePanel";
 import { AnalysisGrid } from "@/components/report/AnalysisGrid";
 import { OptimizePanel, StrengthsPanel } from "@/components/report/Findings";
 import { TipCard } from "@/components/report/TipCard";
+import { Recommendations } from "@/components/report/Recommendations";
 import { HistoryCard } from "@/components/report/HistoryCard";
 import { TabBar } from "@/components/report/TabBar";
 import { can, formatPrice } from "@/lib/pricing";
@@ -226,6 +227,14 @@ export default function ResultsPage() {
                 means touching lib/pricing.ts and nothing else. */}
             {unlocked && can(plan, "actionPlan") ? (
               <MonthlyProgram quiz={quiz} metrics={metrics} />
+            ) : null}
+
+            {/* The affiliate block. Directly under the plan on purpose: it is
+                the same ranking pointed at things you can buy, so it reads as
+                "and here is what that costs" rather than as an ad break. It
+                renders nothing at all when no product matches. */}
+            {unlocked && can(plan, "products") ? (
+              <Recommendations quiz={quiz} metrics={metrics} />
             ) : null}
 
             {unlocked && can(plan, "blueprint") ? <FullReport /> : null}

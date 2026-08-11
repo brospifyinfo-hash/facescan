@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
 export const ACCESS_KEY = "facescan.access";
-const CODE = "1312";
+const CODE = "09052008";
 const HOLD_MS = 5000;
 
 /** Has the owner's access code been entered in this session? */
@@ -25,6 +25,11 @@ export function hasAccessCode(): boolean {
  * runs in the browser, so the code sits in the shipped bundle and anyone who
  * looks will find it. The same is true of the paid unlock itself today —
  * both need a server-verified entitlement before launch.
+ *
+ * It follows that this value must NOT be reused as the credential for
+ * anything that writes: the catalogue editor at /admin/products is gated on
+ * a signed session plus ADMIN_EMAILS, checked server-side on every request,
+ * precisely because a code shipped to the browser protects nothing.
  */
 export function DevUnlock({ children }: { children: React.ReactNode }) {
   const [prompting, setPrompting] = useState(false);
@@ -104,7 +109,7 @@ export function DevUnlock({ children }: { children: React.ReactNode }) {
               enterKeyHint="go"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              placeholder="••••"
+              placeholder="••••••••"
               aria-label="Code"
               className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center text-lg tracking-[0.5em] outline-none transition-colors placeholder:text-[var(--color-ink-quaternary)] focus:border-accent/50"
             />
