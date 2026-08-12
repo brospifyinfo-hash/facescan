@@ -346,6 +346,14 @@ export interface Dict {
     fieldPrice: string;
     priceHint: string;
     fieldImage: string;
+    pickImage: string;
+    replaceImage: string;
+    removeImage: string;
+    uploading: string;
+    uploadFailed: string;
+    uploadNotImage: string;
+    /** Shown when no Blob store is connected and the field is a URL box. */
+    uploadUnavailable: string;
     fieldLink: string;
     fieldTags: string;
     tagsHint: string;

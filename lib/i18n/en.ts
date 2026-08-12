@@ -493,6 +493,14 @@ export const en: Dict = {
     fieldPrice: "Price",
     priceHint: "Free text, exactly as the merchant shows it — displayed as indicative.",
     fieldImage: "Image URL",
+    pickImage: "Choose image",
+    replaceImage: "Replace",
+    removeImage: "Remove",
+    uploading: "Uploading…",
+    uploadFailed: "Upload failed.",
+    uploadNotImage: "That is not an image.",
+    uploadUnavailable:
+      "Image upload is not set up yet — paste the image address for now. (Vercel → Storage → create a Blob store and connect it.)",
     fieldLink: "Affiliate link",
     fieldTags: "Which problems does it address?",
     tagsHint:

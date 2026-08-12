@@ -494,6 +494,14 @@ export const fr: Dict = {
     fieldPrice: "Prix",
     priceHint: "Texte libre, tel que le marchand l'affiche ; présenté comme indicatif.",
     fieldImage: "URL de l'image",
+    pickImage: "Choisir une image",
+    replaceImage: "Remplacer",
+    removeImage: "Retirer",
+    uploading: "Envoi…",
+    uploadFailed: "L'envoi a échoué.",
+    uploadNotImage: "Ce n'est pas une image.",
+    uploadUnavailable:
+      "L'envoi d'images n'est pas configuré — collez l'adresse de l'image pour l'instant. (Vercel → Storage → créer un Blob et le connecter.)",
     fieldLink: "Lien affilié",
     fieldTags: "Quels problèmes cela adresse-t-il ?",
     tagsHint:

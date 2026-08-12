@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isAdmin } from "@/lib/admin";
 import { products, productBacking, isReadOnlyBacking } from "@/lib/products/store";
 import { SHEET_COLUMNS } from "@/lib/products/sheet-csv";
+import { blobConfigured } from "@/lib/blob";
 import { validateProduct } from "@/lib/products/types";
 
 export const runtime = "nodejs";
@@ -30,6 +31,8 @@ export async function GET() {
       products: await products.list(),
       backing,
       readOnly: isReadOnlyBacking(backing),
+      // Decides whether the image field is a file picker or a URL box.
+      uploads: blobConfigured(),
       // Only meaningful in the read-only mode, where the admin has to go to
       // the spreadsheet to change anything.
       sheetUrl: process.env.SHEETS_ID

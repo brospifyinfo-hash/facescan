@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Plus, Trash2, Pencil, X, AlertTriangle, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { ImageField } from "./ImageField";
 import { useT } from "@/lib/i18n";
 import { PROBLEM_TAGS, PLAN_FOR_TAG, type Product, type ProblemTag } from "@/lib/products/types";
 import type { ProductBacking } from "@/lib/products/store";
@@ -37,6 +38,7 @@ export function ProductAdmin() {
   const [readOnly, setReadOnly] = useState(false);
   const [sheetUrl, setSheetUrl] = useState<string | null>(null);
   const [columns, setColumns] = useState<string[]>([]);
+  const [uploads, setUploads] = useState(false);
   const [loading, setLoading] = useState(true);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -53,12 +55,14 @@ export function ProductAdmin() {
         readOnly?: boolean;
         sheetUrl?: string | null;
         columns?: string[];
+        uploads?: boolean;
         details?: string[];
       };
       if (data.backing) setBacking(data.backing);
       setReadOnly(Boolean(data.readOnly));
       setSheetUrl(data.sheetUrl ?? null);
       if (data.columns) setColumns(data.columns);
+      setUploads(Boolean(data.uploads));
       if (res.ok) {
         setItems(data.products ?? []);
         setErrors([]);
@@ -247,12 +251,11 @@ export function ProductAdmin() {
             </div>
 
             <Field label={t.admin.fieldImage}>
-              <input
-                className={inputClass}
+              <ImageField
                 value={draft.imageUrl}
-                onChange={(e) => setDraft({ ...draft, imageUrl: e.target.value })}
-                placeholder="https://…"
-                inputMode="url"
+                onChange={(imageUrl) => setDraft({ ...draft, imageUrl })}
+                uploads={uploads}
+                inputClass={inputClass}
               />
             </Field>
 

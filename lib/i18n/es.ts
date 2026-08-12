@@ -494,6 +494,14 @@ export const es: Dict = {
     fieldPrice: "Precio",
     priceHint: "Texto libre, tal como lo muestra el vendedor; se indica como orientativo.",
     fieldImage: "URL de imagen",
+    pickImage: "Elegir imagen",
+    replaceImage: "Reemplazar",
+    removeImage: "Quitar",
+    uploading: "Subiendo…",
+    uploadFailed: "La subida falló.",
+    uploadNotImage: "Eso no es una imagen.",
+    uploadUnavailable:
+      "La subida de imágenes no está configurada; pega la dirección de la imagen por ahora. (Vercel → Storage → crear Blob y conectarlo.)",
     fieldLink: "Enlace de afiliado",
     fieldTags: "¿Qué problemas cubre?",
     tagsHint:
