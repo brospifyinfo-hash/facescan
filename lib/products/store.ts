@@ -26,6 +26,7 @@ import { kv, kvPipeline, kvConfigured } from "@/lib/kv";
 import type { Product, ProductInput } from "./types";
 import { isProblemTag } from "./types";
 import { SheetsProductStore, sheetsConfigured } from "./sheets";
+import { fetchSheetProducts, sheetIdConfigured } from "./sheet-csv";
 
 export interface ProductStore {
   list(): Promise<Product[]>;
@@ -148,24 +149,69 @@ declare global {
   var __facescanProducts: ProductStore | undefined;
 }
 
-export type ProductBacking = "sheets" | "redis" | "memory";
+export type ProductBacking = "sheets" | "sheet-readonly" | "redis" | "memory";
+
+/** Backings where the admin page can only look, not edit. */
+export const isReadOnlyBacking = (b: ProductBacking) => b === "sheet-readonly";
 
 /**
  * Which backing is live.
  *
- * Sheets wins when configured, because it is the one an owner picked
- * deliberately — Redis is the general-purpose store the rest of the app
- * uses, and memory is the "nothing is set up" case. Order is preference,
- * not fallback: a configured Sheets backend that is failing throws rather
- * than quietly serving an empty catalogue from somewhere else.
+ * Order is preference, not fallback — a configured backing that is failing
+ * throws rather than quietly serving a catalogue from somewhere else.
+ *
+ *   sheets          Apps Script on the spreadsheet: read and write.
+ *   sheet-readonly  A publicly shared spreadsheet, read through its CSV
+ *                   export. No credential of any kind, so it needs no setup
+ *                   beyond sharing the document — and Google offers no
+ *                   unauthenticated write, so products are added by typing a
+ *                   row. The admin page says so instead of showing buttons
+ *                   that cannot work.
+ *   redis           The store the rest of the app uses.
+ *   memory          Nothing configured.
  */
 export const productBacking = (): ProductBacking =>
-  sheetsConfigured() ? "sheets" : kvConfigured() ? "redis" : "memory";
+  sheetsConfigured()
+    ? "sheets"
+    : sheetIdConfigured()
+      ? "sheet-readonly"
+      : kvConfigured()
+        ? "redis"
+        : "memory";
+
+/** A catalogue that can be read but not changed from the app. */
+class ReadOnlySheetStore implements ProductStore {
+  async list() {
+    return fetchSheetProducts();
+  }
+  async get(id: string) {
+    return (await this.list()).find((p) => p.id === id) ?? null;
+  }
+  // Rejected loudly rather than silently doing nothing: the admin UI hides
+  // these controls, so reaching them at all means something is out of step.
+  private refuse(): never {
+    throw new Error(
+      "This catalogue is read-only. Add or edit the row in the spreadsheet, " +
+        "or configure SHEETS_URL and SHEETS_TOKEN to edit from here.",
+    );
+  }
+  async create(): Promise<never> {
+    this.refuse();
+  }
+  async update(): Promise<never> {
+    this.refuse();
+  }
+  async remove(): Promise<never> {
+    this.refuse();
+  }
+}
 
 function makeStore(): ProductStore {
   switch (productBacking()) {
     case "sheets":
       return new SheetsProductStore();
+    case "sheet-readonly":
+      return new ReadOnlySheetStore();
     case "redis":
       return new RedisProductStore();
     default:

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Plus, Trash2, Pencil, X, AlertTriangle } from "lucide-react";
+import { Plus, Trash2, Pencil, X, AlertTriangle, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useT } from "@/lib/i18n";
 import { PROBLEM_TAGS, PLAN_FOR_TAG, type Product, type ProblemTag } from "@/lib/products/types";
@@ -34,6 +34,9 @@ export function ProductAdmin() {
   const t = useT();
   const [items, setItems] = useState<Product[]>([]);
   const [backing, setBacking] = useState<ProductBacking>("memory");
+  const [readOnly, setReadOnly] = useState(false);
+  const [sheetUrl, setSheetUrl] = useState<string | null>(null);
+  const [columns, setColumns] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -47,9 +50,15 @@ export function ProductAdmin() {
       const data = (await res.json().catch(() => ({}))) as {
         products?: Product[];
         backing?: ProductBacking;
+        readOnly?: boolean;
+        sheetUrl?: string | null;
+        columns?: string[];
         details?: string[];
       };
       if (data.backing) setBacking(data.backing);
+      setReadOnly(Boolean(data.readOnly));
+      setSheetUrl(data.sheetUrl ?? null);
+      if (data.columns) setColumns(data.columns);
       if (res.ok) {
         setItems(data.products ?? []);
         setErrors([]);
@@ -128,7 +137,7 @@ export function ProductAdmin() {
             {backing === "sheets" ? ` · ${t.admin.backingSheets}` : ""}
           </p>
         </div>
-        {draft === null ? (
+        {draft === null && !readOnly ? (
           <Button
             onClick={() => {
               setEditingId(null);
@@ -141,6 +150,33 @@ export function ProductAdmin() {
           </Button>
         ) : null}
       </header>
+
+      {readOnly ? (
+        <div className="mt-4 rounded-[var(--r-card)] border border-white/10 bg-white/[0.03] p-3">
+          <p className="text-[12px] leading-relaxed text-[var(--color-ink-secondary)]">
+            {t.admin.readOnlyNotice}
+          </p>
+          {columns.length > 0 ? (
+            <>
+              <p className="t-eyebrow mt-3">{t.admin.columnsLabel}</p>
+              <p className="font-mono-terminal mt-1 break-words text-[11px] text-[var(--color-ink-tertiary)]">
+                {columns.join(" · ")}
+              </p>
+            </>
+          ) : null}
+          {sheetUrl ? (
+            <a
+              href={sheetUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-[var(--color-accent)]/30 bg-[var(--color-accent)]/[0.06] px-3 py-1.5 text-[12px] font-semibold text-[var(--color-accent)]"
+            >
+              {t.admin.openSheet}
+              <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+            </a>
+          ) : null}
+        </div>
+      ) : null}
 
       {/* Not a nicety. Without Upstash the store is per-instance memory, so
           everything typed here is gone on the next cold start — which looks
@@ -333,6 +369,7 @@ export function ProductAdmin() {
                   ) : null}
                 </div>
               </div>
+              {readOnly ? null : (
               <div className="flex shrink-0 flex-col gap-1">
                 <button
                   type="button"
@@ -352,6 +389,7 @@ export function ProductAdmin() {
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
+              )}
             </article>
           ))
         )}

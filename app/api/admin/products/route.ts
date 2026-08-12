@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdmin } from "@/lib/admin";
-import { products, productBacking } from "@/lib/products/store";
+import { products, productBacking, isReadOnlyBacking } from "@/lib/products/store";
+import { SHEET_COLUMNS } from "@/lib/products/sheet-csv";
 import { validateProduct } from "@/lib/products/types";
 
 export const runtime = "nodejs";
@@ -24,9 +25,17 @@ export async function GET() {
   // the one person who can fix it — so the reason is passed through rather
   // than collapsing into an empty list that looks like "no products yet".
   try {
+    const backing = productBacking();
     return NextResponse.json({
       products: await products.list(),
-      backing: productBacking(),
+      backing,
+      readOnly: isReadOnlyBacking(backing),
+      // Only meaningful in the read-only mode, where the admin has to go to
+      // the spreadsheet to change anything.
+      sheetUrl: process.env.SHEETS_ID
+        ? `https://docs.google.com/spreadsheets/d/${process.env.SHEETS_ID}/edit`
+        : null,
+      columns: SHEET_COLUMNS,
     });
   } catch (err) {
     return NextResponse.json(

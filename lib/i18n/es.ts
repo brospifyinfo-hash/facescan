@@ -482,6 +482,10 @@ export const es: Dict = {
     loading: "Cargando…",
     empty: "Todavía no hay productos.",
     inactive: "Inactivo",
+    readOnlyNotice:
+      "El catálogo vive en tu Google Sheet. Añade un producto agregando una fila allí; los cambios aparecen aquí poco después.",
+    openSheet: "Abrir hoja",
+    columnsLabel: "Columnas en este orden (primera fila)",
     backingSheets: "Google Sheets",
     memoryWarning:
       "Upstash no está configurado: el catálogo vive solo en la memoria de esta instancia y desaparece al siguiente arranque en frío. Configura KV_REST_API_URL y KV_REST_API_TOKEN.",

@@ -336,6 +336,10 @@ export interface Dict {
     inactive: string;
     /** Shown beside the count when the catalogue lives in a spreadsheet. */
     backingSheets: string;
+    /** Shown when the catalogue can be read but not edited from here. */
+    readOnlyNotice: string;
+    openSheet: string;
+    columnsLabel: string;
     memoryWarning: string;
     fieldTitle: string;
     fieldDescription: string;

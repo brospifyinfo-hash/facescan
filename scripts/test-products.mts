@@ -10,6 +10,7 @@
 import { recommend, tagWeights, TOP_N } from "../lib/products/match";
 import { validateProduct, PROBLEM_TAGS, TAG_FOR_PLAN } from "../lib/products/types";
 import type { Product, ProblemTag } from "../lib/products/types";
+import { parseCsv, productsFromRows } from "../lib/products/sheet-csv";
 import { buildPlan } from "../lib/plan";
 import type { QuizAnswers, ScanMetrics } from "../lib/store";
 import { makeMetric, METRIC_ORDER, SPECS } from "../lib/specs";
@@ -252,6 +253,63 @@ check(
   "duplicate tags are collapsed, so they cannot double-count",
   validateProduct({ ...good, tags: ["body_fat", "body_fat"] }).value?.tags.length === 1,
 );
+
+console.log("\nSheet CSV\n---------");
+
+// Every field in this sheet can legitimately contain a comma: a description,
+// a European price, an affiliate URL with query parameters, and the tag list
+// by definition. split(",") would shred exactly the rows a catalogue is made
+// of, so the parser is checked against the shapes that break naive ones.
+{
+  const csv = [
+    "id,title,description,price,imageUrl,affiliateLink,tags,active",
+    '1,"Serum, mild","Für trockene Haut, abends","24,90 €",https://e.de/i.png,"https://e.de/p?a=1,2","skin_routine,sun_protection",TRUE',
+    '2,Bürste,"Zeile eins\nZeile zwei","9 €",https://e.de/b.png,https://e.de/b,grooming,FALSE',
+    '3,"Er sagte ""hallo""",Beschreibung,"1.299,00 €",https://e.de/c.png,https://e.de/c,sleep,',
+  ].join("\n");
+
+  const rows = parseCsv(csv);
+  check("a quoted field keeps its comma", rows[1][1] === "Serum, mild", rows[1][1]);
+  check("a European price survives", rows[1][3] === "24,90 €", rows[1][3]);
+  check("a URL with a comma in the query survives", rows[1][5] === "https://e.de/p?a=1,2", rows[1][5]);
+  check("a newline inside quotes stays one field", rows[2][2].includes("\n"), JSON.stringify(rows[2][2]));
+  check("a doubled quote becomes one", rows[3][1] === 'Er sagte "hallo"', rows[3][1]);
+
+  const parsed = productsFromRows(rows);
+  check("the header row is not a product", parsed.length === 3, String(parsed.length));
+  check("tags are split and validated", parsed[0].tags.join("|") === "skin_routine|sun_protection", parsed[0].tags.join("|"));
+  check("FALSE in the active column disables the row", parsed[1].active === false);
+  check("an empty active column defaults to active", parsed[2].active === true);
+}
+
+{
+  // A sheet with no header row still has to work — the columns are then
+  // taken in the canonical order.
+  const rows = parseCsv('9,Titel,Text,5 €,https://e.de/i.png,https://e.de/p,sleep,TRUE');
+  const parsed = productsFromRows(rows);
+  check("a headerless sheet is read positionally", parsed.length === 1 && parsed[0].title === "Titel");
+}
+
+{
+  const rows = parseCsv(
+    [
+      "title,affiliateLink,tags",
+      "Ohne Tag,https://e.de/a,",
+      "Falscher Tag,https://e.de/b,puffy-face",
+      ",https://e.de/c,sleep",
+      "Ohne Link,,sleep",
+      "Gut,https://e.de/d,sleep",
+    ].join("\n"),
+  );
+  const parsed = productsFromRows(rows);
+  check(
+    "rows that can never match or never be clicked are skipped",
+    parsed.length === 1 && parsed[0].title === "Gut",
+    parsed.map((p) => p.title).join(","),
+  );
+}
+
+check("an empty sheet is an empty catalogue, not a crash", productsFromRows(parseCsv("")).length === 0);
 
 console.log(`\n${checks - failures}/${checks} checks passed`);
 if (failures > 0) process.exitCode = 1;

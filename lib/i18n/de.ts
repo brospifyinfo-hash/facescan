@@ -489,6 +489,10 @@ export const de: Dict = {
     loading: "Wird geladen…",
     empty: "Noch keine Produkte angelegt.",
     inactive: "Inaktiv",
+    readOnlyNotice:
+      "Der Katalog liegt in deinem Google Sheet. Neue Produkte legst du dort als neue Zeile an — Änderungen erscheinen hier nach kurzer Zeit.",
+    openSheet: "Sheet öffnen",
+    columnsLabel: "Spalten in dieser Reihenfolge (erste Zeile)",
     backingSheets: "Google Sheets",
     memoryWarning:
       "Kein Upstash konfiguriert — der Katalog liegt nur im Arbeitsspeicher dieser Instanz und ist beim nächsten Kaltstart weg. Für dauerhafte Produkte KV_REST_API_URL und KV_REST_API_TOKEN setzen.",
