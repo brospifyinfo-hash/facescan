@@ -19,10 +19,25 @@ export async function GET() {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
   // The admin list includes inactive products; the public one does not.
-  return NextResponse.json({
-    products: await products.list(),
-    backing: productBacking(),
-  });
+  //
+  // A Sheets backend that is misconfigured or slow throws, and the admin is
+  // the one person who can fix it — so the reason is passed through rather
+  // than collapsing into an empty list that looks like "no products yet".
+  try {
+    return NextResponse.json({
+      products: await products.list(),
+      backing: productBacking(),
+    });
+  } catch (err) {
+    return NextResponse.json(
+      {
+        error: "backend_unavailable",
+        backing: productBacking(),
+        details: [err instanceof Error ? err.message : "unknown error"],
+      },
+      { status: 502 },
+    );
+  }
 }
 
 export async function POST(request: Request) {

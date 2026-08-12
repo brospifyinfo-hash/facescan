@@ -5,6 +5,7 @@ import { Plus, Trash2, Pencil, X, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useT } from "@/lib/i18n";
 import { PROBLEM_TAGS, PLAN_FOR_TAG, type Product, type ProblemTag } from "@/lib/products/types";
+import type { ProductBacking } from "@/lib/products/store";
 import { cn } from "@/lib/cn";
 
 // The catalogue editor.
@@ -32,7 +33,7 @@ type Draft = typeof EMPTY;
 export function ProductAdmin() {
   const t = useT();
   const [items, setItems] = useState<Product[]>([]);
-  const [backing, setBacking] = useState<"redis" | "memory">("memory");
+  const [backing, setBacking] = useState<ProductBacking>("memory");
   const [loading, setLoading] = useState(true);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -43,10 +44,17 @@ export function ProductAdmin() {
     setLoading(true);
     try {
       const res = await fetch("/api/admin/products", { cache: "no-store" });
+      const data = (await res.json().catch(() => ({}))) as {
+        products?: Product[];
+        backing?: ProductBacking;
+        details?: string[];
+      };
+      if (data.backing) setBacking(data.backing);
       if (res.ok) {
-        const data = (await res.json()) as { products: Product[]; backing: "redis" | "memory" };
-        setItems(data.products);
-        setBacking(data.backing);
+        setItems(data.products ?? []);
+        setErrors([]);
+      } else {
+        setErrors(data.details ?? [`HTTP ${res.status}`]);
       }
     } finally {
       setLoading(false);
@@ -117,6 +125,7 @@ export function ProductAdmin() {
           <h1 className="t-title2">{t.admin.title}</h1>
           <p className="t-caption mt-1 text-[var(--color-ink-tertiary)]">
             {items.length} {t.admin.productsLabel}
+            {backing === "sheets" ? ` · ${t.admin.backingSheets}` : ""}
           </p>
         </div>
         {draft === null ? (

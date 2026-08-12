@@ -489,6 +489,7 @@ export const de: Dict = {
     loading: "Wird geladen…",
     empty: "Noch keine Produkte angelegt.",
     inactive: "Inaktiv",
+    backingSheets: "Google Sheets",
     memoryWarning:
       "Kein Upstash konfiguriert — der Katalog liegt nur im Arbeitsspeicher dieser Instanz und ist beim nächsten Kaltstart weg. Für dauerhafte Produkte KV_REST_API_URL und KV_REST_API_TOKEN setzen.",
     fieldTitle: "Titel",

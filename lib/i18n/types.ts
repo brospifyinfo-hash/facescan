@@ -334,6 +334,8 @@ export interface Dict {
     loading: string;
     empty: string;
     inactive: string;
+    /** Shown beside the count when the catalogue lives in a spreadsheet. */
+    backingSheets: string;
     memoryWarning: string;
     fieldTitle: string;
     fieldDescription: string;

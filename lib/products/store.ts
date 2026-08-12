@@ -25,6 +25,7 @@ import { randomUUID } from "crypto";
 import { kv, kvPipeline, kvConfigured } from "@/lib/kv";
 import type { Product, ProductInput } from "./types";
 import { isProblemTag } from "./types";
+import { SheetsProductStore, sheetsConfigured } from "./sheets";
 
 export interface ProductStore {
   list(): Promise<Product[]>;
@@ -147,12 +148,30 @@ declare global {
   var __facescanProducts: ProductStore | undefined;
 }
 
-export const products: ProductStore =
-  globalThis.__facescanProducts ??
-  (globalThis.__facescanProducts = kvConfigured()
-    ? new RedisProductStore()
-    : new MemoryProductStore());
+export type ProductBacking = "sheets" | "redis" | "memory";
 
-/** Which backing is live. Shown in the admin UI, never to a customer. */
-export const productBacking = (): "redis" | "memory" =>
-  kvConfigured() ? "redis" : "memory";
+/**
+ * Which backing is live.
+ *
+ * Sheets wins when configured, because it is the one an owner picked
+ * deliberately — Redis is the general-purpose store the rest of the app
+ * uses, and memory is the "nothing is set up" case. Order is preference,
+ * not fallback: a configured Sheets backend that is failing throws rather
+ * than quietly serving an empty catalogue from somewhere else.
+ */
+export const productBacking = (): ProductBacking =>
+  sheetsConfigured() ? "sheets" : kvConfigured() ? "redis" : "memory";
+
+function makeStore(): ProductStore {
+  switch (productBacking()) {
+    case "sheets":
+      return new SheetsProductStore();
+    case "redis":
+      return new RedisProductStore();
+    default:
+      return new MemoryProductStore();
+  }
+}
+
+export const products: ProductStore =
+  globalThis.__facescanProducts ?? (globalThis.__facescanProducts = makeStore());
