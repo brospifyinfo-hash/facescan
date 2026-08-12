@@ -95,6 +95,38 @@ function reviveProduct(raw: unknown): Product | null {
 const byNewest = (a: Product, b: Product) =>
   b.createdAt - a.createdAt || a.id.localeCompare(b.id);
 
+/**
+ * Force a value into the sheet as literal text.
+ *
+ * Sheets parses what it is given, and it is good at it: "24,90 €" written
+ * into a German-locale sheet is stored as the NUMBER 24.9, and reading it
+ * back gives "24.9" — the currency and the decimal comma are gone. That is
+ * the one field a customer actually reads on the card, so it cannot be left
+ * to a locale guess.
+ *
+ * A leading apostrophe is the spreadsheet convention for "this is text". It
+ * is a formatting directive, not part of the value, so it does not come back
+ * on read — verified against the live sheet, where "'24,90 €" round-trips
+ * intact and the bare form does not.
+ *
+ * Applied to every string field rather than just the price: a title like
+ * "1,5" or a description starting with "=" has the same problem, and the
+ * guard costs nothing where it is not needed.
+ */
+const asText = (v: string): string => (v.length > 0 ? `'${v}` : v);
+
+function toSheetProduct(p: Product) {
+  return {
+    ...p,
+    id: asText(p.id),
+    title: asText(p.title),
+    description: asText(p.description),
+    price: asText(p.price),
+    imageUrl: asText(p.imageUrl),
+    affiliateLink: asText(p.affiliateLink),
+  };
+}
+
 export class SheetsProductStore implements ProductStore {
   async list(): Promise<Product[]> {
     const { token } = config();
@@ -121,7 +153,7 @@ export class SheetsProductStore implements ProductStore {
     await call({
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token, action: "create", product }),
+      body: JSON.stringify({ token, action: "create", product: toSheetProduct(product) }),
     });
     return product;
   }
@@ -134,7 +166,7 @@ export class SheetsProductStore implements ProductStore {
     await call({
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token, action: "update", product: next }),
+      body: JSON.stringify({ token, action: "update", product: toSheetProduct(next) }),
     });
     return next;
   }
