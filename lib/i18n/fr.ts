@@ -437,6 +437,8 @@ export const fr: Dict = {
       occluded: "visage partiellement masqué",
     },
   },
+  navAccount: "Compte",
+  navAdmin: "Admin",
   account: {
     title: "Votre compte",
     loading: "Chargement…",
@@ -444,6 +446,10 @@ export const fr: Dict = {
       "Connectez-vous avec votre e-mail. Vos scans et vos achats vivent sous cette adresse — sans mot de passe, nous vous envoyons un code.",
     signIn: "Se connecter",
     signOut: "Se déconnecter",
+    savedBody:
+      "Ce scan est enregistré sous votre e-mail. Vos paiements s'y trouvent aussi.",
+    teaserBody:
+      "Avec un compte, vos scans sont conservés et vous voyez vos paiements.",
     scansTitle: "Vos scans",
     noScans:
       "Aucun scan enregistré pour l'instant. Un scan est archivé ici une fois débloqué ; avant cela il ne quitte pas votre navigateur.",

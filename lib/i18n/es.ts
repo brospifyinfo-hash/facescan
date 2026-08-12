@@ -437,6 +437,8 @@ export const es: Dict = {
       occluded: "cara parcialmente tapada",
     },
   },
+  navAccount: "Cuenta",
+  navAdmin: "Admin",
   account: {
     title: "Tu cuenta",
     loading: "Cargando…",
@@ -444,6 +446,10 @@ export const es: Dict = {
       "Inicia sesión con tu correo. Tus escaneos y compras viven bajo esa dirección: sin contraseña, te enviamos un código.",
     signIn: "Iniciar sesión",
     signOut: "Cerrar sesión",
+    savedBody:
+      "Este escaneo está guardado bajo tu correo. Allí también están tus pagos.",
+    teaserBody:
+      "Con una cuenta tus escaneos se conservan y puedes ver tus pagos.",
     scansTitle: "Tus escaneos",
     noScans:
       "Todavía no hay escaneos guardados. Un escaneo se archiva aquí cuando lo desbloqueas; antes no sale de tu navegador.",

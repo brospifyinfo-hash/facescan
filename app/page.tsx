@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { DevUnlock } from "@/components/ui/DevUnlock";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
+import { AccountLink } from "@/components/ui/AccountLink";
 import { HeroMesh } from "@/components/landing/HeroMesh";
 import { ReviewsSection } from "@/components/landing/ReviewsSection";
 import { CATEGORY_ORDER } from "@/lib/metrics";
@@ -154,6 +155,7 @@ export default function LandingPage() {
             >
               {t.nav.howItWorks}
             </a>
+            <AccountLink />
             <LanguageSwitcher />
           </div>
         </div>
@@ -410,6 +412,12 @@ export default function LandingPage() {
           <div className={cn("flex gap-5 text-[11px] text-[var(--color-ink-tertiary)]")}>
             <span>{t.landing.imprint}</span>
             <span>{t.landing.privacyLink}</span>
+            <a
+              href="/admin/products"
+              className="ml-auto text-[var(--color-ink-quaternary)] transition-colors hover:text-[var(--color-ink-secondary)]"
+            >
+              {t.navAdmin}
+            </a>
           </div>
         </div>
       </footer>

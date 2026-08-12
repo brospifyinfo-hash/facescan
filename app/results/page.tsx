@@ -25,8 +25,7 @@ import { AnalysisGrid } from "@/components/report/AnalysisGrid";
 import { OptimizePanel, StrengthsPanel } from "@/components/report/Findings";
 import { TipCard } from "@/components/report/TipCard";
 import { Recommendations } from "@/components/report/Recommendations";
-import { HistoryCard } from "@/components/report/HistoryCard";
-import { TabBar } from "@/components/report/TabBar";
+import { AccountCard } from "@/components/report/AccountCard";
 import { can, formatPrice } from "@/lib/pricing";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { fetchSession } from "@/lib/auth/client";
@@ -162,7 +161,7 @@ export default function ResultsPage() {
           as a centred column rather than stretching six analysis tiles across
           1200px, which is what made the old layout read as a dashboard. The
           bottom padding clears the floating tab bar. */}
-      <main className="mx-auto w-full max-w-md px-4 pt-5 pb-32">
+      <main className="mx-auto w-full max-w-md px-4 pt-5 pb-16">
         <ReportHeader demo={metrics.demo} />
 
         {locked ? (
@@ -171,7 +170,7 @@ export default function ResultsPage() {
           </div>
         ) : null}
 
-        <section id="result" className="mt-4 scroll-mt-4 space-y-3">
+        <section className="mt-4 space-y-3">
           <ScanStage
             src={photos.front?.dataUrl}
             mesh={metrics.mesh}
@@ -199,7 +198,7 @@ export default function ResultsPage() {
         <section className="relative mt-3">
           <div className="flex flex-col gap-3">
             <LockedSection locked={locked}>
-              <div id="analysis" className="scroll-mt-4">
+              <div>
                 <AnalysisGrid rows={rows} />
               </div>
             </LockedSection>
@@ -331,21 +330,16 @@ export default function ResultsPage() {
           ) : null}
         </section>
 
-        {/* Outside the locked region on purpose. The advice is generic, so
-            there is nothing to sell here — and the Tips tab needs a target
-            that is actually readable before payment. */}
-        <div id="tips" className="mt-3 scroll-mt-4">
+        {/* Outside the locked region on purpose: the advice is generic, so
+            there is nothing to sell here. */}
+        <div className="mt-3">
           <TipCard onMore={goToPlan} />
         </div>
 
-        {/* What the Verlauf tab opens. Outside the locked region: it is the
-            record of this session, not part of the analysis being sold. */}
-        <div id="history" className="mt-3 scroll-mt-4">
-          <HistoryCard
-            reference={scanRef(metrics)}
-            date={scanDate}
-            score={metrics.overall}
-          />
+        {/* The way into the account, and the only place on the report that
+            says where this scan went. */}
+        <div className="mt-3">
+          <AccountCard signedIn={Boolean(signedInAs)} unlocked={unlocked} />
         </div>
 
         {unlocked ? (
@@ -362,8 +356,6 @@ export default function ResultsPage() {
           <LanguageSwitcher />
         </div>
       </main>
-
-      <TabBar />
 
       <AuthModal
         open={authOpen}

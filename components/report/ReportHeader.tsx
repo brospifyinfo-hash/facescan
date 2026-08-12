@@ -3,6 +3,7 @@
 import { Lock } from "lucide-react";
 import { DevUnlock } from "@/components/ui/DevUnlock";
 import { IconScanMark } from "./icons";
+import { AccountLink } from "@/components/ui/AccountLink";
 import { useT } from "@/lib/i18n";
 
 /**
@@ -32,12 +33,24 @@ export function ReportHeader({ demo }: { demo?: boolean }) {
         </span>
       </DevUnlock>
 
-      {/* Not a button — it has no action. A bordered pill at this weight reads
-          as a state, which is what it is. */}
-      <span className="flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--color-accent)]/30 bg-[var(--color-accent)]/[0.06] px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--color-accent)]">
-        <Lock className="h-3 w-3" aria-hidden />
-        {t.results.confidential}
-      </span>
+      <div className="flex shrink-0 items-center gap-2">
+        <AccountLink />
+
+        {/* Not a button — it has no action. A bordered pill at this weight
+            reads as a state, which is what it is.
+
+            Its label collapses below 380px, exactly as the account link's
+            does. The wordmark is 194px and the three items together do not
+            fit across a 375px phone; dropping both labels to their icons
+            keeps them on one row instead of wrapping the header. */}
+        <span
+          className="flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--color-accent)]/30 bg-[var(--color-accent)]/[0.06] px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--color-accent)]"
+          title={t.results.confidential}
+        >
+          <Lock className="h-3 w-3" aria-hidden />
+          <span className="hidden min-[380px]:inline">{t.results.confidential}</span>
+        </span>
+      </div>
 
       {/* basis-full, so it takes a line of its own rather than competing for
           the row. The wordmark plus both pills do not fit across 375px, and

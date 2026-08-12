@@ -286,6 +286,9 @@ export interface Dict {
       string
     >;
   };
+  /** Header link to /konto, and the discreet footer link to the editor. */
+  navAccount: string;
+  navAdmin: string;
   /** The customer profile at /konto. */
   account: {
     title: string;
@@ -293,6 +296,10 @@ export interface Dict {
     signedOutBody: string;
     signIn: string;
     signOut: string;
+    /** On the report, once the scan has actually been filed. */
+    savedBody: string;
+    /** On the report, when it has not — so the copy never over-claims. */
+    teaserBody: string;
     scansTitle: string;
     noScans: string;
     paymentsTitle: string;

@@ -436,6 +436,8 @@ export const en: Dict = {
       occluded: "face partly covered",
     },
   },
+  navAccount: "Account",
+  navAdmin: "Admin",
   account: {
     title: "Your account",
     loading: "Loading…",
@@ -443,6 +445,10 @@ export const en: Dict = {
       "Sign in with your email. Your scans and purchases live under that address — no password, we send you a code.",
     signIn: "Sign in",
     signOut: "Sign out",
+    savedBody:
+      "This scan is saved under your email. Your payments are there too.",
+    teaserBody:
+      "With an account your scans are kept and you can see your payments.",
     scansTitle: "Your scans",
     noScans:
       "No saved scans yet. A scan is filed here once you unlock it — before that it never leaves your browser.",
