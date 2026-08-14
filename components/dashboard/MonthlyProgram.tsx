@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronDown } from "lucide-react";
 import { buildPlan } from "@/lib/plan";
 import { useT } from "@/lib/i18n";
 import type { QuizAnswers, ScanMetrics } from "@/lib/store";
@@ -19,13 +20,17 @@ import { cn } from "@/lib/cn";
 export function MonthlyProgram({
   quiz,
   metrics,
+  collapsible = false,
 }: {
   quiz: QuizAnswers;
   metrics: ScanMetrics;
+  /** Start closed, with the existing heading as the disclosure control. */
+  collapsible?: boolean;
 }) {
   const t = useT();
   const plan = buildPlan(quiz, metrics);
   const [week, setWeek] = useState(0);
+  const [open, setOpen] = useState(!collapsible);
 
   // Front-load the strongest levers, then introduce the rest in pairs.
   const weeks: (typeof plan)[] = [[], [], [], []];
@@ -40,15 +45,53 @@ export function MonthlyProgram({
 
   return (
     <section className="surface p-4 sm:p-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      <div
+        role={collapsible ? "button" : undefined}
+        tabIndex={collapsible ? 0 : undefined}
+        aria-expanded={collapsible ? open : undefined}
+        onClick={collapsible ? () => setOpen((v) => !v) : undefined}
+        onKeyDown={
+          collapsible
+            ? (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setOpen((v) => !v);
+                }
+              }
+            : undefined
+        }
+        className={cn(
+          "flex flex-wrap items-center justify-between gap-3",
+          collapsible && "cursor-pointer select-none",
+        )}
+      >
         <div>
           <h2 className="text-base font-semibold tracking-tight sm:text-lg">
             {t.monthly.title}
           </h2>
           <p className="mt-1.5 text-[12px] text-[var(--color-ink-tertiary)]">{t.monthly.sub}</p>
         </div>
+        {collapsible ? (
+          <motion.span
+            animate={{ rotate: open ? 180 : 0 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            className="text-[var(--color-ink-tertiary)]"
+          >
+            <ChevronDown className="h-5 w-5" />
+          </motion.span>
+        ) : null}
       </div>
 
+      <AnimatePresence initial={false}>
+      {open ? (
+      <motion.div
+        key="body"
+        initial={collapsible ? { height: 0, opacity: 0 } : false}
+        animate={{ height: "auto", opacity: 1 }}
+        exit={{ height: 0, opacity: 0 }}
+        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+        className="overflow-hidden"
+      >
       <div className="mt-5 grid grid-cols-4 gap-1.5">
         {weeks.map((_, i) => {
           const active = i === week;
@@ -133,6 +176,9 @@ export function MonthlyProgram({
           );
         })}
       </motion.ol>
+      </motion.div>
+      ) : null}
+      </AnimatePresence>
     </section>
   );
 }

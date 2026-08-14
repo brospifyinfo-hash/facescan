@@ -13,15 +13,9 @@ import { useT } from "@/lib/i18n";
  * that contradicts what the app does is worse than no copy at all, so the
  * card states which of the two situations the reader is actually in.
  */
-export function AccountCard({
-  signedIn,
-  unlocked,
-}: {
-  signedIn: boolean;
-  unlocked: boolean;
-}) {
+export function AccountCard({ signedIn }: { signedIn: boolean }) {
   const t = useT();
-  const saved = signedIn && unlocked;
+  const saved = signedIn;
 
   return (
     <Link

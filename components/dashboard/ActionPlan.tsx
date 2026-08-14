@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronDown } from "lucide-react";
 import { buildPlan } from "@/lib/plan";
 import { useT } from "@/lib/i18n";
 import type { QuizAnswers, ScanMetrics } from "@/lib/store";
@@ -10,14 +12,24 @@ export function ActionPlan({
   quiz,
   metrics,
   interactive = true,
+  collapsible = false,
 }: {
   quiz: QuizAnswers;
   metrics: ScanMetrics;
   interactive?: boolean;
+  /**
+   * Render the existing heading as a disclosure and start closed.
+   *
+   * Not a <Collapsible> wrapper: this section already draws its own surface
+   * and its own title, so wrapping it would nest a card in a card and show
+   * the heading twice. The header it has becomes the control instead.
+   */
+  collapsible?: boolean;
 }) {
   const t = useT();
   const plan = buildPlan(quiz, metrics);
   const [done, setDone] = useState<Set<string>>(new Set());
+  const [open, setOpen] = useState(!collapsible);
 
   const toggle = (id: string) => {
     if (!interactive) return;
@@ -31,7 +43,26 @@ export function ActionPlan({
 
   return (
     <section className="surface p-7 sm:p-9">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+      <div
+        role={collapsible ? "button" : undefined}
+        tabIndex={collapsible ? 0 : undefined}
+        aria-expanded={collapsible ? open : undefined}
+        onClick={collapsible ? () => setOpen((v) => !v) : undefined}
+        onKeyDown={
+          collapsible
+            ? (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setOpen((v) => !v);
+                }
+              }
+            : undefined
+        }
+        className={cn(
+          "flex flex-wrap items-end justify-between gap-4",
+          collapsible && "cursor-pointer select-none",
+        )}
+      >
         <div>
           <h2 className="flex items-center gap-2.5 text-xl font-semibold tracking-tight">
             <span aria-hidden>✨</span> {t.results.planTitle}
@@ -47,8 +78,27 @@ export function ActionPlan({
             {t.results.completed}
           </p>
         </div>
+        {collapsible ? (
+          <motion.span
+            animate={{ rotate: open ? 180 : 0 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            className="text-[var(--color-ink-tertiary)]"
+          >
+            <ChevronDown className="h-5 w-5" />
+          </motion.span>
+        ) : null}
       </div>
 
+      <AnimatePresence initial={false}>
+      {open ? (
+      <motion.div
+        key="body"
+        initial={collapsible ? { height: 0, opacity: 0 } : false}
+        animate={{ height: "auto", opacity: 1 }}
+        exit={{ height: 0, opacity: 0 }}
+        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+        className="overflow-hidden"
+      >
       <div className="mt-5 h-1 w-full overflow-hidden rounded-full bg-white/[0.07]">
         <div
           className="h-full rounded-full bg-accent transition-[width] duration-500"
@@ -110,6 +160,9 @@ export function ActionPlan({
           );
         })}
       </ol>
+      </motion.div>
+      ) : null}
+      </AnimatePresence>
     </section>
   );
 }

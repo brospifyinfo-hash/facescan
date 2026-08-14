@@ -85,17 +85,16 @@ export default function ResultsPage() {
     setShowRaw(sessionStorage.getItem("facescan.raw") === "1");
   }, []);
 
-  // Save this scan to the customer's history — once, and only once both
-  // conditions hold: they are signed in (so there is an address to file it
-  // under) and they have unlocked (so a free scan is never stored, which is
-  // what keeps the privacy claim on the landing page true).
+  // Save this scan to the customer's history — once, as soon as there is an
+  // address to file it under. Signing in IS the consent; the server applies
+  // the same rule, and a visitor who never signed in is never stored.
   //
   // The ref is what makes it once. Without it, every re-render that touches
   // `unlocked` or `metrics` would append the same scan again, and the history
   // would fill with duplicates of a single reading.
   const saved = useRef(false);
   useEffect(() => {
-    if (saved.current || !unlocked || !signedInAs || !metrics) return;
+    if (saved.current || !signedInAs || !metrics) return;
     saved.current = true;
     void fetch("/api/history", {
       method: "POST",
@@ -113,7 +112,7 @@ export default function ResultsPage() {
       // A failed save must not interrupt the report the customer just paid
       // for. It is recoverable — the next scan writes again.
     }).catch(() => {});
-  }, [unlocked, signedInAs, metrics]);
+  }, [signedInAs, metrics]);
 
   // Owner access code — unlocks every gated section with no visible marker,
   // so the paid experience can be reviewed exactly as a customer sees it.
@@ -203,6 +202,12 @@ export default function ResultsPage() {
               </div>
             </LockedSection>
 
+            {/* Straight under the measurements, because that is what they are
+                an answer to. It renders nothing when no product matches. */}
+            {unlocked && can(plan, "products") ? (
+              <Recommendations quiz={quiz} metrics={metrics} />
+            ) : null}
+
             {/* Side by side, per the reference. They fit at phone width
                 because the optimisation column uses plan[].short — see the
                 note in Findings.tsx. */}
@@ -248,6 +253,7 @@ export default function ResultsPage() {
                   quiz={quiz}
                   metrics={metrics}
                   interactive={!locked && can(plan, "actionPlan")}
+                  collapsible
                 />
               </div>
             </LockedSection>
@@ -255,15 +261,7 @@ export default function ResultsPage() {
             {/* Gated by capability, never by plan id — adding a tier later
                 means touching lib/pricing.ts and nothing else. */}
             {unlocked && can(plan, "actionPlan") ? (
-              <MonthlyProgram quiz={quiz} metrics={metrics} />
-            ) : null}
-
-            {/* The affiliate block. Directly under the plan on purpose: it is
-                the same ranking pointed at things you can buy, so it reads as
-                "and here is what that costs" rather than as an ad break. It
-                renders nothing at all when no product matches. */}
-            {unlocked && can(plan, "products") ? (
-              <Recommendations quiz={quiz} metrics={metrics} />
+              <MonthlyProgram quiz={quiz} metrics={metrics} collapsible />
             ) : null}
 
             {unlocked && can(plan, "blueprint") ? <FullReport /> : null}
@@ -339,7 +337,7 @@ export default function ResultsPage() {
         {/* The way into the account, and the only place on the report that
             says where this scan went. */}
         <div className="mt-3">
-          <AccountCard signedIn={Boolean(signedInAs)} unlocked={unlocked} />
+          <AccountCard signedIn={Boolean(signedInAs)} />
         </div>
 
         {unlocked ? (

@@ -130,10 +130,66 @@ function authed_(token) {
   return typeof token === "string" && token.length > 0 && token === TOKEN;
 }
 
-function doGet(e) {
-  if (!authed_(e && e.parameter && e.parameter.token)) {
-    return json_({ error: "unauthorized" });
+// ---------------------------------------------------------------------------
+// Scan history — a second tab on the same document.
+//
+// One deployment and one token for both, so there is a single thing to keep
+// alive. Rows are appended and never updated: a reading is a fact about a
+// moment, and the only correct edit is to delete it.
+// ---------------------------------------------------------------------------
+
+var SCANS = "scans";
+var SCAN_COLUMNS = [
+  "id", "email", "at", "overall", "band",
+  "symmetry", "eyesScore", "jawScore", "proportionsScore", "midfaceScore", "source",
+];
+
+function scanSheet_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName(SCANS);
+  if (!sh) sh = ss.insertSheet(SCANS);
+  if (sh.getLastRow() === 0) {
+    sh.appendRow(SCAN_COLUMNS);
+    sh.setFrozenRows(1);
   }
+  return sh;
+}
+
+function scansFor_(email) {
+  var sh = scanSheet_();
+  var last = sh.getLastRow();
+  if (last < 2) return [];
+  var values = sh.getRange(2, 1, last - 1, SCAN_COLUMNS.length).getValues();
+  var out = [];
+  var wanted = String(email || "").trim().toLowerCase();
+  for (var i = 0; i < values.length; i++) {
+    var o = {};
+    for (var c = 0; c < SCAN_COLUMNS.length; c++) o[SCAN_COLUMNS[c]] = values[i][c];
+    if (!o.id) continue;
+    if (String(o.email).trim().toLowerCase() !== wanted) continue;
+    out.push({
+      id: String(o.id), at: Number(o.at) || 0,
+      overall: Number(o.overall) || 0, band: String(o.band || ""),
+      symmetry: Number(o.symmetry) || 0, eyesScore: Number(o.eyesScore) || 0,
+      jawScore: Number(o.jawScore) || 0, proportionsScore: Number(o.proportionsScore) || 0,
+      midfaceScore: Number(o.midfaceScore) || 0,
+      source: String(o.source) === "vision" ? "vision" : "geometry",
+    });
+  }
+  return out;
+}
+
+function addScan_(email, e) {
+  scanSheet_().appendRow([
+    e.id, email, e.at, e.overall, e.band,
+    e.symmetry, e.eyesScore, e.jawScore, e.proportionsScore, e.midfaceScore, e.source,
+  ]);
+}
+
+function doGet(e) {
+  var p = (e && e.parameter) || {};
+  if (!authed_(p.token)) return json_({ error: "unauthorized" });
+  if (p.action === "scans") return json_({ scans: scansFor_(p.email) });
   return json_({ products: readAll_(sheet_()) });
 }
 
@@ -145,6 +201,13 @@ function doPost(e) {
     return json_({ error: "invalid_json" });
   }
   if (!authed_(body.token)) return json_({ error: "unauthorized" });
+
+  // Appending a scan touches a different tab and needs no lock dance around
+  // the catalogue, so it is handled before the products branch.
+  if (body.action === "scan-add") {
+    addScan_(body.email, body.entry);
+    return json_({ ok: true });
+  }
 
   var sh = sheet_();
 

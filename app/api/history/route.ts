@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { currentSession } from "@/lib/auth/session";
-import { entitlements } from "@/lib/stripe/entitlements";
 import { history, type HistoryInput } from "@/lib/history/store";
 
 export const runtime = "nodejs";
@@ -15,11 +14,17 @@ export async function GET() {
 /**
  * Store one scan result under the customer's address.
  *
- * TWO GATES, and both matter. The session decides WHOSE history this is, so
- * the address is taken from the signed cookie and never from the body — a
- * client-supplied email would let anyone write into anyone's history. The
- * entitlement decides WHETHER anything is stored at all: without a purchase
- * the scan stays in the browser exactly as the landing page promises.
+ * THE SESSION IS THE GATE, and it decides WHOSE history this is: the address
+ * comes from the signed cookie and never from the body, or anyone could write
+ * into anyone's history.
+ *
+ * It used to also require an entitlement, which is why nothing was ever
+ * stored — Stripe is not configured in production, so no entitlement can
+ * exist, so every save was refused with a 403 that nothing surfaced. Signing
+ * in is the meaningful consent here: somebody who created an account and
+ * proved an inbox is asking for their results to be kept. A scan by a visitor
+ * who never signed in is still never stored, which is the promise that
+ * actually matters.
  *
  * The numbers are re-clamped here rather than trusted. They arrive from the
  * client because that is where the analyser runs, so a hand-written request
@@ -28,9 +33,6 @@ export async function GET() {
 export async function POST(request: Request) {
   const session = await currentSession();
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-
-  const ent = await entitlements.get(session.email);
-  if (!ent) return NextResponse.json({ error: "no_entitlement" }, { status: 403 });
 
   let body: Record<string, unknown>;
   try {

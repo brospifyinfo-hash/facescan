@@ -12,15 +12,18 @@
 // obvious right to see again next month, and it is the only way a history
 // can exist at all once the browser session is gone.
 //
-// So the rule is: a scan is written only for a signed-in address, and only
-// after a purchase. Someone who never paid never has a row here, which keeps
-// the free scan exactly as private as it is advertised to be.
+// So the rule is: a scan is written only for a SIGNED-IN address. Creating an
+// account and proving an inbox is the consent; a visitor who never signs in
+// never has a row here, which keeps the free scan exactly as private as it is
+// advertised to be. Requiring a purchase on top of that was the earlier rule,
+// and it meant nothing was ever stored at all while Stripe was unconfigured.
 //
 // KEY LAYOUT
 //   scans:<email>   LIST of JSON HistoryEntry, newest first, capped
 
 import { randomUUID } from "crypto";
 import { kv, kvConfigured } from "@/lib/kv";
+import { SheetsHistoryStore, historySheetConfigured } from "./sheets";
 
 /** A summary, not the full report. No photos, ever. */
 export interface HistoryEntry {
@@ -92,8 +95,24 @@ declare global {
   var __facescanHistory: HistoryStore | undefined;
 }
 
+/**
+ * Same preference order as the product store: the spreadsheet when it is
+ * configured, then Redis, then memory. One place to look when a history is
+ * empty and nobody knows where it should have gone.
+ */
+export const historyBacking = (): "sheets" | "redis" | "memory" =>
+  historySheetConfigured() ? "sheets" : kvConfigured() ? "redis" : "memory";
+
+function makeHistoryStore(): HistoryStore {
+  switch (historyBacking()) {
+    case "sheets":
+      return new SheetsHistoryStore();
+    case "redis":
+      return new RedisHistoryStore();
+    default:
+      return new MemoryHistoryStore();
+  }
+}
+
 export const history: HistoryStore =
-  globalThis.__facescanHistory ??
-  (globalThis.__facescanHistory = kvConfigured()
-    ? new RedisHistoryStore()
-    : new MemoryHistoryStore());
+  globalThis.__facescanHistory ?? (globalThis.__facescanHistory = makeHistoryStore());
