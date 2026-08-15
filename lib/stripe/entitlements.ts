@@ -13,6 +13,7 @@
 
 import type { PlanId } from "@/lib/pricing";
 import { kv, kvConfigured } from "@/lib/kv";
+import { skGet, skGetJson, skSet, skSetJson, sheetsKvConfigured, sheetsKvHealthy } from "@/lib/sheets-kv";
 
 export interface Entitlement {
   plan: PlanId;
@@ -161,6 +162,97 @@ class RedisEntitlementStore implements EntitlementStore {
   }
 }
 
+/**
+ * Spreadsheet-backed store — what production actually runs on.
+ *
+ * A purchase written here survives everything a purchase has to survive, and
+ * it has one property Redis does not: the owner can open the tab and see who
+ * bought what. For a product selling a handful of one-off unlocks a day, that
+ * is worth more than the milliseconds.
+ *
+ * The payment list is held as one JSON array per address rather than as a
+ * Redis list, because the backend has get and set and does not have LPUSH.
+ * Same cap, same newest-first order, same dedupe by payment intent.
+ */
+class SheetsEntitlementStore implements EntitlementStore {
+  private key = (email: string) => `ent:${email}`;
+  private payKey = (email: string) => `pay:${email}`;
+  private eventKey = (id: string) => `stripeevt:${id}`;
+
+  /** The old behaviour, kept as a floor. See SheetsOtpStore for why. */
+  private fallback = new MemoryEntitlementStore();
+
+  private async via<T>(remote: () => Promise<T>, local: () => Promise<T>): Promise<T> {
+    if (!sheetsKvHealthy()) return local();
+    try {
+      return await remote();
+    } catch {
+      return local();
+    }
+  }
+
+  async grant(email: string, ent: Entitlement) {
+    return this.via(
+      async () => {
+        const existing = await this.get(email);
+        if (existing && RANK[existing.plan] >= RANK[ent.plan]) return;
+        // No TTL. A purchase is permanent, and an entitlement that quietly
+        // expired would take a customer access with it.
+        await skSetJson(this.key(email), ent);
+      },
+      () => this.fallback.grant(email, ent),
+    );
+  }
+
+  async get(email: string) {
+    return this.via(
+      async () => {
+        const parsed = await skGetJson<Entitlement>(this.key(email));
+        // A record naming an unknown plan cannot be honoured, and guessing
+        // one would hand out access nobody paid for.
+        return parsed && parsed.plan in RANK ? parsed : null;
+      },
+      () => this.fallback.get(email),
+    );
+  }
+
+  async recordPayment(email: string, payment: Payment) {
+    return this.via(
+      async () => {
+        const existing = await this.payments(email);
+        if (existing.some((p) => p.paymentIntentId === payment.paymentIntentId)) return;
+        await skSetJson(this.payKey(email), [payment, ...existing].slice(0, MAX_PAYMENTS));
+      },
+      () => this.fallback.recordPayment(email, payment),
+    );
+  }
+
+  async payments(email: string) {
+    return this.via(
+      async () => {
+        const rows = await skGetJson<Payment[]>(this.payKey(email));
+        if (!Array.isArray(rows)) return [];
+        return rows.filter((p): p is Payment => Boolean(p) && p.plan in RANK);
+      },
+      () => this.fallback.payments(email),
+    );
+  }
+
+  async hasProcessed(eventId: string) {
+    return this.via(
+      async () => (await skGet(this.eventKey(eventId))) !== null,
+      () => this.fallback.hasProcessed(eventId),
+    );
+  }
+
+  async markProcessed(eventId: string) {
+    return this.via(
+      () => skSet(this.eventKey(eventId), "1", 30 * 24 * 60 * 60 * 1000),
+      () => this.fallback.markProcessed(eventId),
+    );
+  }
+}
+
 declare global {
   // eslint-disable-next-line no-var
   var __facescanEntitlements: EntitlementStore | undefined;
@@ -170,8 +262,40 @@ export const entitlements: EntitlementStore =
   globalThis.__facescanEntitlements ??
   (globalThis.__facescanEntitlements = kvConfigured()
     ? new RedisEntitlementStore()
-    : new MemoryEntitlementStore());
+    : sheetsKvConfigured()
+      ? new SheetsEntitlementStore()
+      : new MemoryEntitlementStore());
 
 /** Which backing is live. Surfaced by the health check, never to a user. */
-export const entitlementBacking = (): "redis" | "memory" =>
-  kvConfigured() ? "redis" : "memory";
+export const entitlementBacking = (): "redis" | "sheets" | "memory" =>
+  kvConfigured() ? "redis" : sheetsKvConfigured() ? "sheets" : "memory";
+
+/**
+ * May a feature be refused on the grounds that no entitlement exists?
+ *
+ * ONLY WHEN AN ENTITLEMENT COULD EXIST. Three things have to hold, and the
+ * store being persistent is just one of them:
+ *
+ *   1. the store survives a cold start — otherwise a purchase made a minute
+ *      ago may already be gone, and refusing on its absence punishes someone
+ *      who paid
+ *   2. Stripe has a secret key — otherwise checkout cannot run at all
+ *   3. the webhook secret is set — and this is the one that is easy to miss:
+ *      the webhook is the ONLY writer of entitlements. Without it, checkout
+ *      can take money and nothing is ever granted, so every gate would be
+ *      shut against every customer including the paying ones.
+ *
+ * Switching the OTP and entitlement stores onto the spreadsheet made (1) true
+ * for the first time, which would have silently armed every entitlement gate
+ * in the app while (2) and (3) were still false — turning "everyone gets in"
+ * into "nobody gets in" as a side effect of fixing storage. Hence one shared
+ * predicate rather than each caller testing the backing itself.
+ */
+export const entitlementsEnforceable = (): boolean =>
+  entitlementBacking() !== "memory" &&
+  // A spreadsheet backend that has failed is a memory store wearing its
+  // name; enforcing against it would refuse customers whose purchase is
+  // sitting in a Map on another instance.
+  (kvConfigured() || sheetsKvHealthy()) &&
+  Boolean(process.env.STRIPE_SECRET_KEY) &&
+  Boolean(process.env.STRIPE_WEBHOOK_SECRET);

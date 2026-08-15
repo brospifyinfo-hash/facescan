@@ -23,7 +23,7 @@
 // rationed is free. The image quota does not get the same treatment.
 
 import { SCAN_QUOTA, type PlanId } from "../pricing";
-import { entitlements, entitlementBacking } from "../stripe/entitlements";
+import { entitlements, entitlementsEnforceable } from "../stripe/entitlements";
 
 export interface ScanQuota {
   used: number;
@@ -56,7 +56,7 @@ export function limitFor(plan: PlanId | null, entitlementsReadable: boolean): nu
 }
 
 export async function scanQuota(email: string, used: number): Promise<ScanQuota> {
-  const readable = entitlementBacking() !== "memory";
+  const readable = entitlementsEnforceable();
 
   let plan: PlanId | null = null;
   if (readable) {

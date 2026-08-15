@@ -186,10 +186,131 @@ function addScan_(email, e) {
   ]);
 }
 
+
+// ---------------------------------------------------------------------------
+// A general key-value tab.
+// ---------------------------------------------------------------------------
+// Login codes and purchases live here. They were previously held in memory,
+// which on serverless means: the code is written by one instance and looked
+// up by another, so it is simply not there. Sign-in failed for a share of
+// users at random, and every purchase would have been lost on the next cold
+// start.
+//
+// Redis is the better tool and the app still prefers it when Upstash
+// credentials are present. This is the backing that exists TODAY, on
+// infrastructure already deployed, and a few hundred milliseconds is a fine
+// price for a login that works.
+//
+// Rows carry their own expiry. Nothing sweeps them on a timer — Apps Script
+// has no cron here — so writes prune opportunistically, bounded so a big tab
+// cannot push a request past the execution limit.
+
+var KV = "kv";
+var KV_COLUMNS = ["key", "value", "expiresAt"];
+var KV_PRUNE_SCAN = 200;
+
+function kvSheet_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName(KV);
+  if (!sh) sh = ss.insertSheet(KV);
+  if (sh.getLastRow() === 0) {
+    sh.appendRow(KV_COLUMNS);
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+function kvFindRow_(sh, key) {
+  var last = sh.getLastRow();
+  if (last < 2) return -1;
+  var keys = sh.getRange(2, 1, last - 1, 1).getValues();
+  for (var i = 0; i < keys.length; i++) {
+    if (String(keys[i][0]) === key) return i + 2;
+  }
+  return -1;
+}
+
+function kvGet_(key) {
+  var sh = kvSheet_();
+  var row = kvFindRow_(sh, key);
+  if (row < 0) return null;
+  var v = sh.getRange(row, 1, 1, KV_COLUMNS.length).getValues()[0];
+  var expiresAt = Number(v[2]) || 0;
+  if (expiresAt > 0 && Date.now() > expiresAt) {
+    sh.deleteRow(row);
+    return null;
+  }
+  return { value: String(v[1] || ""), expiresAt: expiresAt };
+}
+
+// A leading apostrophe forces Sheets to keep the text as text. Without it a
+// value that looks like a number comes back as one — the bug that turned a
+// price of "24,90 EUR" into 24.9.
+function kvAsText_(v) {
+  var s = String(v == null ? "" : v);
+  return s.length > 0 ? "'" + s : s;
+}
+
+function kvSet_(key, value, expiresAt) {
+  var sh = kvSheet_();
+  var row = kvFindRow_(sh, key);
+  var data = [[key, kvAsText_(value), Number(expiresAt) || 0]];
+  if (row < 0) sh.appendRow(data[0]);
+  else sh.getRange(row, 1, 1, KV_COLUMNS.length).setValues(data);
+  kvPrune_(sh);
+  return true;
+}
+
+function kvDel_(key) {
+  var sh = kvSheet_();
+  var row = kvFindRow_(sh, key);
+  if (row > 0) sh.deleteRow(row);
+  return true;
+}
+
+/**
+ * Increment one field of a JSON value, atomically.
+ *
+ * Read-modify-write from the app would race: two parallel guesses at a login
+ * code both read 4 attempts, both write 5, and the fifth attempt never trips
+ * the limit — which is the entire value of a brute-force limit. Under the
+ * script lock this is a single serialised operation.
+ */
+function kvBump_(key, field, by) {
+  var sh = kvSheet_();
+  var row = kvFindRow_(sh, key);
+  if (row < 0) return null;
+  var cell = sh.getRange(row, 2);
+  var parsed;
+  try {
+    parsed = JSON.parse(String(cell.getValue() || "{}"));
+  } catch (err) {
+    return null;
+  }
+  parsed[field] = (Number(parsed[field]) || 0) + (Number(by) || 1);
+  cell.setValue(kvAsText_(JSON.stringify(parsed)));
+  return parsed[field];
+}
+
+/** Delete expired rows, scanning only the head of the tab. */
+function kvPrune_(sh) {
+  var last = sh.getLastRow();
+  if (last < 3) return;
+  var count = Math.min(last - 1, KV_PRUNE_SCAN);
+  var values = sh.getRange(2, 1, count, KV_COLUMNS.length).getValues();
+  var now = Date.now();
+  // Bottom-up: deleting a row shifts everything below it up.
+  for (var i = values.length - 1; i >= 0; i--) {
+    var exp = Number(values[i][2]) || 0;
+    if (exp > 0 && now > exp) sh.deleteRow(i + 2);
+  }
+}
+
 function doGet(e) {
   var p = (e && e.parameter) || {};
   if (!authed_(p.token)) return json_({ error: "unauthorized" });
   if (p.action === "scans") return json_({ scans: scansFor_(p.email) });
+  if (p.action === "kv-get") return json_({ record: kvGet_(String(p.key || "")) });
   return json_({ products: readAll_(sheet_()) });
 }
 
@@ -207,6 +328,27 @@ function doPost(e) {
   if (body.action === "scan-add") {
     addScan_(body.email, body.entry);
     return json_({ ok: true });
+  }
+
+  // The key-value actions take the lock themselves: kv-bump is only correct
+  // when the read and the write are one serialised step, and the others share
+  // a tab with it.
+  if (body.action === "kv-set" || body.action === "kv-del" || body.action === "kv-bump") {
+    var kvLock = LockService.getScriptLock();
+    try {
+      kvLock.waitLock(10000);
+    } catch (err) {
+      return json_({ error: "busy" });
+    }
+    try {
+      if (body.action === "kv-set") {
+        return json_({ ok: kvSet_(String(body.key), String(body.value), body.expiresAt) });
+      }
+      if (body.action === "kv-del") return json_({ ok: kvDel_(String(body.key)) });
+      return json_({ value: kvBump_(String(body.key), String(body.field), body.by) });
+    } finally {
+      kvLock.releaseLock();
+    }
   }
 
   var sh = sheet_();

@@ -18,6 +18,7 @@
 
 import { createHash, randomInt, timingSafeEqual } from "crypto";
 import { kv, kvConfigured, kvPipeline, toHash } from "../kv";
+import { skBump, skDel, skGetJson, skSetJson, sheetsKvConfigured, sheetsKvHealthy } from "../sheets-kv";
 
 export const CODE_TTL_MS = 10 * 60 * 1000;
 export const MAX_ATTEMPTS = 5;
@@ -183,28 +184,144 @@ class RedisOtpStore implements OtpStore {
   }
 }
 
+/**
+ * Spreadsheet-backed store — the one production actually runs on.
+ *
+ * Same guarantees that matter as the Redis one: it survives cold starts and
+ * it is shared between instances. Slower by a few hundred milliseconds, which
+ * on a login flow is invisible, and the atomicity that the attempt counter
+ * depends on is provided by the script lock rather than by HINCRBY.
+ *
+ * Redis stays ahead of it in the selection below. This is the last resort,
+ * and the point is that the last resort no longer loses data.
+ */
+class SheetsOtpStore implements OtpStore {
+  private codeKey = (email: string) => `otp:${email}`;
+  private sendKey = (email: string) => `otpsend:${email}`;
+
+  /**
+   * The old behaviour, kept as a floor.
+   *
+   * The spreadsheet's script is deployed by hand, so this code can be live
+   * while the script serving it is a version back — during which every call
+   * here fails. Falling through to the Map makes that window exactly as good
+   * as yesterday instead of a hard outage, and the flag latches so the cost
+   * is one failed call per instance rather than one per login.
+   */
+  private fallback = new MemoryOtpStore();
+
+  private async via<T>(remote: () => Promise<T>, local: () => Promise<T>): Promise<T> {
+    if (!sheetsKvHealthy()) return local();
+    try {
+      return await remote();
+    } catch {
+      return local();
+    }
+  }
+
+  async put(email: string, rec: OtpRecord) {
+    return this.via(
+      () => skSetJson(this.codeKey(email), rec, CODE_TTL_MS + 60_000),
+      () => this.fallback.put(email, rec),
+    );
+  }
+
+  async get(email: string) {
+    return this.via(
+      async () => {
+        const rec = await skGetJson<OtpRecord>(this.codeKey(email));
+        if (!rec?.codeHash) return null;
+        // The row carries its own expiry and the backend drops it on read,
+        // but that is eventual: a row the sweep has not reached yet must
+        // still be treated as dead.
+        if (!Number.isFinite(rec.expiresAt) || Date.now() > rec.expiresAt) {
+          await this.delete(email);
+          return null;
+        }
+        return { ...rec, attempts: Number(rec.attempts) || 0 };
+      },
+      () => this.fallback.get(email),
+    );
+  }
+
+  async delete(email: string) {
+    return this.via(
+      () => skDel(this.codeKey(email)),
+      () => this.fallback.delete(email),
+    );
+  }
+
+  async bumpAttempts(email: string) {
+    return this.via(
+      async () => {
+        const attempts = await skBump(this.codeKey(email), "attempts", 1);
+        // A key that is gone is a code that is spent or expired. Reporting
+        // the limit rather than 0 keeps a vanished record from reading as a
+        // fresh allowance of guesses.
+        if (attempts === null) return MAX_ATTEMPTS;
+        if (attempts >= MAX_ATTEMPTS) await this.delete(email);
+        return attempts;
+      },
+      () => this.fallback.bumpAttempts(email),
+    );
+  }
+
+  async recordSend(email: string) {
+    return this.via(
+      async () => {
+        const timestamps = await this.sendsInWindow(email);
+        timestamps.push(Date.now());
+        await skSetJson(this.sendKey(email), timestamps, SEND_WINDOW_MS);
+      },
+      () => this.fallback.recordSend(email),
+    );
+  }
+
+  async sendsInWindow(email: string) {
+    return this.via(
+      async () => {
+        const parsed = await skGetJson<unknown>(this.sendKey(email));
+        if (!Array.isArray(parsed)) return [];
+        const cutoff = Date.now() - SEND_WINDOW_MS;
+        return parsed.filter((t: unknown): t is number => typeof t === "number" && t > cutoff);
+      },
+      () => this.fallback.sendsInWindow(email),
+    );
+  }
+}
+
 // Pinned to globalThis, not a plain module constant.
 //
 // Next.js loads route handlers in separate module graphs, so a module-level
 // `new MemoryOtpStore()` gives request-code and verify-code a Map each: the
 // code is written to one and looked up in the other, and every verification
 // fails with "expired". Hot reloads would wipe it too. globalThis is the one
-// thing both share. (Irrelevant for the Redis store, which shares by
+// thing both share. (Irrelevant for the shared stores, which share by
 // definition — but the selection still happens once.)
 declare global {
   // eslint-disable-next-line no-var
   var __facescanOtpStore: OtpStore | undefined;
 }
 
+/**
+ * Redis first, spreadsheet second, memory only when neither is configured.
+ *
+ * The order is by quality, not by preference: memory is last because it is
+ * the only one of the three that loses a code between the request and the
+ * verification, and it stays in the list only so that a checkout of this repo
+ * with no credentials at all still runs.
+ */
 export const otpStore: OtpStore =
   globalThis.__facescanOtpStore ??
   (globalThis.__facescanOtpStore = kvConfigured()
     ? new RedisOtpStore()
-    : new MemoryOtpStore());
+    : sheetsKvConfigured()
+      ? new SheetsOtpStore()
+      : new MemoryOtpStore());
 
 /** Which backing is live. Surfaced by the health check, never to a user. */
-export const otpBacking = (): "redis" | "memory" =>
-  kvConfigured() ? "redis" : "memory";
+export const otpBacking = (): "redis" | "sheets" | "memory" =>
+  kvConfigured() ? "redis" : sheetsKvConfigured() ? "sheets" : "memory";
 
 /** Normalise so "A@B.com " and "a@b.com" are the same account. */
 export function normalizeEmail(raw: string): string {

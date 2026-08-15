@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { kvConfigured } from "@/lib/kv";
 import { otpBacking } from "@/lib/auth/store";
-import { entitlementBacking } from "@/lib/stripe/entitlements";
+import { entitlementBacking, entitlementsEnforceable } from "@/lib/stripe/entitlements";
 
 // Configuration readout.
 //
@@ -46,11 +46,20 @@ export async function GET() {
   if (production && !process.env.AUTH_SECRET) {
     degraded.push("AUTH_SECRET is unset; session minting will throw");
   }
+  // Not "degraded" in the sense the others are — nothing is losing data. It
+  // is reported because it is the difference between a shop and a demo, and
+  // because while it holds, every entitlement gate in the app is standing
+  // down rather than refusing. See entitlementsEnforceable().
+  if (production && !entitlementsEnforceable()) {
+    degraded.push(
+      "purchases cannot be granted (stripe key or webhook secret missing); entitlement gates are not enforced",
+    );
+  }
 
   return NextResponse.json({
     ok: degraded.length === 0,
     engine: process.env.NEXT_PUBLIC_SCORE_ENGINE === "vision" ? "vision" : "geometry",
-    stores: { otp, entitlements: ent, kv: kvConfigured() },
+    stores: { otp, entitlements: ent, kv: kvConfigured(), entitlementsEnforced: entitlementsEnforceable() },
     configured: {
       openai: Boolean(process.env.OPENAI_API_KEY),
       resend: Boolean(process.env.RESEND_API_KEY),

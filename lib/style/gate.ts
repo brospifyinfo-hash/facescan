@@ -26,7 +26,7 @@
 // and nothing here needs changing.
 
 import { currentSession } from "../auth/session";
-import { entitlements, entitlementBacking } from "../stripe/entitlements";
+import { entitlements, entitlementsEnforceable } from "../stripe/entitlements";
 import { can } from "../pricing";
 import { quotaFor, type QuotaState } from "./quota";
 
@@ -49,7 +49,7 @@ export async function gateStyle(): Promise<GateResult> {
   const session = await currentSession();
   if (!session) return { ok: false, status: 401, error: "unauthorized" };
 
-  const enforceable = entitlementBacking() !== "memory";
+  const enforceable = entitlementsEnforceable();
   if (enforceable) {
     const ent = await entitlements.get(session.email);
     if (!ent || !can(ent.plan, "hairstyle")) {
