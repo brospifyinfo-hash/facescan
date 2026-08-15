@@ -25,9 +25,7 @@
 // When Stripe and Upstash are configured, 2 becomes load-bearing on its own
 // and nothing here needs changing.
 
-import { currentSession } from "../auth/session";
-import { entitlements, entitlementsEnforceable } from "../stripe/entitlements";
-import { can } from "../pricing";
+import { requireCapability } from "../access";
 import { quotaFor, type QuotaState } from "./quota";
 
 export type GateFailure =
@@ -46,26 +44,19 @@ export type GateResult =
   | GateFailure;
 
 export async function gateStyle(): Promise<GateResult> {
-  const session = await currentSession();
-  if (!session) return { ok: false, status: 401, error: "unauthorized" };
+  // Conditions 1 and 2 are the shared ones; only the quota belongs to us.
+  const access = await requireCapability("hairstyle");
+  if (!access.ok) return access;
 
-  const enforceable = entitlementsEnforceable();
-  if (enforceable) {
-    const ent = await entitlements.get(session.email);
-    if (!ent || !can(ent.plan, "hairstyle")) {
-      return { ok: false, status: 403, error: "not_entitled" };
-    }
-  }
-
-  const quota = await quotaFor(session.email);
+  const quota = await quotaFor(access.email);
   if (quota.remaining <= 0) {
     return { ok: false, status: 429, error: "quota_exhausted", quota };
   }
 
   return {
     ok: true,
-    email: session.email,
+    email: access.email,
     quota,
-    entitlementUnenforced: !enforceable,
+    entitlementUnenforced: !access.enforced,
   };
 }

@@ -1,13 +1,19 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { requireCapability } from "@/lib/access";
 
 // Paid deep-dive report via Claude Vision. This route is only called AFTER
 // payment and with the user's explicit consent to transmit their photos
 // once (see components/dashboard/FullReport.tsx).
 //
-// ⚠️ TODO before launch: verify payment server-side here (Stripe webhook /
-// checkout-session lookup). Never trust the client's tier flag — anyone can
-// call this endpoint otherwise.
+// GATED SERVER-SIDE. This carried a "verify payment before launch" note and
+// nothing else: the route spends real money at Anthropic and was open to
+// anyone who could POST to it, because the only thing in front of it was the
+// client deciding whether to show the button.
+//
+// The check is requireCapability("blueprint") — a signed session for the
+// address, plus the entitlement whenever an entitlement could exist. See
+// lib/access.ts for why that second half is conditional rather than absolute.
 
 export const maxDuration = 60;
 
@@ -49,6 +55,16 @@ function parseDataUrl(dataUrl: string) {
 }
 
 export async function POST(req: Request) {
+  // Before the key check, so an unauthorised caller cannot use the error to
+  // learn whether the feature is configured.
+  const access = await requireCapability("blueprint");
+  if (!access.ok) {
+    return NextResponse.json({ error: access.error }, { status: access.status });
+  }
+  if (!access.enforced) {
+    console.warn("[report] entitlement not enforced; purchases cannot be granted");
+  }
+
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json(
       {

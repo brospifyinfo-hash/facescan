@@ -205,12 +205,6 @@ export default function ResultsPage() {
               </div>
             </LockedSection>
 
-            {/* Straight under the measurements, because that is what they are
-                an answer to. It renders nothing when no product matches. */}
-            {unlocked && can(plan, "products") ? (
-              <Recommendations quiz={quiz} metrics={metrics} />
-            ) : null}
-
             {/* Side by side, per the reference. They fit at phone width
                 because the optimisation column uses plan[].short — see the
                 note in Findings.tsx. */}
@@ -229,6 +223,16 @@ export default function ResultsPage() {
             <LockedSection locked={locked}>
               <MetricsPanel metrics={metrics.metrics} />
             </LockedSection>
+
+            {/* UNDER the stats, not among them. It sat between the detailed
+                analysis and the strengths panel, which put a row of things to
+                buy in the middle of the reading — so the numbers resumed
+                after it and the block read as an interruption. Here the whole
+                measured picture has been given first and the products answer
+                it. Renders nothing when no product matches. */}
+            {unlocked && can(plan, "products") ? (
+              <Recommendations quiz={quiz} metrics={metrics} />
+            ) : null}
 
             <LockedSection locked={locked}>
               <Collapsible
