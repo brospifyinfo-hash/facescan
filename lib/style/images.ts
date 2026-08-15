@@ -42,8 +42,10 @@ export interface ImageEditOptions {
 }
 
 export interface ImageEditResult {
-  /** Base64 PNG, without the data-URL prefix. */
+  /** Base64 WebP, without the data-URL prefix. */
   base64: string;
+  /** The media type of `base64` — kept with it so callers cannot guess wrong. */
+  mediaType: string;
   attempts: number;
 }
 
@@ -83,6 +85,12 @@ export async function editImage(opts: ImageEditOptions): Promise<ImageEditResult
     form.append("quality", "medium");
     // Keeps the customer's own face on the result. See the header.
     form.append("input_fidelity", "high");
+    // WebP, not the default PNG. The same picture is ~1.5 MB as PNG and
+    // ~150 KB here; three of them is the difference between a 4.5 MB
+    // download and a 0.5 MB one, on a report that is read on a phone. It
+    // also keeps each response well clear of the 4.5 MB body ceiling.
+    form.append("output_format", "webp");
+    form.append("output_compression", "85");
     form.append(
       "image",
       new Blob([new Uint8Array(bytes)], { type: opts.image.mediaType }),
@@ -145,7 +153,7 @@ export async function editImage(opts: ImageEditOptions): Promise<ImageEditResult
       }
 
       log.info("image_ok", { ...base, attempt, ms, bytes: Math.floor((b64.length * 3) / 4) });
-      return { base64: b64, attempts: attempt };
+      return { base64: b64, mediaType: "image/webp", attempts: attempt };
     } catch (err) {
       const ms = Date.now() - started;
       if (err instanceof VisionError) throw err;

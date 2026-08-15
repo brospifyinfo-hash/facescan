@@ -246,7 +246,7 @@ export function StyleStudio({
                   alt={cut.name}
                   labels={s}
                   onRetry={() => retry(i)}
-                  filename={`facescan-${i === 0 ? "cut-1" : "cut-2"}.png`}
+                  filename={`facescan-${i === 0 ? "cut-1" : "cut-2"}.webp`}
                 />
                 <div className="px-4 py-3.5">
                   <div className="flex items-baseline justify-between gap-3">
@@ -274,7 +274,7 @@ export function StyleStudio({
                 alt={s.projectionTitle}
                 labels={s}
                 onRetry={() => retry(2)}
-                filename="facescan-projection.png"
+                filename="facescan-projection.webp"
               />
               <div className="px-4 py-3.5">
                 <h3 className="text-sm font-semibold text-[var(--color-ink)]">

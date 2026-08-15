@@ -107,7 +107,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({
-      image: `data:image/png;base64,${result.base64}`,
+      image: `data:${result.mediaType};base64,${result.base64}`,
       quota: { used, limit: IMAGE_QUOTA, remaining: Math.max(0, IMAGE_QUOTA - used) },
     });
   } catch (err) {
