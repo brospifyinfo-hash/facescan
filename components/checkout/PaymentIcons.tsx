@@ -27,11 +27,52 @@ function Frame({ children, label }: { children: React.ReactNode; label: string }
   );
 }
 
-export function PaymentIcons({ methods }: { methods?: string[] }) {
+function Word({ children, label }: { children: string; label: string }) {
+  return (
+    <Frame label={label}>
+      <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--color-ink-tertiary)]">
+        {children}
+      </span>
+    </Frame>
+  );
+}
+
+/**
+ * The methods shown when the caller does not narrow the list.
+ *
+ * Kept as one exported constant so the marks under the package list and the
+ * marks under the pay button cannot drift apart — a customer who picks a
+ * plan because PayPal was shown, and then does not find PayPal at checkout,
+ * has been misled by a detail nobody would think to test.
+ */
+export const DEFAULT_METHODS = [
+  "apple_pay",
+  "google_pay",
+  "paypal",
+  "klarna",
+  "visa",
+  "mastercard",
+  "amex",
+] as const;
+
+export function PaymentIcons({ methods }: { methods?: readonly string[] }) {
   const show = (m: string) => !methods || methods.includes(m);
 
   return (
     <div className="flex flex-wrap items-center justify-center gap-1.5">
+      {show("visa") ? <Word label="Visa">Visa</Word> : null}
+
+      {show("mastercard") ? (
+        <Frame label="Mastercard">
+          <svg viewBox="0 0 32 20" className={cls} fill="none" aria-hidden>
+            <circle cx="13" cy="10" r="6.2" stroke="currentColor" strokeWidth="1.4" />
+            <circle cx="19" cy="10" r="6.2" stroke="currentColor" strokeWidth="1.4" />
+          </svg>
+        </Frame>
+      ) : null}
+
+      {show("amex") ? <Word label="American Express">Amex</Word> : null}
+
       {show("card") ? (
         <Frame label="Kredit- und Debitkarte">
           <svg viewBox="0 0 32 20" className={cls} fill="none" aria-hidden>

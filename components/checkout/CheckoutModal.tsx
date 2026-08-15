@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { StripeCheckout } from "./StripeCheckout";
 import { useI18n, useT } from "@/lib/i18n";
 import { formatPrice, PLAN_ORDER, type PlanId } from "@/lib/pricing";
+import { PaymentIcons } from "./PaymentIcons";
 import { cn } from "@/lib/cn";
 
 /**
@@ -156,6 +157,12 @@ export function CheckoutModal({
             <Button size="lg" className="mt-5 w-full" onClick={() => setStep("pay")}>
               {t.checkout.continueToPayment} · {formatPrice(locale, plan)}
             </Button>
+
+            {/* Under the packages, not only at the pay step: how you can pay
+                is part of deciding whether to buy at all. */}
+            <div className="mt-4">
+              <PaymentIcons />
+            </div>
           </>
         ) : (
           <div className="mt-5">

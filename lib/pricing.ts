@@ -21,8 +21,22 @@ export const PLAN_ORDER: PlanId[] = ["raw", "pro", "blueprint"];
 
 export const AMOUNTS: Record<PlanId, number> = {
   raw: 1.95,
-  pro: 4.95,
+  pro: 5.95,
   blueprint: 18.95,
+};
+
+/**
+ * How many further scans the purchase includes.
+ *
+ * A number rather than a capability flag, because "included" is a quantity
+ * and the two lower tiers genuinely differ from the top one by amount, not
+ * by kind. Enforced server-side against the scan history — a client-side
+ * count is a suggestion.
+ */
+export const SCAN_QUOTA: Record<PlanId, number> = {
+  raw: 1,
+  pro: 1,
+  blueprint: 10,
 };
 
 /**
@@ -36,9 +50,46 @@ export const AMOUNTS: Record<PlanId, number> = {
  * still a change to this file and nothing else.
  */
 export const CAPABILITIES = {
-  raw: { metrics: true, actionPlan: false, history: false, blueprint: false, products: false },
-  pro: { metrics: true, actionPlan: true, history: true, blueprint: false, products: true },
-  blueprint: { metrics: true, actionPlan: true, history: true, blueprint: true, products: true },
+  // 1.95 — the analysis, and nothing else.
+  raw: {
+    metrics: true,
+    actionPlan: false,
+    history: false,
+    products: false,
+    simulation: false,
+    monthly: false,
+    hairstyle: false,
+    projection: false,
+    blueprint: false,
+    download: false,
+  },
+  // 5.95 — everything above, plus the product recommendations and the
+  // re-scan simulation that plays once the purchase lands.
+  pro: {
+    metrics: true,
+    actionPlan: true,
+    history: true,
+    products: true,
+    simulation: true,
+    monthly: false,
+    hairstyle: false,
+    projection: false,
+    blueprint: false,
+    download: true,
+  },
+  // 18.95 — everything.
+  blueprint: {
+    metrics: true,
+    actionPlan: true,
+    history: true,
+    products: true,
+    simulation: true,
+    monthly: true,
+    hairstyle: true,
+    projection: true,
+    blueprint: true,
+    download: true,
+  },
 } as const satisfies Record<PlanId, Record<string, boolean>>;
 
 export type Capability = keyof (typeof CAPABILITIES)["raw"];
