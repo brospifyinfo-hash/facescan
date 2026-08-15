@@ -463,7 +463,6 @@ export const en: Dict = {
     cta: "View on {host}",
     ctaGeneric: "View product",
     matchedFor: "Matches",
-    priceNote: "Price may differ",
     disclosure:
       "Advertisement · Affiliate links. If you buy through one of these we receive a commission from the merchant. It does not change your price. The selection follows your measurements, not the size of the commission.",
   },
@@ -490,8 +489,6 @@ export const en: Dict = {
       "No Upstash configured — the catalogue lives in this instance's memory only and is gone on the next cold start. Set KV_REST_API_URL and KV_REST_API_TOKEN to keep products.",
     fieldTitle: "Title",
     fieldDescription: "Description",
-    fieldPrice: "Price",
-    priceHint: "Free text, exactly as the merchant shows it — displayed as indicative.",
     fieldImage: "Image URL",
     pickImage: "Choose image",
     replaceImage: "Replace",

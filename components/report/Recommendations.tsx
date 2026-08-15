@@ -147,35 +147,27 @@ function TopCard({ entry, index }: { entry: Entry; index: number }) {
         </div>
       </div>
 
-      <div className="relative mt-3 flex items-center gap-2">
-        <span className="min-w-0">
-          <span className="block truncate text-[14px] font-semibold text-[var(--color-ink)]">
-            {product.price}
-          </span>
-          <span className="block text-[9.5px] text-[var(--color-ink-quaternary)]">
-            {t.products.priceNote}
-          </span>
-        </span>
-
-        <a
-          href={product.affiliateLink}
-          target="_blank"
-          // `sponsored` is the correct relationship for a paid link, and
-          // noopener/noreferrer keep the opened tab from reaching back into
-          // this one.
-          rel="sponsored noopener noreferrer"
-          className="ml-auto inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[var(--color-accent)] px-4 py-2.5 text-[12.5px] font-semibold text-[var(--color-accent-ink)] transition-colors hover:bg-[var(--color-accent-bright)] active:scale-[0.97] motion-reduce:active:scale-100"
-        >
-          {ctaLabel(t, product.affiliateLink)}
-          <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
-        </a>
-      </div>
+      {/* The call to action takes the whole row now that no price shares it.
+          A price was a copy of the merchant's, went stale the moment they
+          changed it, and put a number next to a recommendation that this shop
+          does not charge. */}
+      <a
+        href={product.affiliateLink}
+        target="_blank"
+        // `sponsored` is the correct relationship for a paid link, and
+        // noopener/noreferrer keep the opened tab from reaching back into
+        // this one.
+        rel="sponsored noopener noreferrer"
+        className="relative mt-3 flex w-full items-center justify-center gap-1.5 rounded-full bg-[var(--color-accent)] px-4 py-2.5 text-[12.5px] font-semibold text-[var(--color-accent-ink)] transition-colors hover:bg-[var(--color-accent-bright)] active:scale-[0.98] motion-reduce:active:scale-100"
+      >
+        {ctaLabel(t, product.affiliateLink)}
+        <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+      </a>
     </motion.article>
   );
 }
 
 function SmallCard({ entry }: { entry: Entry }) {
-  const t = useT();
   const { product } = entry;
 
   return (
@@ -201,10 +193,9 @@ function SmallCard({ entry }: { entry: Entry }) {
       <h4 className="line-clamp-2 text-[11.5px] font-medium leading-tight text-[var(--color-ink-secondary)]">
         {product.title}
       </h4>
-      <span className="mt-auto flex items-center gap-1 pt-1.5 text-[11.5px] font-semibold text-[var(--color-ink)]">
-        {product.price}
+      <span className="mt-auto flex items-center justify-end pt-1.5">
         <ArrowUpRight
-          className="h-3 w-3 text-[var(--color-ink-tertiary)]"
+          className="h-3.5 w-3.5 text-[var(--color-accent)]"
           aria-hidden
         />
       </span>

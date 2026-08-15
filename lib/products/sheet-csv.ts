@@ -23,7 +23,14 @@ import { isProblemTag } from "./types";
 export const sheetIdConfigured = (): boolean =>
   typeof process.env.SHEETS_ID === "string" && process.env.SHEETS_ID.length > 0;
 
-/** Canonical column order, used when the sheet carries no header row. */
+/**
+ * Canonical column order, used when the sheet carries no header row.
+ *
+ * "price" is still listed although no product carries one any more. The
+ * column exists in sheets that were created earlier, and dropping it here
+ * would shift every field after it by one for anyone reading such a sheet
+ * positionally. It is parsed and discarded.
+ */
 export const SHEET_COLUMNS = [
   "id",
   "title",
@@ -155,7 +162,6 @@ export function productsFromRows(rows: string[][]): Product[] {
       id,
       title,
       description: at(row, "description"),
-      price: at(row, "price"),
       imageUrl: at(row, "imageUrl"),
       affiliateLink,
       tags,

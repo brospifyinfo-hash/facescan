@@ -89,16 +89,6 @@ export interface Product {
   id: string;
   title: string;
   description: string;
-  /**
-   * Free text, exactly as the merchant shows it — "24,99 €", "ab 19 €".
-   *
-   * NOT a number, and deliberately so. An affiliate price is a copy of
-   * somebody else's price that goes stale the moment they change it, and a
-   * decimal invites arithmetic (totals, sorting, "from" prices) that would
-   * present a stale figure as if this shop were charging it. The UI labels
-   * it as indicative and links out for the real one.
-   */
-  price: string;
   imageUrl: string;
   affiliateLink: string;
   tags: ProblemTag[];
@@ -137,7 +127,7 @@ function checkUrl(raw: string, field: string, errors: string[]): void {
   }
 }
 
-const LIMITS = { title: 120, description: 600, price: 40, url: 2000 } as const;
+const LIMITS = { title: 120, description: 600, url: 2000 } as const;
 
 export function validateProduct(body: unknown): ValidationResult {
   const errors: string[] = [];
@@ -152,7 +142,6 @@ export function validateProduct(body: unknown): ValidationResult {
 
   const title = str("title", LIMITS.title);
   const description = str("description", LIMITS.description);
-  const price = str("price", LIMITS.price);
   const imageUrl = str("imageUrl", LIMITS.url);
   const affiliateLink = str("affiliateLink", LIMITS.url);
 
@@ -177,6 +166,6 @@ export function validateProduct(body: unknown): ValidationResult {
   return {
     ok: true,
     errors: [],
-    value: { title, description, price, imageUrl, affiliateLink, tags, active },
+    value: { title, description, imageUrl, affiliateLink, tags, active },
   };
 }

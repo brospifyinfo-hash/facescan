@@ -59,7 +59,6 @@ function reviveProduct(raw: unknown): Product | null {
       id: p.id,
       title: p.title,
       description: typeof p.description === "string" ? p.description : "",
-      price: typeof p.price === "string" ? p.price : "",
       imageUrl: typeof p.imageUrl === "string" ? p.imageUrl : "",
       affiliateLink: typeof p.affiliateLink === "string" ? p.affiliateLink : "",
       // Tags retired from the vocabulary are dropped, not kept as dead

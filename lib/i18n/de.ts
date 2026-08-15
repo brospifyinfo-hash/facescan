@@ -471,7 +471,6 @@ export const de: Dict = {
     cta: "Auf {host} ansehen",
     ctaGeneric: "Produkt ansehen",
     matchedFor: "Passt zu",
-    priceNote: "Preis kann abweichen",
     disclosure:
       "Anzeige · Affiliate-Links. Kaufst du über einen dieser Links, erhalten wir eine Provision vom Händler. Für dich ändert das den Preis nicht. Die Auswahl richtet sich nach deinen Messwerten, nicht nach der Höhe der Provision.",
   },
@@ -498,8 +497,6 @@ export const de: Dict = {
       "Kein Upstash konfiguriert — der Katalog liegt nur im Arbeitsspeicher dieser Instanz und ist beim nächsten Kaltstart weg. Für dauerhafte Produkte KV_REST_API_URL und KV_REST_API_TOKEN setzen.",
     fieldTitle: "Titel",
     fieldDescription: "Beschreibung",
-    fieldPrice: "Preis",
-    priceHint: "Freitext, genau wie beim Händler — wird als Richtwert angezeigt.",
     fieldImage: "Bild-URL",
     pickImage: "Bild auswählen",
     replaceImage: "Ersetzen",

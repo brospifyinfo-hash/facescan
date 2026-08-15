@@ -79,7 +79,6 @@ function reviveProduct(raw: unknown): Product | null {
     id: p.id,
     title: p.title,
     description: typeof p.description === "string" ? p.description : "",
-    price: typeof p.price === "string" ? p.price : "",
     imageUrl: typeof p.imageUrl === "string" ? p.imageUrl : "",
     affiliateLink: typeof p.affiliateLink === "string" ? p.affiliateLink : "",
     // A tag typed into the sheet that is not in the vocabulary is dropped —
@@ -98,11 +97,10 @@ const byNewest = (a: Product, b: Product) =>
 /**
  * Force a value into the sheet as literal text.
  *
- * Sheets parses what it is given, and it is good at it: "24,90 €" written
- * into a German-locale sheet is stored as the NUMBER 24.9, and reading it
- * back gives "24.9" — the currency and the decimal comma are gone. That is
- * the one field a customer actually reads on the card, so it cannot be left
- * to a locale guess.
+ * Sheets parses what it is given, and it is good at it: a title of "1,5" in
+ * a German-locale sheet is stored as the NUMBER 1.5, and a description
+ * beginning with "=" is stored as a formula. Neither survives the round trip
+ * as typed.
  *
  * A leading apostrophe is the spreadsheet convention for "this is text". It
  * is a formatting directive, not part of the value, so it does not come back
@@ -121,7 +119,6 @@ function toSheetProduct(p: Product) {
     id: asText(p.id),
     title: asText(p.title),
     description: asText(p.description),
-    price: asText(p.price),
     imageUrl: asText(p.imageUrl),
     affiliateLink: asText(p.affiliateLink),
   };

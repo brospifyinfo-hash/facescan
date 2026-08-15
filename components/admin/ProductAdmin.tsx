@@ -22,7 +22,6 @@ import { cn } from "@/lib/cn";
 const EMPTY = {
   title: "",
   description: "",
-  price: "",
   imageUrl: "",
   affiliateLink: "",
   tags: [] as ProblemTag[],
@@ -123,7 +122,6 @@ export function ProductAdmin() {
     setDraft({
       title: p.title,
       description: p.description,
-      price: p.price,
       imageUrl: p.imageUrl,
       affiliateLink: p.affiliateLink,
       tags: p.tags,
@@ -228,15 +226,7 @@ export function ProductAdmin() {
               />
             </Field>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Field label={t.admin.fieldPrice} hint={t.admin.priceHint}>
-                <input
-                  className={inputClass}
-                  value={draft.price}
-                  onChange={(e) => setDraft({ ...draft, price: e.target.value })}
-                  placeholder="24,99 €"
-                />
-              </Field>
+            <div className="grid gap-3">
               <Field label={t.admin.fieldActive}>
                 <label className="flex h-[42px] items-center gap-2 text-[13px] text-[var(--color-ink-secondary)]">
                   <input
@@ -347,12 +337,7 @@ export function ProductAdmin() {
                 loading="lazy"
               />
               <div className="min-w-0 flex-1">
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="truncate text-[14px] font-semibold">{p.title}</h3>
-                  <span className="tnum shrink-0 text-[13px] text-[var(--color-ink-secondary)]">
-                    {p.price}
-                  </span>
-                </div>
+                <h3 className="truncate text-[14px] font-semibold">{p.title}</h3>
                 <p className="mt-0.5 line-clamp-2 text-[12px] text-[var(--color-ink-tertiary)]">
                   {p.description}
                 </p>

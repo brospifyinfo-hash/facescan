@@ -315,7 +315,6 @@ export interface Dict {
     cta: string;
     ctaGeneric: string;
     matchedFor: string;
-    priceNote: string;
     /** Advertising disclosure. Legally required, not decorative. */
     disclosure: string;
   };
@@ -343,8 +342,6 @@ export interface Dict {
     memoryWarning: string;
     fieldTitle: string;
     fieldDescription: string;
-    fieldPrice: string;
-    priceHint: string;
     fieldImage: string;
     pickImage: string;
     replaceImage: string;

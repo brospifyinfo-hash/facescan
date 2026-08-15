@@ -59,7 +59,6 @@ function product(tags: ProblemTag[], title = `p${++seq}`): Product {
     id: `id-${title}`,
     title,
     description: "",
-    price: "9,99 €",
     imageUrl: "https://example.com/i.png",
     affiliateLink: "https://example.com/p",
     tags,
@@ -224,7 +223,6 @@ console.log("\nValidation\n----------");
 const good = {
   title: "T",
   description: "D",
-  price: "9 €",
   imageUrl: "https://example.com/i.png",
   affiliateLink: "https://example.com/p",
   tags: ["body_fat"],
@@ -257,9 +255,13 @@ check(
 console.log("\nSheet CSV\n---------");
 
 // Every field in this sheet can legitimately contain a comma: a description,
-// a European price, an affiliate URL with query parameters, and the tag list
-// by definition. split(",") would shred exactly the rows a catalogue is made
-// of, so the parser is checked against the shapes that break naive ones.
+// an affiliate URL with query parameters, and the tag list by definition.
+// split(",") would shred exactly the rows a catalogue is made of, so the
+// parser is checked against the shapes that break naive ones.
+//
+// The fixture still carries a price COLUMN. Products no longer have a price,
+// but sheets created before that do, and the reader has to skip past it
+// without shifting every field after it.
 {
   const csv = [
     "id,title,description,price,imageUrl,affiliateLink,tags,active",

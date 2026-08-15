@@ -464,7 +464,6 @@ export const es: Dict = {
     cta: "Ver en {host}",
     ctaGeneric: "Ver producto",
     matchedFor: "Encaja con",
-    priceNote: "El precio puede variar",
     disclosure:
       "Publicidad · Enlaces de afiliado. Si compras a través de uno, recibimos una comisión del vendedor. A ti no te cambia el precio. La selección sigue tus medidas, no el importe de la comisión.",
   },
@@ -491,8 +490,6 @@ export const es: Dict = {
       "Upstash no está configurado: el catálogo vive solo en la memoria de esta instancia y desaparece al siguiente arranque en frío. Configura KV_REST_API_URL y KV_REST_API_TOKEN.",
     fieldTitle: "Título",
     fieldDescription: "Descripción",
-    fieldPrice: "Precio",
-    priceHint: "Texto libre, tal como lo muestra el vendedor; se indica como orientativo.",
     fieldImage: "URL de imagen",
     pickImage: "Elegir imagen",
     replaceImage: "Reemplazar",
