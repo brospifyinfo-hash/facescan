@@ -43,6 +43,8 @@ import {
   renderPrompt,
   toAdvice,
 } from "../lib/style/prompt";
+import { limitFor, MAX_QUOTA } from "../lib/history/quota";
+import { SCAN_QUOTA } from "../lib/pricing";
 import { de } from "../lib/i18n/de";
 import { en } from "../lib/i18n/en";
 import { es } from "../lib/i18n/es";
@@ -249,6 +251,39 @@ const advice = toAdvice({
 ok("produces exactly two cuts", advice.hairstyles.length === 2);
 ok("keeps the order primary then alternate", advice.hairstyles[0].name === "A" && advice.hairstyles[1].name === "B");
 ok("the projection prompt stays separate from the cuts", advice.projectionPrompt === "pp");
+
+// ---------------------------------------------------------------------------
+// 6. The scan allowance
+// ---------------------------------------------------------------------------
+// lib/pricing.ts promised for two releases that SCAN_QUOTA was "enforced
+// server-side". It was declared and read by nobody. Now it is read, and the
+// branch that decides the limit is the one worth pinning down: it has to
+// stay generous exactly where a wrong answer would lock a paying customer
+// out of their own history.
+console.log("\nScan allowance");
+
+ok("blueprint gets ten", limitFor("blueprint", true) === 10);
+ok("pro gets one", limitFor("pro", true) === 1);
+ok("raw gets one", limitFor("raw", true) === 1);
+ok(
+  "a readable store that reports no purchase means the raw allowance",
+  limitFor(null, true) === SCAN_QUOTA.raw,
+);
+// The important one. Stripe is unconfigured in production, so this is the
+// branch every real customer hits today.
+ok(
+  "an unreadable store never rations below the top tier",
+  limitFor(null, false) === MAX_QUOTA && MAX_QUOTA === 10,
+  String(limitFor(null, false)),
+);
+ok(
+  "no tier is ever allowed zero scans",
+  (Object.keys(SCAN_QUOTA) as Array<keyof typeof SCAN_QUOTA>).every((p) => SCAN_QUOTA[p] >= 1),
+);
+ok(
+  "the fallback is the maximum, not a hardcoded 10",
+  MAX_QUOTA === Math.max(...Object.values(SCAN_QUOTA)),
+);
 
 console.log(
   failed === 0

@@ -1,14 +1,19 @@
 import { NextResponse } from "next/server";
 import { currentSession } from "@/lib/auth/session";
 import { history, type HistoryInput } from "@/lib/history/store";
+import { scanQuota } from "@/lib/history/quota";
 
 export const runtime = "nodejs";
 
-/** The signed-in customer's scans. */
+/** The signed-in customer's scans, and how many they have left. */
 export async function GET() {
   const session = await currentSession();
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  return NextResponse.json({ scans: await history.list(session.email) });
+  const scans = await history.list(session.email);
+  return NextResponse.json({
+    scans,
+    quota: await scanQuota(session.email, scans.length),
+  });
 }
 
 /**
@@ -34,6 +39,15 @@ export async function POST(request: Request) {
   const session = await currentSession();
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
+  // The scan allowance, finally enforced where lib/pricing.ts always said it
+  // was. Counted from the stored history rather than from a counter, so it
+  // cannot drift away from what the customer can actually see in /konto.
+  const existing = await history.list(session.email);
+  const quota = await scanQuota(session.email, existing.length);
+  if (quota.remaining <= 0) {
+    return NextResponse.json({ error: "quota_exhausted", quota }, { status: 429 });
+  }
+
   let body: Record<string, unknown>;
   try {
     body = (await request.json()) as Record<string, unknown>;
@@ -55,5 +69,9 @@ export async function POST(request: Request) {
     source: body.source === "vision" ? "vision" : "geometry",
   };
 
-  return NextResponse.json({ scan: await history.add(session.email, entry) }, { status: 201 });
+  const scan = await history.add(session.email, entry);
+  return NextResponse.json(
+    { scan, quota: { ...quota, used: quota.used + 1, remaining: quota.remaining - 1 } },
+    { status: 201 },
+  );
 }
