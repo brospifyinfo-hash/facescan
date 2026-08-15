@@ -301,6 +301,14 @@ export const fr: Dict = {
       "Atteignable si les mesures que vous pouvez influencer étaient à leur référence.",
     potentialWhat:
       "Pas une estimation : le même score, recalculé avec chaque mesure que le comportement, les soins, la posture ou la photo elle-même déplacent réellement, ramenée à sa valeur de référence. L'os reste où il est — l'écart ne vient que de ce que vous pouvez changer.",
+    simulationSteps: [
+      "Déchiffrement de vos mesures",
+      "Évaluation des catégories",
+      "Composition de votre plan",
+      "Déverrouillage du rapport",
+    ],
+    simulationNote:
+      "Vos valeurs ne changent pas — rien n'est remesuré, l'analyse complète est simplement assemblée.",
     tipTitle: "Votre conseil",
     tipBody:
       "La régularité est le levier. De petites améliorations quotidiennes produisent de grands résultats.",

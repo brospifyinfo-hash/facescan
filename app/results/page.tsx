@@ -25,6 +25,7 @@ import { AnalysisGrid } from "@/components/report/AnalysisGrid";
 import { OptimizePanel, StrengthsPanel } from "@/components/report/Findings";
 import { TipCard } from "@/components/report/TipCard";
 import { Recommendations } from "@/components/report/Recommendations";
+import { UnlockSimulation } from "@/components/report/UnlockSimulation";
 import { AccountCard } from "@/components/report/AccountCard";
 import { can, formatPrice } from "@/lib/pricing";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -354,6 +355,15 @@ export default function ResultsPage() {
           <LanguageSwitcher />
         </div>
       </main>
+
+      {/* Plays once, straight after the purchase lands. */}
+      {unlocked && can(plan, "simulation") ? (
+        <UnlockSimulation
+          src={photos.front?.dataUrl}
+          mesh={metrics.mesh}
+          aspect={metrics.aspect}
+        />
+      ) : null}
 
       <AuthModal
         open={authOpen}

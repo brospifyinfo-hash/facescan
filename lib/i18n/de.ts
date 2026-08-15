@@ -301,6 +301,14 @@ export const de: Dict = {
       "Erreichbar, wenn die beeinflussbaren Messwerte auf ihrem Referenzwert lägen.",
     potentialWhat:
       "Kein geschätzter Wert: derselbe Score, neu gerechnet mit jedem Messwert auf seinem Referenzwert, den Verhalten, Pflege, Haltung oder die Aufnahme selbst tatsächlich bewegen. Knochen bleibt, wo er ist — die Differenz kommt ausschließlich aus dem, was du beeinflussen kannst.",
+    simulationSteps: [
+      "Messwerte werden entschlüsselt",
+      "Kategorien werden ausgewertet",
+      "Dein Plan wird zusammengestellt",
+      "Report wird freigeschaltet",
+    ],
+    simulationNote:
+      "Deine Werte bleiben unverändert — es wird nichts neu gemessen, nur die vollständige Auswertung aufgebaut.",
     tipTitle: "Tipp für dich",
     tipBody:
       "Konsistenz ist der Schlüssel. Kleine tägliche Verbesserungen führen zu großen Ergebnissen.",

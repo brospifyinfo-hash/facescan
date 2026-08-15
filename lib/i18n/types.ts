@@ -154,6 +154,9 @@ export interface Dict {
     potentialBody: string;
     /** The full derivation, revealed by the info control. */
     potentialWhat: string;
+    /** The reveal that plays once after a purchase. */
+    simulationSteps: string[];
+    simulationNote: string;
     tipTitle: string;
     tipBody: string;
     moreTips: string;

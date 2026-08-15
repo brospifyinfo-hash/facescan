@@ -301,6 +301,14 @@ export const es: Dict = {
       "Alcanzable si las medidas que puedes influir estuvieran en su referencia.",
     potentialWhat:
       "No es una estimación: la misma puntuación, recalculada con cada medida que el comportamiento, el cuidado, la postura o la propia foto sí mueven, situada en su valor de referencia. El hueso se queda donde está: la diferencia sale solo de lo que puedes cambiar.",
+    simulationSteps: [
+      "Descifrando tus medidas",
+      "Evaluando las categorías",
+      "Componiendo tu plan",
+      "Desbloqueando el informe",
+    ],
+    simulationNote:
+      "Tus valores no cambian: no se vuelve a medir nada, solo se compone el análisis completo.",
     tipTitle: "Tu consejo",
     tipBody:
       "La constancia es la palanca. Las pequeñas mejoras diarias se acumulan en grandes resultados.",

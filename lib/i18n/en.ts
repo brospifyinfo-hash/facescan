@@ -300,6 +300,14 @@ export const en: Dict = {
       "Reachable if the measurements you can influence sat at their reference.",
     potentialWhat:
       "Not an estimate: the same score, recomputed with every measurement that behaviour, grooming, posture or the photograph itself genuinely moves set to its reference value. Bone stays where it is — the difference comes only from what you can actually change.",
+    simulationSteps: [
+      "Decrypting your measurements",
+      "Evaluating the categories",
+      "Assembling your plan",
+      "Unlocking the report",
+    ],
+    simulationNote:
+      "Your figures do not change — nothing is re-measured, the full evaluation is simply being assembled.",
     tipTitle: "Your tip",
     tipBody:
       "Consistency is the lever. Small daily improvements compound into large results.",
