@@ -157,6 +157,11 @@ export interface Dict {
     /** The reveal that plays once after a purchase. */
     simulationSteps: string[];
     simulationNote: string;
+    /** Saving the report as a file. */
+    downloadTitle: string;
+    downloadBody: string;
+    downloadCta: string;
+    downloadDone: string;
     tipTitle: string;
     tipBody: string;
     moreTips: string;

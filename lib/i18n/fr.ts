@@ -309,6 +309,11 @@ export const fr: Dict = {
     ],
     simulationNote:
       "Vos valeurs ne changent pas — rien n'est remesuré, l'analyse complète est simplement assemblée.",
+    downloadTitle: "Enregistrer votre plan",
+    downloadBody:
+      "Téléchargez le rapport complet en fichier — il s'ouvre dans tout navigateur et s'imprime en PDF depuis là.",
+    downloadCta: "Télécharger le rapport",
+    downloadDone: "Enregistré",
     tipTitle: "Votre conseil",
     tipBody:
       "La régularité est le levier. De petites améliorations quotidiennes produisent de grands résultats.",

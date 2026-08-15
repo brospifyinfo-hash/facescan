@@ -26,6 +26,7 @@ import { OptimizePanel, StrengthsPanel } from "@/components/report/Findings";
 import { TipCard } from "@/components/report/TipCard";
 import { Recommendations } from "@/components/report/Recommendations";
 import { UnlockSimulation } from "@/components/report/UnlockSimulation";
+import { DownloadPlan } from "@/components/report/DownloadPlan";
 import { AccountCard } from "@/components/report/AccountCard";
 import { can, formatPrice } from "@/lib/pricing";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -328,6 +329,18 @@ export default function ResultsPage() {
             </div>
           ) : null}
         </section>
+
+        {/* Right after the plan it exports, and outside the locked region so
+            it is never blurred out from the person who paid for it. */}
+        {unlocked && can(plan, "download") ? (
+          <div className="mt-3">
+            <DownloadPlan
+              quiz={quiz}
+              metrics={metrics}
+              monthly={can(plan, "monthly")}
+            />
+          </div>
+        ) : null}
 
         {/* Outside the locked region on purpose: the advice is generic, so
             there is nothing to sell here. */}

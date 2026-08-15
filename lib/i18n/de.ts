@@ -309,6 +309,11 @@ export const de: Dict = {
     ],
     simulationNote:
       "Deine Werte bleiben unverändert — es wird nichts neu gemessen, nur die vollständige Auswertung aufgebaut.",
+    downloadTitle: "Plan speichern",
+    downloadBody:
+      "Lade deinen vollständigen Report als Datei herunter — sie öffnet sich in jedem Browser und lässt sich von dort als PDF drucken.",
+    downloadCta: "Report herunterladen",
+    downloadDone: "Gespeichert",
     tipTitle: "Tipp für dich",
     tipBody:
       "Konsistenz ist der Schlüssel. Kleine tägliche Verbesserungen führen zu großen Ergebnissen.",

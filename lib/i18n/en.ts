@@ -308,6 +308,11 @@ export const en: Dict = {
     ],
     simulationNote:
       "Your figures do not change — nothing is re-measured, the full evaluation is simply being assembled.",
+    downloadTitle: "Save your plan",
+    downloadBody:
+      "Download the full report as a file — it opens in any browser and prints to PDF from there.",
+    downloadCta: "Download report",
+    downloadDone: "Saved",
     tipTitle: "Your tip",
     tipBody:
       "Consistency is the lever. Small daily improvements compound into large results.",

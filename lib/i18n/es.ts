@@ -309,6 +309,11 @@ export const es: Dict = {
     ],
     simulationNote:
       "Tus valores no cambian: no se vuelve a medir nada, solo se compone el análisis completo.",
+    downloadTitle: "Guardar tu plan",
+    downloadBody:
+      "Descarga el informe completo como archivo: se abre en cualquier navegador y desde ahí se imprime a PDF.",
+    downloadCta: "Descargar informe",
+    downloadDone: "Guardado",
     tipTitle: "Tu consejo",
     tipBody:
       "La constancia es la palanca. Las pequeñas mejoras diarias se acumulan en grandes resultados.",
