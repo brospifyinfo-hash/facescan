@@ -1,4 +1,5 @@
 import type { BandId, CategoryId, MetricId, PlanId, RowId } from "@/lib/metrics";
+import type { StyleFaceShape, UpkeepLevel } from "@/lib/style/types";
 
 // Adding a language = write one dictionary file against the `Dict` type,
 // register it in ./index.ts, and add it here. Nothing else changes; the
@@ -162,6 +163,34 @@ export interface Dict {
     downloadBody: string;
     downloadCta: string;
     downloadDone: string;
+    /** The hairstyle and projection studio. Blueprint only. */
+    style: {
+      title: string;
+      body: string;
+      cta: string;
+      analysing: string;
+      faceShapeLabel: string;
+      shapes: Record<StyleFaceShape, string>;
+      upkeep: Record<UpkeepLevel, string>;
+      /** "What to say at the counter." */
+      barberLabel: string;
+      projectionTitle: string;
+      /**
+       * The qualifier under the projection. Load-bearing, not a footnote:
+       * the picture is a generated illustration and the copy has to say so.
+       */
+      projectionDisclaimer: string;
+      rendering: string;
+      retry: string;
+      save: string;
+      again: string;
+      /** Contains {n} — pictures left in the allowance. */
+      remaining: string;
+      errGeneric: string;
+      errNotImage: string;
+      errSignIn: string;
+      errQuota: string;
+    };
     tipTitle: string;
     tipBody: string;
     moreTips: string;

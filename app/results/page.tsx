@@ -27,6 +27,7 @@ import { TipCard } from "@/components/report/TipCard";
 import { Recommendations } from "@/components/report/Recommendations";
 import { UnlockSimulation } from "@/components/report/UnlockSimulation";
 import { DownloadPlan } from "@/components/report/DownloadPlan";
+import { StyleStudio } from "@/components/report/StyleStudio";
 import { AccountCard } from "@/components/report/AccountCard";
 import { can, formatPrice } from "@/lib/pricing";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -339,6 +340,15 @@ export default function ResultsPage() {
               metrics={metrics}
               monthly={can(plan, "monthly")}
             />
+          </div>
+        ) : null}
+
+        {/* Blueprint only, and last of the paid blocks: it is the one that
+            asks the customer for something (a second photo), so it sits
+            after everything they already got without lifting a finger. */}
+        {unlocked && can(plan, "hairstyle") ? (
+          <div className="mt-3">
+            <StyleStudio quiz={quiz} metrics={metrics} />
           </div>
         ) : null}
 
