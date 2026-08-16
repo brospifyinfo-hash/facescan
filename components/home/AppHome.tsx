@@ -17,8 +17,8 @@ import {
   Target,
   TrendingUp,
 } from "lucide-react";
-import { CornerBrackets, PotentialGauge, ScoreAvatar, TipBadge } from "./HomeArt";
-import { fmtDelta, fmtScore, summarise, type ScanRecord } from "@/lib/home/summary";
+import { CornerBrackets, Plinth, PotentialGauge, ScoreAvatar, TipBadge } from "./HomeArt";
+import { DEMO_SUMMARY, fmtDelta, fmtScore, summarise, type ScanRecord } from "@/lib/home/summary";
 import { SLOT_SPECS } from "@/lib/site-images";
 import { DevUnlock } from "@/components/ui/DevUnlock";
 import { bandFor } from "@/lib/tiers";
@@ -78,21 +78,30 @@ export function AppHome() {
     };
   }, []);
 
-  const summary = summarise(scans);
+  const real = summarise(scans);
 
   // The scan sitting in this browser counts as the latest reading even before
   // it is filed — otherwise someone who just scanned and has not signed in
   // sees an empty home page while their result is one tab away.
   const liveScore = metrics?.overall ?? null;
-  const shownScore = summary.latest?.overall ?? liveScore;
-  const shownPotential = summary.latest?.potential ?? null;
-  const shownDate = summary.latest
-    ? new Date(summary.latest.at).toLocaleDateString(locale, {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      })
-    : null;
+  const hasAnything = real.count > 0 || liveScore !== null;
+
+  // Nothing to show yet: the example fills the layout, and every block that
+  // uses it carries the marker. One flag, so the numbers and the label can
+  // never come apart. See DEMO_SUMMARY.
+  const preview = !hasAnything;
+  const summary = preview ? DEMO_SUMMARY : real;
+
+  const shownScore = preview ? DEMO_SUMMARY.latest!.overall : (real.latest?.overall ?? liveScore);
+  const shownPotential = preview ? DEMO_SUMMARY.latest!.potential ?? null : (real.latest?.potential ?? null);
+  const shownDate =
+    !preview && real.latest
+      ? new Date(real.latest.at).toLocaleDateString(locale, {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        })
+      : null;
 
   const stats: Array<{ icon: typeof Scan; value: string; unit?: string; label: string }> = [
     { icon: Scan, value: String(summary.count), unit: t.home.stats.scansUnit, label: t.home.stats.scansLabel },
@@ -139,24 +148,36 @@ export function AppHome() {
           style={{ background: "radial-gradient(closest-side, var(--color-accent), transparent)" }}
         />
 
-        <div className="pointer-events-none absolute right-2 top-4 aspect-[100/114] w-[47%]">
+        {/* 45% wide, and the text column below is 55%: between them they use
+            the card exactly once. The supplied head faces LEFT, so its nose
+            points into the copy — which reads well but leaves no room for the
+            two to overlap even slightly. */}
+        <div className="pointer-events-none absolute right-2 top-4 w-[45%]">
           <CornerBrackets />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={art.hero} alt="" className="h-full w-full object-contain p-1" />
+          <img
+            src={art.hero}
+            alt=""
+            className="aspect-[340/435] w-full object-contain p-1"
+          />
+          {/* The plinth from the reference. The artwork has no base of its
+              own, so it is drawn under the picture rather than across it —
+              and a swapped-in image still stands on something. */}
+          <Plinth />
         </div>
 
-        <span className="relative inline-flex max-w-[56%] items-center gap-1.5 whitespace-nowrap rounded-full border border-[var(--color-hairline)] bg-white/[0.04] px-2.5 py-[5px] text-[8px] font-semibold uppercase tracking-[0.05em] text-[var(--color-accent)]">
+        <span className="relative inline-flex max-w-[54%] items-center gap-1.5 whitespace-nowrap rounded-full border border-[var(--color-hairline)] bg-white/[0.04] px-2.5 py-[5px] text-[8px] font-semibold uppercase tracking-[0.05em] text-[var(--color-accent)]">
           <Sparkles className="h-3 w-3 shrink-0" aria-hidden />
           {t.home.badge}
         </span>
 
-        <div className="relative mt-4 w-[62%] min-w-[190px]">
-          <h1 className="text-[30px] font-bold leading-[1.07] tracking-[-0.02em] text-[var(--color-ink)]">
+        <div className="relative mt-4 w-[55%] min-w-[180px]">
+          <h1 className="text-[26px] font-bold leading-[1.08] tracking-[-0.025em] text-[var(--color-ink)]">
             {t.home.headline}{" "}
             <span className="text-[var(--color-accent)]">{t.home.headlineAccent}</span>
           </h1>
 
-          <p className="mt-3 text-[13px] leading-[1.5] text-[var(--color-ink-secondary)]">
+          <p className="mt-2.5 text-[12.5px] leading-[1.45] text-[var(--color-ink-secondary)]">
             {t.home.sub}
           </p>
         </div>
@@ -186,7 +207,10 @@ export function AppHome() {
       </section>
 
       {/* ---- Stats ----------------------------------------------------- */}
-      <section className="grid grid-cols-4 rounded-[var(--r-card)] border border-[var(--color-hairline)] bg-[var(--color-surface)] px-1 py-4">
+      {/* pt-7 rather than py-4: the example marker sits in the corner and
+          would otherwise land on top of the fourth icon. */}
+      <section className="relative grid grid-cols-4 rounded-[var(--r-card)] border border-[var(--color-hairline)] bg-[var(--color-surface)] px-1 pb-4 pt-7">
+        {preview ? <PreviewTag label={t.home.preview} /> : null}
         {stats.map((s, i) => (
           <div
             key={i}
@@ -215,8 +239,13 @@ export function AppHome() {
       {/* ---- Last scan -------------------------------------------------- */}
       <section className="rounded-[var(--r-card)] border border-[var(--color-hairline)] bg-[var(--color-surface)] p-4">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--color-accent)]">
+          <h2 className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--color-accent)]">
             {t.home.lastScan}
+            {preview ? (
+              <span className="rounded-full border border-[var(--color-hairline)] px-1.5 py-px text-[8.5px] font-medium tracking-normal text-[var(--color-ink-tertiary)]">
+                {t.home.preview}
+              </span>
+            ) : null}
           </h2>
           <Link
             href="/konto"
@@ -335,6 +364,21 @@ export function AppHome() {
         </Link>
       </section>
     </div>
+  );
+}
+
+/**
+ * The marker that says these numbers are an example.
+ *
+ * Small and quiet on purpose — it is a label, not a warning — but always
+ * rendered whenever DEMO_SUMMARY is in use, so the page cannot end up showing
+ * example figures with nothing to say so.
+ */
+function PreviewTag({ label }: { label: string }) {
+  return (
+    <span className="absolute right-3 top-2 rounded-full border border-[var(--color-hairline)] bg-[var(--color-surface-raised)] px-1.5 py-px text-[8.5px] font-medium text-[var(--color-ink-tertiary)]">
+      {label}
+    </span>
   );
 }
 

@@ -18,7 +18,9 @@
 //    javascript: URL — and the same field will one day be filled by an
 //    upload endpoint rather than a human.
 
-import { fmtDelta, fmtScore, summarise } from "../lib/home/summary";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import { DEMO_SUMMARY, fmtDelta, fmtScore, summarise } from "../lib/home/summary";
 import { cleanImageUrl, cleanSiteImages, resolveSlot, SLOT_SPECS, IMAGE_SLOTS } from "../lib/site-images";
 import { de } from "../lib/i18n/de";
 import { en } from "../lib/i18n/en";
@@ -91,11 +93,29 @@ ok("rows with unusable numbers are dropped, not averaged in", junk.count === 1);
 ok("and the survivor still reads correctly", junk.avgScore === 6.0);
 
 // ---------------------------------------------------------------------------
+console.log("\nThe example figures");
+
+ok("the example matches the design", DEMO_SUMMARY.count === 6 && DEMO_SUMMARY.avgScore === 6.4);
+ok("it fills every tile", DEMO_SUMMARY.improvement !== null && DEMO_SUMMARY.avgPotential !== null);
+ok("it carries a latest reading for the card below", DEMO_SUMMARY.latest !== null);
+// The line that keeps it honest: summarise() must never produce these on its
+// own, so the only way they reach the screen is the branch that also renders
+// the marker.
+ok(
+  "summarise() never invents them",
+  summarise([]).count === 0 && summarise([]).avgScore === null,
+  "the example is a separate constant, not a fallback inside the maths",
+);
+for (const [code, dict] of Object.entries({ de, en, es, fr })) {
+  ok(`${code}: the example marker is translated`, dict.home.preview.trim().length > 0);
+}
+
+// ---------------------------------------------------------------------------
 console.log("\nImage slots — what may reach an src attribute");
 
 ok("an https URL is kept", cleanImageUrl("https://cdn.example.com/a.png") !== null);
 ok("an http URL is kept", cleanImageUrl("http://example.com/a.png") !== null);
-ok("a site-relative path is kept", cleanImageUrl("/hero-mesh.svg") === "/hero-mesh.svg");
+ok("a site-relative path is kept", cleanImageUrl("/tip-chart.svg") === "/tip-chart.svg");
 ok("surrounding whitespace is trimmed", cleanImageUrl("  /a.svg  ") === "/a.svg");
 
 ok("javascript: is refused", cleanImageUrl("javascript:alert(1)") === null);
@@ -124,8 +144,13 @@ ok("cleaning a non-object yields nothing", Object.keys(cleanSiteImages("nope")).
 console.log("\nDefaults — the page renders before anything is configured");
 
 for (const slot of IMAGE_SLOTS) {
-  ok(`${slot} has a shipped fallback`, SLOT_SPECS[slot].fallback.startsWith("/"));
-  ok(`${slot} resolves to it when unset`, resolveSlot({}, slot) === SLOT_SPECS[slot].fallback);
+  const fallback = SLOT_SPECS[slot].fallback;
+  ok(`${slot} has a site-relative fallback`, fallback.startsWith("/"));
+  // The check that matters: the file has to be there. A default pointing at a
+  // deleted asset is a broken image on the landing page, and every other test
+  // here would still pass.
+  ok(`${slot}: ${fallback} exists in public/`, existsSync(join("public", fallback.slice(1))));
+  ok(`${slot} resolves to it when unset`, resolveSlot({}, slot) === fallback);
 }
 ok(
   "an override wins over the fallback",

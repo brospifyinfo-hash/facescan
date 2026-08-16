@@ -116,6 +116,7 @@ export const de: Dict = {
     tipTitle: "Konsistenz ist der Schlüssel.",
     tipBody: "Kleine tägliche Verbesserungen führen zu großen Ergebnissen.",
     tipCta: "Mehr Tipps ansehen",
+    preview: "Beispiel",
     tabsLabel: "Hauptnavigation",
     tabs: { home: "Home", scan: "Scan", analysis: "Analyse", profile: "Profil" },
   },

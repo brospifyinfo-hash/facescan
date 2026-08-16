@@ -89,6 +89,8 @@ export interface Dict {
     tipTitle: string;
     tipBody: string;
     tipCta: string;
+    /** Marks the example figures shown before the first scan. */
+    preview: string;
     tabsLabel: string;
     tabs: Record<"home" | "scan" | "analysis" | "profile", string>;
   };

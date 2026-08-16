@@ -116,6 +116,7 @@ export const fr: Dict = {
     tipTitle: "La régularité est la clé.",
     tipBody: "De petites améliorations quotidiennes mènent à de grands résultats.",
     tipCta: "Voir plus de conseils",
+    preview: "Exemple",
     tabsLabel: "Navigation principale",
     tabs: { home: "Accueil", scan: "Scan", analysis: "Analyse", profile: "Profil" },
   },

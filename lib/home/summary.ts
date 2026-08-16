@@ -75,6 +75,30 @@ export function summarise(scans: readonly ScanRecord[]): HomeSummary {
   };
 }
 
+/**
+ * The example figures, shown before anybody has scanned.
+ *
+ * WHY THIS IS NOT SIMPLY FAKE DATA. An empty dashboard is a bad first
+ * impression and the page was designed around four filled tiles, so it has to
+ * be populated on the first visit. What it must NOT do is state those numbers
+ * as the visitor's own: every label here says "your scans", "your average",
+ * and telling somebody who has never scanned that they have six of them is a
+ * fabricated statement about that person — one that also breaks visibly the
+ * moment they scan and the count drops from six to one.
+ *
+ * So the numbers are shown AND marked as an example. The page looks complete,
+ * nobody is told something false about themselves, and the marker disappears
+ * the instant there is a real reading to show. These are the values from the
+ * design so the live page matches it exactly.
+ */
+export const DEMO_SUMMARY: HomeSummary = {
+  count: 6,
+  avgScore: 6.4,
+  improvement: 0.8,
+  avgPotential: 8.2,
+  latest: { at: 0, overall: 6.4, potential: 8.2 },
+};
+
 /** One decimal, and a sign on the improvement because its direction is the point. */
 export const fmtScore = (v: number | null): string => (v === null ? "—" : v.toFixed(1));
 

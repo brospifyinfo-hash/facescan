@@ -22,6 +22,29 @@ export function CornerBrackets({ className = "" }: { className?: string }) {
 }
 
 /**
+ * The concentric rings the hero figure stands on.
+ *
+ * Drawn here rather than baked into the artwork for two reasons: the supplied
+ * head has no base of its own, and a picture the owner swaps in later still
+ * gets one. Anchored to the bottom of the figure box and slightly wider than
+ * the head, so it reads as a platform rather than as a halo.
+ */
+export function Plinth() {
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 100 22"
+      preserveAspectRatio="none"
+      className="pointer-events-none -mt-[7%] block h-[26px] w-full"
+    >
+      <ellipse cx="50" cy="11" rx="44" ry="9" fill="none" stroke="var(--color-accent)" strokeWidth="0.5" strokeOpacity="0.45" />
+      <ellipse cx="50" cy="11" rx="31" ry="6.3" fill="none" stroke="var(--color-accent)" strokeWidth="0.4" strokeOpacity="0.26" />
+      <ellipse cx="50" cy="11" rx="17" ry="3.4" fill="none" stroke="var(--color-accent)" strokeWidth="0.35" strokeOpacity="0.15" />
+    </svg>
+  );
+}
+
+/**
  * A photo inside a progress ring.
  *
  * `value` is 0–10 and drives how far the arc travels, so the ring is a
@@ -63,7 +86,11 @@ export function ScoreAvatar({
           <img src={src} alt="" className="h-full w-full object-cover" />
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src="/hero-mesh.svg" alt="" className="h-full w-full scale-[1.35] object-contain opacity-70" />
+          <img
+            src="/strengths-mesh.webp"
+            alt=""
+            className="h-full w-full scale-[1.3] object-contain opacity-60"
+          />
         )}
       </div>
     </div>

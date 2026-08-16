@@ -6,10 +6,11 @@
 // mean the page has to cope with any image in any shape, which is how a
 // landing page ends up looking different every time someone touches it.
 //
-// EVERY SLOT SHIPS WITH A DEFAULT. public/hero-mesh.svg and the tip chart are
-// generated assets committed to the repo, so a fresh deployment with nothing
-// configured renders the design as drawn. The admin overrides are exactly
-// that — overrides.
+// EVERY SLOT SHIPS WITH A DEFAULT, committed to public/, so a fresh
+// deployment with nothing configured renders the design as drawn. The admin
+// overrides are exactly that — overrides. scripts/test-home.mts checks that
+// each default is a file that actually exists: a fallback pointing at nothing
+// is a broken image on the landing page and nothing else would catch it.
 //
 // STORED IN THE SHEETS KV, so a change survives a deploy and the owner can
 // see the current value in the spreadsheet. Two URLs is not worth a tab of
@@ -33,8 +34,12 @@ export const SLOT_SPECS: Record<ImageSlot, SlotSpec> = {
   hero: {
     label: "Hero-Grafik",
     hint: "Die Drahtgitter-Grafik rechts im obersten Block. Transparenter Hintergrund, hochkant, grün auf Dunkel.",
-    fallback: "/hero-mesh.svg",
-    aspect: "3 / 4",
+    // The supplied artwork, the same one the strengths panel on the report
+    // uses. It replaced a generated point cloud: a real triangulated head
+    // reads as a scan, and a procedural silhouette only ever approximates
+    // one. Shared between the two places on purpose — one picture, one look.
+    fallback: "/strengths-mesh.webp",
+    aspect: "340 / 435",
   },
   tip: {
     label: "Tipp-Grafik",
