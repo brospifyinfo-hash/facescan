@@ -139,7 +139,7 @@ export function PotentialGauge({
 /** The circular star badge on the tip card, with its partial ring. */
 export function TipBadge() {
   return (
-    <div aria-hidden className="relative h-[68px] w-[68px] shrink-0">
+    <div aria-hidden className="relative h-[68px] w-[68px] shrink-0 sm:h-[84px] sm:w-[84px]">
       <svg viewBox="0 0 100 100" className="absolute inset-0 -rotate-90">
         <circle cx="50" cy="50" r="45" fill="none" stroke="var(--color-hairline)" strokeWidth="3" />
         <circle
@@ -161,7 +161,7 @@ export function TipBadge() {
         strokeWidth="1.6"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="absolute inset-0 m-auto h-7 w-7"
+        className="absolute inset-0 m-auto h-7 w-7 sm:h-9 sm:w-9"
       >
         <path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z" />
       </svg>

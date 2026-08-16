@@ -33,7 +33,7 @@ export function HomeTabBar() {
       aria-label={t.home.tabsLabel}
       className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--color-hairline)] bg-[var(--color-surface)]/95 backdrop-blur-xl"
     >
-      <ul className="mx-auto flex w-full max-w-md items-stretch justify-between px-2 pb-[max(env(safe-area-inset-bottom),8px)] pt-2.5">
+      <ul className="mx-auto flex w-full max-w-md items-stretch justify-between px-2 pb-[max(env(safe-area-inset-bottom),10px)] pt-3 sm:max-w-2xl">
         {items.map((item) => {
           const active = pathname === item.href;
           return (
@@ -44,13 +44,13 @@ export function HomeTabBar() {
                 className="flex flex-col items-center gap-1 rounded-[var(--r-control)] py-1.5"
               >
                 <item.icon
-                  className={`h-[18px] w-[18px] ${
+                  className={`h-5 w-5 sm:h-[22px] sm:w-[22px] ${
                     active ? "text-[var(--color-accent)]" : "text-[var(--color-ink-tertiary)]"
                   }`}
                   aria-hidden
                 />
                 <span
-                  className={`text-[9.5px] font-medium ${
+                  className={`text-[11px] font-medium sm:text-[12px] ${
                     active ? "text-[var(--color-accent)]" : "text-[var(--color-ink-tertiary)]"
                   }`}
                 >

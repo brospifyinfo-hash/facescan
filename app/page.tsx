@@ -138,13 +138,13 @@ export default function LandingPage() {
   } as const;
 
   return (
-    <main className="flex min-h-dvh flex-col pb-[76px]">
+    <main className="flex min-h-dvh flex-col pb-[88px]">
       {/* ---------------- App home ----------------
           The reference screen: header, hero, statistics, last scan, quick
           links, tip. A phone column even on a desktop, because that is what
           it was designed as — stretching it to 1200px turns four stat tiles
           into a dashboard nobody drew. */}
-      <div className="mx-auto w-full max-w-md px-4 pt-3">
+      <div className="mx-auto w-full max-w-md px-4 pt-4 sm:max-w-2xl sm:px-6 sm:pt-7">
         <AppHome />
       </div>
 
