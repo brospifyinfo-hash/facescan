@@ -1,6 +1,7 @@
 import { isAdmin, adminConfigured } from "@/lib/admin";
 import { AdminLogin } from "@/components/admin/AdminLogin";
 import { ProductAdmin } from "@/components/admin/ProductAdmin";
+import { SiteImageAdmin } from "@/components/admin/SiteImageAdmin";
 
 // A SERVER component, so the gate runs before anything is sent. Rendering the
 // editor client-side behind a flag would ship the whole form to anyone who
@@ -26,5 +27,14 @@ export default async function AdminProductsPage() {
 
   if (!(await isAdmin())) return <AdminLogin />;
 
-  return <ProductAdmin />;
+  return (
+    <>
+      <ProductAdmin />
+      {/* Same page, same gate. A second admin URL would be a second thing to
+          remember and a second thing to protect. */}
+      <div className="mx-auto w-full max-w-3xl px-4 pb-24">
+        <SiteImageAdmin />
+      </div>
+    </>
+  );
 }

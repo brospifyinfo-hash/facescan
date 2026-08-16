@@ -50,6 +50,48 @@ export interface Dict {
     imprint: string;
     privacyLink: string;
   };
+  /** The app home screen at `/`. */
+  home: {
+    confidential: string;
+    badge: string;
+    /** Split so the last word can carry the accent colour. */
+    headline: string;
+    headlineAccent: string;
+    sub: string;
+    /** Exactly three, index-aligned with the icons in AppHome. */
+    chips: [string, string, string];
+    cta: string;
+    stats: {
+      /** Suffix after the scan count, e.g. "Scans". */
+      scansUnit: string;
+      scansLabel: string;
+      avgLabel: string;
+      deltaLabel: string;
+      potentialLabel: string;
+    };
+    lastScan: string;
+    allScans: string;
+    totalScore: string;
+    details: string;
+    potentialScore: string;
+    potentialCaption: string;
+    /** Shown in place of the last-scan card when nothing has been scanned. */
+    emptyTitle: string;
+    emptyBody: string;
+    /** Exactly four, index-aligned with the icons in AppHome. */
+    tiles: [
+      { title: string; sub: string },
+      { title: string; sub: string },
+      { title: string; sub: string },
+      { title: string; sub: string },
+    ];
+    tipEyebrow: string;
+    tipTitle: string;
+    tipBody: string;
+    tipCta: string;
+    tabsLabel: string;
+    tabs: Record<"home" | "scan" | "analysis" | "profile", string>;
+  };
   quiz: {
     progress: string; // "Question {n} of {total}"
     back: string;
@@ -393,6 +435,16 @@ export interface Dict {
     tagsHint: string;
     fieldActive: string;
     activeHint: string;
+    /** The home-page artwork slots. */
+    images: {
+      title: string;
+      body: string;
+      reset: string;
+      usingDefault: string;
+      saved: string;
+      loadFailed: string;
+      saveFailed: string;
+    };
   };
   session: { notice: string };
   status: Record<"in" | "below" | "above", string>;

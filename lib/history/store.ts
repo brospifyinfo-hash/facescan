@@ -40,6 +40,16 @@ export interface HistoryEntry {
   midfaceScore: number;
   /** Which engine produced it — the two are on different scales. */
   source: "geometry" | "vision";
+  /**
+   * The derived potential, 0–10, when it could be computed.
+   *
+   * OPTIONAL ON PURPOSE. It arrived after the scans tab already existed, so a
+   * spreadsheet whose Apps Script predates the column simply drops it and
+   * every older row has none. The home page shows the stat only when there is
+   * something to show, which is the same rule the rest of this product
+   * follows: an unknown number is left out rather than guessed at.
+   */
+  potential?: number | null;
 }
 
 export type HistoryInput = Omit<HistoryEntry, "id" | "at">;

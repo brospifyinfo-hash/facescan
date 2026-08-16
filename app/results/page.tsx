@@ -111,6 +111,12 @@ export default function ResultsPage() {
         proportionsScore: metrics.proportionsScore,
         midfaceScore: metrics.midfaceScore,
         source: metrics.scoreSource ?? "geometry",
+        // Derived here because it needs the full measurement set, which the
+        // stored row does not carry — see potentialFor(). Computed inline
+        // rather than read from the render body: that binding is declared
+        // further down, and depending on it would make this effect break the
+        // day someone reorders the file.
+        potential: potentialFor(metrics)?.score ?? null,
       }),
       // A failed save must not interrupt the report the customer just paid
       // for. It is recoverable — the next scan writes again.

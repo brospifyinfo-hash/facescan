@@ -67,6 +67,12 @@ export async function POST(request: Request) {
     proportionsScore: num(body.proportionsScore, 100),
     midfaceScore: num(body.midfaceScore, 100),
     source: body.source === "vision" ? "vision" : "geometry",
+    // Same clamp as the rest: it arrives from the client because that is
+    // where the analyser runs.
+    potential:
+      typeof body.potential === "number" && Number.isFinite(body.potential)
+        ? Math.min(10, Math.max(0, body.potential))
+        : null,
   };
 
   const scan = await history.add(session.email, entry);

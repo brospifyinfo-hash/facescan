@@ -142,6 +142,10 @@ var SCANS = "scans";
 var SCAN_COLUMNS = [
   "id", "email", "at", "overall", "band",
   "symmetry", "eyesScore", "jawScore", "proportionsScore", "midfaceScore", "source",
+  // Appended, never inserted: the existing rows keep their column order and a
+  // sheet written by the previous version of this script simply has the last
+  // cell empty.
+  "potential",
 ];
 
 function scanSheet_() {
@@ -174,6 +178,7 @@ function scansFor_(email) {
       jawScore: Number(o.jawScore) || 0, proportionsScore: Number(o.proportionsScore) || 0,
       midfaceScore: Number(o.midfaceScore) || 0,
       source: String(o.source) === "vision" ? "vision" : "geometry",
+      potential: o.potential === "" || o.potential == null ? null : Number(o.potential),
     });
   }
   return out;
@@ -183,6 +188,7 @@ function addScan_(email, e) {
   scanSheet_().appendRow([
     e.id, email, e.at, e.overall, e.band,
     e.symmetry, e.eyesScore, e.jawScore, e.proportionsScore, e.midfaceScore, e.source,
+    e.potential == null ? "" : e.potential,
   ]);
 }
 

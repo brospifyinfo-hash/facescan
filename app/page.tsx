@@ -25,6 +25,8 @@ import { METRIC_ORDER, SPECS } from "@/lib/specs";
 import { useI18n, useT } from "@/lib/i18n";
 import { visionPrivacy } from "@/lib/i18n/privacy";
 import { useFunnel } from "@/lib/store";
+import { AppHome } from "@/components/home/AppHome";
+import { HomeTabBar } from "@/components/home/HomeTabBar";
 
 /**
  * Positions of the two photo-related items in the dictionaries.
@@ -136,30 +138,15 @@ export default function LandingPage() {
   } as const;
 
   return (
-    <main className="flex min-h-dvh flex-col">
-      {/* ---------------- Nav ---------------- */}
-      <header className="sticky top-0 z-40 border-b border-white/[0.07] bg-[var(--color-canvas)]/80 backdrop-blur-xl">
-        <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-5 py-3.5 sm:px-8">
-          <DevUnlock>
-            <span className="flex items-center gap-2.5">
-              <ScanFace className="h-[18px] w-[18px] text-accent" />
-              <span className="text-[13px] font-semibold tracking-[0.16em]">
-                FACESCAN
-              </span>
-            </span>
-          </DevUnlock>
-          <div className="flex items-center gap-4">
-            <a
-              href="#method"
-              className="hidden text-[13px] text-[var(--color-ink-secondary)] transition-colors hover:text-[var(--color-ink)] sm:block"
-            >
-              {t.nav.howItWorks}
-            </a>
-            <AccountLink />
-            <LanguageSwitcher />
-          </div>
-        </div>
-      </header>
+    <main className="flex min-h-dvh flex-col pb-[76px]">
+      {/* ---------------- App home ----------------
+          The reference screen: header, hero, statistics, last scan, quick
+          links, tip. A phone column even on a desktop, because that is what
+          it was designed as — stretching it to 1200px turns four stat tiles
+          into a dashboard nobody drew. */}
+      <div className="mx-auto w-full max-w-md px-4 pt-3">
+        <AppHome />
+      </div>
 
       {expiredNotice ? (
         <div className="mx-auto mt-4 w-full max-w-4xl px-5 sm:px-8">
@@ -172,62 +159,11 @@ export default function LandingPage() {
         </div>
       ) : null}
 
-      <div className="mx-auto w-full max-w-4xl px-5 sm:px-8">
-        {/* ---------------- Hero ---------------- */}
-        <section className="grid items-center gap-12 py-14 sm:py-20 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <div className="flex items-center gap-2.5 font-mono-terminal t-eyebrow text-[var(--color-ink-tertiary)]">
-              <span className="h-px w-6 bg-accent" />
-              {t.landing.badge}
-            </div>
-
-            {/* The accent on half the headline was the largest tinted area
-                on the page, competing with the one control that needed to be
-                found. Emphasis now comes from weight and ink level, which is
-                what the type scale is for. */}
-            <h1 className="t-display mt-6">
-              {t.landing.headline}{" "}
-              <span className="text-[var(--color-ink-secondary)]">
-                {t.landing.headlineAccent}
-              </span>
-            </h1>
-
-            <p className="t-body mt-6 max-w-md text-[var(--color-ink-secondary)]">
-              {t.landing.sub}
-            </p>
-
-            <div className="mt-9 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-              <Link href="/quiz" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full sm:w-auto">
-                  {t.landing.cta} <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-              <p className="text-[12px] leading-snug text-[var(--color-ink-tertiary)]">
-                {t.landing.ctaNote}
-              </p>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-            className="relative mx-auto w-full max-w-[340px]"
-          >
-            <div className="rounded-2xl border border-white/[0.09] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),transparent)] p-3">
-              <HeroMesh className="aspect-square w-full" />
-              <div className="flex items-center justify-between border-t border-white/[0.07] px-1 pt-2.5 font-mono-terminal t-eyebrow text-[var(--color-ink-tertiary)]">
-                <span>MediaPipe FaceLandmarker</span>
-                <span className="tabular-nums text-accent">478</span>
-              </div>
-            </div>
-          </motion.div>
-        </section>
-
+      {/* ---------------- The sales page, kept ----------------
+          Everything below is what explains and prices the product. The brief
+          was to rebuild the home screen, not to delete the page that sells
+          it, so it now lives under the app view and the anchors still work. */}
+      <div className="mx-auto w-full max-w-4xl px-5 pt-16 sm:px-8">
         {/* ---------------- Trust ---------------- */}
         <section className="grid gap-px overflow-hidden rounded-2xl border border-white/[0.09] bg-white/[0.06] sm:grid-cols-3">
           {t.landing.trust.map((item, i) => {
@@ -421,6 +357,7 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+      <HomeTabBar />
     </main>
   );
 }

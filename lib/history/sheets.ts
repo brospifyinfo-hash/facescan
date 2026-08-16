@@ -67,6 +67,7 @@ function revive(raw: unknown): HistoryEntry | null {
     proportionsScore: num(e.proportionsScore),
     midfaceScore: num(e.midfaceScore),
     source: e.source === "vision" ? "vision" : "geometry",
+    potential: typeof e.potential === "number" && Number.isFinite(e.potential) ? e.potential : null,
   };
 }
 
