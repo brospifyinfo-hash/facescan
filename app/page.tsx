@@ -10,7 +10,6 @@ import {
   Lock,
   Minus,
   Plus,
-  ScanFace,
   ShieldCheck,
   X,
 } from "lucide-react";
@@ -26,6 +25,7 @@ import { useI18n, useT } from "@/lib/i18n";
 import { visionPrivacy } from "@/lib/i18n/privacy";
 import { useFunnel } from "@/lib/store";
 import { AppHome } from "@/components/home/AppHome";
+import { Logo } from "@/components/ui/Logo";
 import { HomeTabBar } from "@/components/home/HomeTabBar";
 
 /**
@@ -336,12 +336,7 @@ export default function LandingPage() {
       {/* ---------------- Footer ---------------- */}
       <footer className="border-t border-white/[0.07] py-9">
         <div className="mx-auto flex w-full max-w-4xl flex-col gap-5 px-5 sm:px-8">
-          <div className="flex items-center gap-2.5">
-            <ScanFace className="h-3.5 w-3.5 text-accent" />
-            <span className="t-caption font-semibold tracking-[0.16em] text-[var(--color-ink-tertiary)]">
-              FACESCAN
-            </span>
-          </div>
+          <Logo height={22} className="opacity-70" />
           <p className="max-w-2xl text-[11px] leading-relaxed text-[var(--color-ink-tertiary)]">
             {t.landing.disclaimer}
           </p>

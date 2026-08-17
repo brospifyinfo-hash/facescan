@@ -1,8 +1,8 @@
 "use client";
 
 import { Lock } from "lucide-react";
+import { Logo } from "@/components/ui/Logo";
 import { DevUnlock } from "@/components/ui/DevUnlock";
-import { IconScanMark } from "./icons";
 import { AccountLink } from "@/components/ui/AccountLink";
 import { useT } from "@/lib/i18n";
 
@@ -25,11 +25,8 @@ export function ReportHeader({ demo }: { demo?: boolean }) {
   return (
     <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
       <DevUnlock>
-        <span className="flex items-center gap-2.5">
-          <IconScanMark className="h-7 w-7 shrink-0 text-[var(--color-ink)]" />
-          <span className="text-[13px] font-semibold tracking-[0.16em] text-[var(--color-ink)]">
-            FACE SCANNER <span className="text-[var(--color-accent)]">AI</span>
-          </span>
+        <span className="flex items-center">
+          <Logo height={28} />
         </span>
       </DevUnlock>
 

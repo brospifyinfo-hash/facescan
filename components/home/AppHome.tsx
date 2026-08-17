@@ -25,6 +25,7 @@ import type { Product } from "@/lib/products/types";
 import { DEMO_SUMMARY, fmtDelta, fmtScore, summarise, type ScanRecord } from "@/lib/home/summary";
 import { SLOT_SPECS } from "@/lib/site-images";
 import { DevUnlock } from "@/components/ui/DevUnlock";
+import { Logo } from "@/components/ui/Logo";
 import { bandFor } from "@/lib/tiers";
 import { useI18n, useT } from "@/lib/i18n";
 import { useFunnel } from "@/lib/store";
@@ -150,11 +151,8 @@ export function AppHome() {
             the header this replaced — invisible, and the only way to review
             the paid report as a customer sees it. */}
         <DevUnlock>
-          <span className="flex items-center gap-2.5">
-            <FaceMark />
-            <span className="text-[17px] font-bold uppercase tracking-[0.06em] text-[var(--color-ink)] sm:text-[20px]">
-              Face Scanner <span className="text-[var(--color-accent)]">AI</span>
-            </span>
+          <span className="flex items-center">
+            <Logo height={34} className="sm:!h-[42px]" />
           </span>
         </DevUnlock>
         <span className="flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--color-hairline)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.09em] text-[var(--color-ink-secondary)] sm:text-[12.5px]">
@@ -412,26 +410,5 @@ function PreviewTag({ label }: { label: string }) {
     <span className="absolute right-3 top-2.5 rounded-full border border-[var(--color-hairline)] bg-[var(--color-surface-raised)] px-2 py-0.5 text-[9.5px] font-medium text-[var(--color-ink-tertiary)] sm:text-[11px]">
       {label}
     </span>
-  );
-}
-
-/** The logo mark: a face in a bracketed square, drawn to match the wordmark. */
-function FaceMark() {
-  return (
-    <svg
-      viewBox="0 0 32 32"
-      fill="none"
-      stroke="var(--color-accent)"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="h-9 w-9 shrink-0 sm:h-11 sm:w-11"
-      aria-hidden
-    >
-      <path d="M3 10V6a3 3 0 0 1 3-3h4M22 3h4a3 3 0 0 1 3 3v4M29 22v4a3 3 0 0 1-3 3h-4M10 29H6a3 3 0 0 1-3-3v-4" />
-      <circle cx="12.5" cy="14" r="1.4" fill="var(--color-accent)" stroke="none" />
-      <circle cx="20" cy="14" r="1.4" fill="var(--color-accent)" stroke="none" />
-      <path d="M12 20.5c1.2 1.2 2.6 1.8 4.2 1.8s3-.6 4.2-1.8" />
-    </svg>
   );
 }

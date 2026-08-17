@@ -180,6 +180,15 @@ for (const [code, dict] of Object.entries({ de, en, es, fr })) {
 }
 
 // ---------------------------------------------------------------------------
+console.log("\nBrand mark");
+
+// The logo is referenced from three components. A missing file is a broken
+// image in every header at once, and nothing else here would catch it.
+for (const asset of ["logo-malook.webp", "logo-malook-mark.webp"]) {
+  ok(`public/${asset} exists`, existsSync(join("public", asset)));
+}
+
+// ---------------------------------------------------------------------------
 console.log("\nProduct cards — purpose and benefit");
 
 // The card copy is DERIVED from the tags, so the vocabulary and the copy have
