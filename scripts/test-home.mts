@@ -18,7 +18,7 @@
 //    javascript: URL — and the same field will one day be filled by an
 //    upload endpoint rather than a human.
 
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { DEMO_SUMMARY, fmtDelta, fmtScore, summarise } from "../lib/home/summary";
 import { cleanImageUrl, cleanSiteImages, resolveSlot, SLOT_SPECS, IMAGE_SLOTS } from "../lib/site-images";
@@ -184,7 +184,13 @@ console.log("\nBrand mark");
 
 // The logo is referenced from three components. A missing file is a broken
 // image in every header at once, and nothing else here would catch it.
-for (const asset of ["logo-malook.webp", "logo-malook-mark.webp"]) {
+// Read out of the component rather than repeated here: the filenames carry
+// a content hash, so a copy in this file would go stale the moment the art
+// changes and would then assert that the OLD asset exists.
+const logoSource = readFileSync(join("components", "ui", "Logo.tsx"), "utf8");
+const referenced = [...logoSource.matchAll(/"\/(logo-malook[^"]*\.webp)"/g)].map((m) => m[1]);
+ok("the component references both files", referenced.length === 2, referenced.join(", "));
+for (const asset of referenced) {
   ok(`public/${asset} exists`, existsSync(join("public", asset)));
 }
 

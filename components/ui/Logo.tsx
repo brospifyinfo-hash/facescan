@@ -14,10 +14,23 @@
 // The wordmark is white and the accent is the green, so it only works on a
 // dark ground. That is the only ground this app has.
 
-// Both taken from the exported files. They are here so the width attribute
-// reserves the right box before the image loads — a wrong ratio shows up as
-// the header shifting sideways on first paint, which is exactly the kind of
-// thing nobody traces back to a constant.
+// THE FILENAMES CARRY A CONTENT HASH, and that is not decoration.
+//
+// The art was replaced once under the SAME filename and the change did not
+// reach a browser that had already loaded the old one — files in public/ are
+// served verbatim, Next.js does not fingerprint them, and an unchanged URL is
+// an unchanged asset as far as every cache between here and the reader is
+// concerned. A new hash is a new URL, which no cache can get wrong.
+//
+// Changing the artwork therefore means changing these two strings.
+// scripts/test-home.mts checks both files exist, so forgetting fails loudly
+// instead of shipping a 404 where the brand should be.
+const LOCKUP = "/logo-malook.d9990463.webp";
+const MARK = "/logo-malook-mark.9eb10e14.webp";
+
+// Taken from the exported files. They size the width attribute, so a stale
+// one shows up as the header shifting sideways on first paint — exactly the
+// kind of thing nobody traces back to a constant.
 const RATIO_LOCKUP = 640 / 153;
 const RATIO_MARK = 177 / 256;
 
@@ -32,7 +45,7 @@ export function Logo({
   mark?: boolean;
   className?: string;
 }) {
-  const src = mark ? "/logo-malook-mark.webp" : "/logo-malook.webp";
+  const src = mark ? MARK : LOCKUP;
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
