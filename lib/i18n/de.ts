@@ -460,6 +460,9 @@ export const de: Dict = {
     choosePlan: "Wähle deinen Plan",
     continueToPayment: "Weiter zur Zahlung",
     popular: "Am vollständigsten",
+    stepPlan: "Paket",
+    stepPay: "Bezahlen",
+    instant: "Sofort freigeschaltet",
     product: "Vollständige biometrische Analyse",
     once: "einmalig · kein Abo",
     features: [
@@ -538,6 +541,7 @@ export const de: Dict = {
     expressOr: "oder mit Karte bezahlen",
     securedBy: "Zahlungsabwicklung über Stripe. Kartendaten erreichen unsere Server nie.",
     unconfigured: "Die Zahlungsabwicklung ist noch nicht eingerichtet.",
+    checkAgain: "Erneut prüfen",
     errors: {
       declined: "Deine Bank hat die Zahlung abgelehnt. Versuch eine andere Karte oder frag bei deiner Bank nach.",
       insufficientFunds: "Die Karte hat nicht genug Deckung. Bitte eine andere Zahlungsart wählen.",

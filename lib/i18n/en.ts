@@ -452,6 +452,9 @@ export const en: Dict = {
     choosePlan: "Choose your plan",
     continueToPayment: "Continue to payment",
     popular: "Most complete",
+    stepPlan: "Plan",
+    stepPay: "Payment",
+    instant: "Unlocked instantly",
     product: "Full Biometric Analysis",
     once: "once · no subscription",
     features: [
@@ -530,6 +533,7 @@ export const en: Dict = {
     expressOr: "or pay by card",
     securedBy: "Payments handled by Stripe. Card details never touch our servers.",
     unconfigured: "Payments aren't configured yet.",
+    checkAgain: "Check again",
     errors: {
       declined: "Your bank declined the payment. Try another card or check with them.",
       insufficientFunds: "That card has insufficient funds. Please use another method.",

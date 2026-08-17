@@ -453,6 +453,9 @@ export const es: Dict = {
     choosePlan: "Elige tu plan",
     continueToPayment: "Continuar al pago",
     popular: "Más completo",
+    stepPlan: "Plan",
+    stepPay: "Pago",
+    instant: "Acceso inmediato",
     product: "Análisis biométrico completo",
     once: "pago único · sin suscripción",
     features: [
@@ -531,6 +534,7 @@ export const es: Dict = {
     expressOr: "o paga con tarjeta",
     securedBy: "Pagos gestionados por Stripe. Los datos de tarjeta nunca tocan nuestros servidores.",
     unconfigured: "Los pagos aún no están configurados.",
+    checkAgain: "Comprobar de nuevo",
     errors: {
       declined: "Tu banco ha rechazado el pago. Prueba otra tarjeta o consúltalo con ellos.",
       insufficientFunds: "Esa tarjeta no tiene fondos suficientes. Usa otro método.",

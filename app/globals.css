@@ -836,3 +836,37 @@ body {
     background-image: none;
   }
 }
+
+/* The travelling arc on the brand loader. A dash that grows, slides and
+   shrinks reads as progress; a rotating ring reads as a stuck spinner once
+   the wait passes a couple of seconds. Neither claims a percentage. */
+.brand-arc {
+  stroke-dasharray: 20 263;
+  animation: brand-arc 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  transform-origin: 50% 50%;
+}
+
+@keyframes brand-arc {
+  0% {
+    stroke-dasharray: 14 269;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 130 153;
+    stroke-dashoffset: -60;
+  }
+  100% {
+    stroke-dasharray: 14 269;
+    stroke-dashoffset: -283;
+  }
+}
+
+/* "Reduced Motion decreases lensing and elastic effects." A static arc plus
+   the label still says "waiting" — the label was always the part carrying
+   the meaning. */
+@media (prefers-reduced-motion: reduce) {
+  .brand-arc {
+    animation: none;
+    stroke-dasharray: 90 193;
+  }
+}

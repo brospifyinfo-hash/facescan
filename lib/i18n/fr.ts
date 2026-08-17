@@ -453,6 +453,9 @@ export const fr: Dict = {
     choosePlan: "Choisissez votre formule",
     continueToPayment: "Continuer vers le paiement",
     popular: "Le plus complet",
+    stepPlan: "Offre",
+    stepPay: "Paiement",
+    instant: "Débloqué aussitôt",
     product: "Analyse biométrique complète",
     once: "une fois · sans abonnement",
     features: [
@@ -531,6 +534,7 @@ export const fr: Dict = {
     expressOr: "ou payer par carte",
     securedBy: "Paiements gérés par Stripe. Les données de carte ne touchent jamais nos serveurs.",
     unconfigured: "Les paiements ne sont pas encore configurés.",
+    checkAgain: "Vérifier à nouveau",
     errors: {
       declined: "Votre banque a refusé le paiement. Essayez une autre carte ou contactez-la.",
       insufficientFunds: "Provision insuffisante sur cette carte. Utilisez un autre moyen.",

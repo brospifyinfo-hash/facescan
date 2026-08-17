@@ -307,6 +307,11 @@ export interface Dict {
     choosePlan: string;
     continueToPayment: string;
     popular: string;
+    /** The two-step rail at the top of the sheet. */
+    stepPlan: string;
+    stepPay: string;
+    /** Reassurance row under the plans. */
+    instant: string;
     product: string;
     once: string;
     features: string[];
@@ -376,6 +381,8 @@ export interface Dict {
     expressOr: string;
     securedBy: string;
     unconfigured: string;
+    /** Re-poll after a charge whose confirmation is late. Never pays again. */
+    checkAgain: string;
     errors: {
       declined: string;
       insufficientFunds: string;

@@ -69,6 +69,22 @@ export function PaymentForm({
   const [phase, setPhase] = useState<"idle" | "paying" | "confirming" | "done">("idle");
   const [error, setError] = useState<string | null>(null);
 
+  /**
+   * The card has been charged. LATCHES — nothing sets it back to false.
+   *
+   * This is the guard against the worst bug this form can have. The
+   * entitlement poll below gives up after about fourteen seconds, and it used
+   * to reset phase to "idle" and busy to false when it did. The pay button is
+   * disabled on exactly those two, so a customer whose webhook happened to be
+   * slow got a live pay button back on a payment that had already gone
+   * through — and pressing it charged them a second time.
+   *
+   * Stripe has the money the moment confirmPayment resolves without an error.
+   * From that instant the only honest states are "waiting for confirmation"
+   * and "done", and paying again must be impossible.
+   */
+  const [charged, setCharged] = useState(false);
+
   const consented = acceptedTerms && acceptedWithdrawal;
 
   /**
@@ -93,9 +109,13 @@ export function PaymentForm({
       await new Promise((r) => setTimeout(r, 700));
     }
     // Paid but not yet granted — say so honestly instead of failing silently.
+    //
+    // busy and phase deliberately STAY where they are. Resetting them was the
+    // double-charge bug: the pay button keys off both, so clearing them handed
+    // back a live pay button on a card that had already been charged. The way
+    // out of here is the "check again" control, which re-polls; there is no
+    // path that pays twice.
     setError(t.pay.errors.timeout);
-    setBusy(false);
-    setPhase("idle");
   }, [onPaid, t]);
 
   const confirm = async (viaExpress: boolean) => {
@@ -129,6 +149,9 @@ export function PaymentForm({
       return;
     }
     void viaExpress;
+    // Past this line the money has moved. Latch before polling, so even an
+    // exception inside waitForEntitlement cannot leave a payable button.
+    setCharged(true);
     await waitForEntitlement();
   };
 
@@ -286,20 +309,43 @@ export function PaymentForm({
       </div>
 
       {error ? (
-        <p
+        <div
           role="alert"
-          className="flex items-start gap-2 rounded-xl border border-red-500/25 bg-red-500/[0.07] p-3 text-[12px] leading-relaxed text-red-300"
+          className={cn(
+            "rounded-xl border p-3 text-[12px] leading-relaxed",
+            // Charged-but-unconfirmed is not a failure and must not be
+            // coloured like one: the money arrived, only the confirmation is
+            // late. Red here would tell a paying customer their payment
+            // failed, which is the opposite of what happened.
+            charged
+              ? "border-amber-500/25 bg-amber-500/[0.07] text-amber-200"
+              : "border-red-500/25 bg-red-500/[0.07] text-red-300",
+          )}
         >
-          <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-          {error}
-        </p>
+          <p className="flex items-start gap-2">
+            <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            {error}
+          </p>
+          {charged ? (
+            <button
+              type="button"
+              onClick={() => {
+                setError(null);
+                void waitForEntitlement();
+              }}
+              className="mt-2.5 rounded-full border border-amber-400/40 px-3 py-1.5 text-[11.5px] font-semibold text-amber-200 hover:bg-amber-400/10"
+            >
+              {t.pay.checkAgain}
+            </button>
+          ) : null}
+        </div>
       ) : null}
 
       {/* ---------- The legally mandated order button ---------- */}
       <button
         type="button"
         onClick={() => confirm(false)}
-        disabled={busy || !stripe || phase === "done"}
+        disabled={busy || charged || !stripe || phase === "done"}
         className={cn(
           "flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 text-[15px] font-semibold transition-all duration-200",
           "bg-accent text-[var(--color-accent-ink)] shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_8px_24px_-8px_rgba(95,227,138,0.55)]",

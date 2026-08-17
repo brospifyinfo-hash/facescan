@@ -64,7 +64,7 @@ export function Logo({
       // 6% narrower at 320px, which on a wordmark is visible and reads as a
       // cheap build. With object-contain the worst case is empty space beside
       // the mark instead of a stretched one.
-      className={`w-auto shrink-0 select-none object-contain object-left ${className}`}
+      className={`w-auto shrink-0 select-none object-contain ${className}`}
       draggable={false}
     />
   );
