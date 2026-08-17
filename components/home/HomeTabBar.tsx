@@ -31,7 +31,7 @@ export function HomeTabBar() {
   return (
     <nav
       aria-label={t.home.tabsLabel}
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--color-hairline)] bg-[var(--color-surface)]/95 backdrop-blur-xl"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.11] bg-[rgba(16,22,30,0.62)] backdrop-blur-[30px] backdrop-saturate-150"
     >
       <ul className="mx-auto flex w-full max-w-md items-stretch justify-between px-2 pb-[max(env(safe-area-inset-bottom),10px)] pt-3 sm:max-w-2xl">
         {items.map((item) => {

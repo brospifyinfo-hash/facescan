@@ -1,5 +1,6 @@
 import type { BandId, CategoryId, MetricId, PlanId, RowId } from "@/lib/metrics";
 import type { StyleFaceShape, UpkeepLevel } from "@/lib/style/types";
+import type { ProblemTag } from "@/lib/products/types";
 
 // Adding a language = write one dictionary file against the `Dict` type,
 // register it in ./index.ts, and add it here. Nothing else changes; the
@@ -91,6 +92,42 @@ export interface Dict {
     tipCta: string;
     /** Marks the example figures shown before the first scan. */
     preview: string;
+    /** The product rail, the routine strip and the upgrade banner. */
+    products: {
+      title: string;
+      sub: string;
+      seeAll: string;
+      categories: Record<"all" | "skin" | "face" | "hair" | "lifestyle", string>;
+      /** "What it is for" and "what gets better" — the two lines on a card. */
+      purposeLabel: string;
+      benefitLabel: string;
+      /** Real badges only: the strongest match, and genuinely recent. */
+      bestMatch: string;
+      isNew: string;
+      favourite: string;
+      emptyCategory: string;
+      /** Exactly four, index-aligned with the icons in ProductShowcase. */
+      trust: [
+        { title: string; text: string },
+        { title: string; text: string },
+        { title: string; text: string },
+        { title: string; text: string },
+      ];
+    };
+    routine: {
+      title: string;
+      sub: string;
+      cta: string;
+      /** Exactly five, index-aligned with the icons in RoutineStrip. */
+      steps: [
+        { phase: string; title: string; text: string },
+        { phase: string; title: string; text: string },
+        { phase: string; title: string; text: string },
+        { phase: string; title: string; text: string },
+        { phase: string; title: string; text: string },
+      ];
+    };
+    upgrade: { title: string; sub: string; cta: string };
     tabsLabel: string;
     tabs: Record<"home" | "scan" | "analysis" | "profile", string>;
   };
@@ -396,6 +433,14 @@ export interface Dict {
     cta: string;
     ctaGeneric: string;
     matchedFor: string;
+    /**
+     * What improves, one line per problem tag.
+     *
+     * Keyed by tag rather than written per product: the promise on a card
+     * then cannot drift away from the tag that decides where the card is
+     * shown. See lib/products/presentation.ts.
+     */
+    improves: Record<ProblemTag, string>;
     /** Advertising disclosure. Legally required, not decorative. */
     disclosure: string;
   };

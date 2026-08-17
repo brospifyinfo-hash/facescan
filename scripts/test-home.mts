@@ -22,6 +22,8 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { DEMO_SUMMARY, fmtDelta, fmtScore, summarise } from "../lib/home/summary";
 import { cleanImageUrl, cleanSiteImages, resolveSlot, SLOT_SPECS, IMAGE_SLOTS } from "../lib/site-images";
+import { categoryMatches, purposeAndBenefit, PRODUCT_CATEGORIES } from "../lib/products/presentation";
+import { PROBLEM_TAGS, PLAN_FOR_TAG, type ProblemTag } from "../lib/products/types";
 import { de } from "../lib/i18n/de";
 import { en } from "../lib/i18n/en";
 import { es } from "../lib/i18n/es";
@@ -176,6 +178,47 @@ for (const [code, dict] of Object.entries({ de, en, es, fr })) {
   ok(`${code}: no empty strings anywhere in the home copy`, !/:""/.test(flatCopy));
   ok(`${code}: admin image section is translated`, dict.admin.images.title.trim().length > 0);
 }
+
+// ---------------------------------------------------------------------------
+console.log("\nProduct cards — purpose and benefit");
+
+// The card copy is DERIVED from the tags, so the vocabulary and the copy have
+// to stay in step. A tag with no benefit line renders an empty second line on
+// every product carrying it, and nothing else in this suite would notice.
+for (const [code, dict] of Object.entries({ de, en, es, fr })) {
+  const gaps = PROBLEM_TAGS.filter((tag) => !dict.products.improves[tag]?.trim());
+  ok(`${code}: every problem tag says what improves`, gaps.length === 0, gaps.join(", "));
+  const stubs = PROBLEM_TAGS.filter((tag) => (dict.products.improves[tag] ?? "").length < 25);
+  ok(`${code}: none of those lines is a stub`, stubs.length === 0, stubs.join(", "));
+}
+
+// The purpose reuses the plan step label, so a card cannot promise something
+// the matching logic disagrees with.
+const derived = purposeAndBenefit(de, ["skin_routine"]);
+ok("purpose comes from the plan step", derived?.purpose === de.plan[PLAN_FOR_TAG.skin_routine].short);
+ok("benefit comes from the tag", derived?.benefit === de.products.improves.skin_routine);
+ok(
+  "the FIRST tag decides the copy",
+  purposeAndBenefit(de, ["hair", "sleep"])?.benefit === de.products.improves.hair,
+  "all of them would read as a list that says nothing",
+);
+ok("no tags means no derived copy", purposeAndBenefit(de, []) === null);
+
+// ---------------------------------------------------------------------------
+console.log("\nCategories");
+
+ok("the first category is the unfiltered one", PRODUCT_CATEGORIES[0].id === "all");
+ok("and it matches anything", categoryMatches("all", []) && categoryMatches("all", ["hair"]));
+ok("a category matches a product carrying one of its tags", categoryMatches("skin", ["skin_routine"]));
+ok("and rejects one that carries none", !categoryMatches("skin", ["hair"]));
+
+// A tag in no category is a product reachable only through the "for you"
+// filter — invisible the moment somebody taps any other one, and silent.
+const covered = new Set<ProblemTag>(
+  PRODUCT_CATEGORIES.flatMap((c) => (c.tags ? [...c.tags] : [])),
+);
+const orphans = PROBLEM_TAGS.filter((tag) => !covered.has(tag));
+ok("every problem tag belongs to a category", orphans.length === 0, orphans.join(", "));
 
 console.log(
   failed === 0

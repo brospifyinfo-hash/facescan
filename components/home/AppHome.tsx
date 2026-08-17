@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   BadgeCheck,
@@ -18,6 +18,10 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { CornerBrackets, Plinth, PotentialGauge, ScoreAvatar, TipBadge } from "./HomeArt";
+import { ProductShowcase } from "./ProductShowcase";
+import { RoutineStrip } from "./RoutineStrip";
+import { recommend } from "@/lib/products/match";
+import type { Product } from "@/lib/products/types";
 import { DEMO_SUMMARY, fmtDelta, fmtScore, summarise, type ScanRecord } from "@/lib/home/summary";
 import { SLOT_SPECS } from "@/lib/site-images";
 import { DevUnlock } from "@/components/ui/DevUnlock";
@@ -48,9 +52,10 @@ interface HistoryResponse {
 export function AppHome() {
   const t = useT();
   const { locale } = useI18n();
-  const { photos, metrics } = useFunnel();
+  const { photos, metrics, quiz } = useFunnel();
 
   const [scans, setScans] = useState<ScanRecord[]>([]);
+  const [catalogue, setCatalogue] = useState<Product[]>([]);
   const [art, setArt] = useState<Record<string, string>>({
     hero: SLOT_SPECS.hero.fallback,
     tip: SLOT_SPECS.tip.fallback,
@@ -65,6 +70,12 @@ export function AppHome() {
       .then((r) => (r.ok ? (r.json() as Promise<HistoryResponse>) : null))
       .then((d) => {
         if (live && d?.scans) setScans(d.scans);
+      })
+      .catch(() => {});
+    fetch("/api/products")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (live && Array.isArray(d?.products)) setCatalogue(d.products);
       })
       .catch(() => {});
     fetch("/api/site-images")
@@ -110,6 +121,20 @@ export function AppHome() {
     { icon: Target, value: fmtScore(summary.avgPotential), unit: t.results.outOf, label: t.home.stats.potentialLabel },
   ];
 
+  // RANKED IN THE BROWSER, exactly as on the report — the scan never leaves
+  // the device, so the server ships the catalogue and this ranks it. Without
+  // a scan there is nothing to rank against and the catalogue order stands;
+  // the heading says "personalised" only once there is something to
+  // personalise against.
+  const ranked = useMemo(() => {
+    if (!metrics || !quiz) return catalogue;
+    const r = recommend(catalogue, quiz, metrics);
+    const matched = [...r.top, ...r.others].map((s) => s.product);
+    // Products that matched nothing still belong in the rail, just last.
+    const seen = new Set(matched.map((m) => m.id));
+    return [...matched, ...catalogue.filter((c) => !seen.has(c.id))];
+  }, [catalogue, metrics, quiz]);
+
   const tiles = [
     { icon: History, href: "/konto", copy: t.home.tiles[0] },
     { icon: BarChart3, href: "/results", copy: t.home.tiles[1] },
@@ -139,7 +164,7 @@ export function AppHome() {
       </header>
 
       {/* ---- Hero ------------------------------------------------------ */}
-      <section className="relative overflow-hidden rounded-[var(--r-window)] border border-[var(--color-hairline)] bg-[var(--color-surface)] p-5 sm:p-8">
+      <section className="glass relative overflow-hidden rounded-[var(--r-window)] p-5 sm:p-8">
         {/* The soft light behind the figure. In CSS rather than baked into the
             artwork, so a swapped-in image gets the same glow. */}
         <div
@@ -213,7 +238,7 @@ export function AppHome() {
       {/* ---- Stats ----------------------------------------------------- */}
       {/* pt-7 rather than py-4: the example marker sits in the corner and
           would otherwise land on top of the fourth icon. */}
-      <section className="relative grid grid-cols-4 rounded-[var(--r-card)] border border-[var(--color-hairline)] bg-[var(--color-surface)] px-1.5 pb-5 pt-8 sm:px-3 sm:pb-7 sm:pt-9">
+      <section className="glass relative grid grid-cols-4 px-1.5 pb-5 pt-8 sm:px-3 sm:pb-7 sm:pt-9">
         {preview ? <PreviewTag label={t.home.preview} /> : null}
         {stats.map((s, i) => (
           <div
@@ -241,7 +266,7 @@ export function AppHome() {
       </section>
 
       {/* ---- Last scan -------------------------------------------------- */}
-      <section className="rounded-[var(--r-card)] border border-[var(--color-hairline)] bg-[var(--color-surface)] p-4 sm:p-6">
+      <section className="glass p-4 sm:p-6">
         <div className="flex items-center justify-between gap-3">
           <h2 className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--color-accent)] sm:text-[13.5px]">
             {t.home.lastScan}
@@ -322,7 +347,7 @@ export function AppHome() {
           <Link
             key={i}
             href={tile.href}
-            className="interactive flex flex-col rounded-[var(--r-control)] border border-[var(--color-hairline)] bg-[var(--color-surface)] p-3 sm:p-4"
+            className="glass interactive flex flex-col rounded-[var(--r-control)] p-3 sm:p-4"
           >
             <tile.icon className="h-5 w-5 text-[var(--color-accent)] sm:h-6 sm:w-6" aria-hidden />
             <span className="mt-2.5 text-[10.5px] font-bold uppercase tracking-[0.06em] text-[var(--color-ink)] sm:mt-3.5 sm:text-[12.5px]">
@@ -337,7 +362,7 @@ export function AppHome() {
       </nav>
 
       {/* ---- Tip of the day --------------------------------------------- */}
-      <section className="relative overflow-hidden rounded-[var(--r-card)] border border-[var(--color-hairline)] bg-[var(--color-surface)] p-4 sm:p-6">
+      <section className="glass relative overflow-hidden p-4 sm:p-6">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           aria-hidden
@@ -367,6 +392,10 @@ export function AppHome() {
           <ChevronRight className="h-3 w-3" aria-hidden />
         </Link>
       </section>
+
+      {/* ---- Products, routine, upgrade -------------------------------- */}
+      <ProductShowcase products={ranked} />
+      <RoutineStrip />
     </div>
   );
 }

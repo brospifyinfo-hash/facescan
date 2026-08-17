@@ -691,3 +691,148 @@ body {
     background: rgba(255, 255, 255, 0.16);
   }
 }
+
+/* ===========================================================================
+   ICE GLASS — the material for the whole app.
+   ===========================================================================
+
+   This layer deliberately overrides the "no blur, no heavy glassmorphism"
+   decision recorded above the .panel rule. That note is still RIGHT about the
+   risk — a backdrop blur under scrolling content is where 12px type goes to
+   die — so the risk is engineered around rather than ignored:
+
+     * the plate keeps ~60% opacity, so the blur softens what is behind it
+       instead of letting it through. Text sits on a near-solid ground and the
+       glass reads in the edges and the halo, which is where it reads on an
+       Apple widget anyway.
+     * the specular top edge and the hairline do most of the work. Glass is
+       recognised by its EDGES far more than by what shows through it.
+     * every transparency is dropped under prefers-contrast and
+       prefers-reduced-transparency, at the bottom of this file.
+
+   THE LIGHT HAS TO EXIST BEFORE THE GLASS CAN REFRACT IT. A backdrop-filter
+   over a flat near-black canvas produces exactly nothing — blurring one
+   colour gives that colour back. So the canvas carries four very low-alpha
+   colour fields, fixed to the viewport, and the panels blur those. Remove
+   them and the entire material collapses to a slightly transparent box.
+--------------------------------------------------------------------------- */
+
+body {
+  background-color: var(--color-canvas);
+  background-image:
+    radial-gradient(42vw 42vw at 10% 4%, rgba(95, 227, 138, 0.15), transparent 70%),
+    radial-gradient(50vw 50vw at 92% 18%, rgba(56, 152, 255, 0.10), transparent 72%),
+    radial-gradient(44vw 44vw at 74% 86%, rgba(95, 227, 138, 0.085), transparent 70%),
+    radial-gradient(38vw 38vw at 16% 68%, rgba(132, 104, 255, 0.075), transparent 70%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+/* The material itself. One rule for every card surface in the app, so the
+   look arrives everywhere at once rather than being pasted per component. */
+.panel,
+.surface,
+.surface-raised,
+.widget,
+.glass {
+  position: relative;
+  background: linear-gradient(
+    180deg,
+    rgba(30, 40, 52, 0.60) 0%,
+    rgba(13, 19, 27, 0.56) 100%
+  );
+  backdrop-filter: blur(30px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  box-shadow:
+    /* The lit top edge — the single strongest glass cue. */
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.16),
+    /* A faint return light along the bottom, as on a thick pane. */
+    inset 0 -1px 0 0 rgba(255, 255, 255, 0.035),
+    /* Contact, then ambient: the tile rests on something and lifts off it. */
+    0 2px 8px -5px rgba(0, 0, 0, 0.7),
+    0 24px 64px -28px rgba(0, 0, 0, 0.9);
+}
+
+.glass {
+  border-radius: var(--r-card);
+}
+
+/* A brighter pane for anything that has to stand in front of the rest. */
+.glass-strong {
+  background: linear-gradient(
+    180deg,
+    rgba(44, 56, 70, 0.68) 0%,
+    rgba(18, 26, 36, 0.64) 100%
+  );
+  backdrop-filter: blur(40px) saturate(185%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+/* The frost: a hairline of light that runs along the top of the pane and
+   fades out, the way a bevelled edge catches a room. Drawn as its own layer
+   so it survives whatever background a component sets. */
+.panel::after,
+.surface::after,
+.surface-raised::after,
+.widget::after,
+.glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.07) 0%,
+    rgba(255, 255, 255, 0) 38%
+  );
+}
+
+/* Nested blocks stay FILLS, never a second pane. Glass on glass reads as
+   fog: the second blur has only the first one's output to work with, so it
+   adds haze and no depth. This is the rule the original file already had and
+   it matters more now, not less. */
+.widget-inner,
+.fill {
+  backdrop-filter: none;
+}
+
+@supports (corner-shape: squircle) {
+  .glass,
+  .surface,
+  .surface-raised {
+    corner-shape: squircle;
+  }
+}
+
+/* Accessibility: both of these mean "stop making me look through things". */
+@media (prefers-contrast: more) {
+  .panel,
+  .surface,
+  .surface-raised,
+  .widget,
+  .glass,
+  .glass-strong {
+    background: #05080d;
+    backdrop-filter: none;
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+  body {
+    background-image: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .panel,
+  .surface,
+  .surface-raised,
+  .widget,
+  .glass,
+  .glass-strong {
+    background: var(--color-surface);
+    backdrop-filter: none;
+  }
+  body {
+    background-image: none;
+  }
+}
