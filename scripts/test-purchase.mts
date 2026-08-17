@@ -164,6 +164,46 @@ const noEmail = JSON.stringify({
 res = await post(noEmail, sign(noEmail));
 ok("an intent with no email is acknowledged, not crashed on", res.status === 200);
 
+// ---------------------------------------------------------------------------
+console.log("\nMehrere Signing Secrets");
+
+// A signing secret belongs to one endpoint, so anyone running test beside
+// live has two. With a single configured value the other endpoint's
+// deliveries all fail verification — indistinguishable from an attack in the
+// logs, and from silence to the customer.
+const SECOND = "whsec_a_second_endpoint";
+process.env.STRIPE_WEBHOOK_SECRET = `${SECRET},${SECOND}`;
+
+const viaFirst = event("evt_m1", "erst@example.com", "pro");
+res = await post(viaFirst, sign(viaFirst, SECRET));
+ok("an event signed with the FIRST secret is accepted", res.status === 200);
+ok("and grants", (await entitlements.get("erst@example.com"))?.plan === "pro");
+
+const viaSecond = event("evt_m2", "zweit@example.com", "blueprint");
+res = await post(viaSecond, sign(viaSecond, SECOND));
+ok(
+  "an event signed with the SECOND secret is accepted",
+  res.status === 200,
+  "returning early on the first mismatch would make this endpoint useless",
+);
+ok("and grants", (await entitlements.get("zweit@example.com"))?.plan === "blueprint");
+
+// The guarantee that matters: more secrets must not mean weaker checking.
+const stranger = event("evt_m3", "fremd@example.com", "blueprint");
+res = await post(stranger, sign(stranger, "whsec_neither_of_them"));
+ok("a third, unknown secret is still refused", res.status === 400);
+ok("and grants nothing", (await entitlements.get("fremd@example.com")) === null);
+
+// A trailing comma must not produce an empty secret that gets tried.
+process.env.STRIPE_WEBHOOK_SECRET = `${SECRET},`;
+const trailing = event("evt_m4", "komma@example.com", "raw");
+res = await post(trailing, sign(trailing, SECRET));
+ok("a trailing comma is ignored", res.status === 200);
+res = await post(trailing, "t=1,v1=deadbeef");
+ok("and does not open a hole", res.status === 400);
+
+process.env.STRIPE_WEBHOOK_SECRET = SECRET;
+
 console.log(
   failed === 0
     ? `\nALLE TESTS BESTANDEN — ${checks}/${checks} Prüfungen ok`

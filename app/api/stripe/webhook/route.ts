@@ -21,9 +21,32 @@ export const runtime = "nodejs";
  * Replays are expected: Stripe retries until it gets a 2xx, so the event id
  * is recorded and repeats are no-ops.
  */
+/**
+ * The signing secrets, comma-separated.
+ *
+ * ONE VARIABLE, POSSIBLY SEVERAL SECRETS. A signing secret belongs to exactly
+ * one endpoint, so anyone running more than one — test mode beside live, or a
+ * second URL during a migration — has more than one secret and only one place
+ * to put it. With a single value the other endpoint's deliveries all fail
+ * signature verification, which looks identical to an attack in the logs and
+ * identical to "nothing happened" to the customer.
+ *
+ * It is also how Stripe's own documented secret ROTATION works: add the new
+ * secret, wait for the old endpoint to drain, remove the old one.
+ *
+ * Empty entries are dropped so a trailing comma cannot produce a secret of ""
+ * — which would otherwise be handed to constructEvent as a real candidate.
+ */
+function signingSecrets(): string[] {
+  return (process.env.STRIPE_WEBHOOK_SECRET ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+}
+
 export async function POST(req: Request) {
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
-  if (!secret) {
+  const secrets = signingSecrets();
+  if (secrets.length === 0) {
     console.error("[stripe] STRIPE_WEBHOOK_SECRET is not set");
     return NextResponse.json({ error: "unconfigured" }, { status: 501 });
   }
@@ -36,12 +59,26 @@ export async function POST(req: Request) {
   // Must be the untouched bytes — parsing first invalidates the signature.
   const raw = await req.text();
 
-  let event: Stripe.Event;
-  try {
-    event = stripe().webhooks.constructEvent(raw, signature, secret);
-  } catch (err) {
+  // Try each secret and take the first that verifies. Every one has to fail
+  // before the request is refused — returning early on the first mismatch
+  // would make a second configured endpoint useless.
+  let event: Stripe.Event | null = null;
+  let lastError: unknown = null;
+  for (const secret of secrets) {
+    try {
+      event = stripe().webhooks.constructEvent(raw, signature, secret);
+      break;
+    } catch (err) {
+      lastError = err;
+    }
+  }
+
+  if (!event) {
     // A bad signature is either a misconfigured secret or a forgery attempt.
-    console.error("[stripe] signature verification failed:", err);
+    console.error(
+      `[stripe] signature verification failed against ${secrets.length} secret(s):`,
+      lastError,
+    );
     return NextResponse.json({ error: "invalid_signature" }, { status: 400 });
   }
 
