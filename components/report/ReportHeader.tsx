@@ -25,7 +25,7 @@ export function ReportHeader({ demo }: { demo?: boolean }) {
   return (
     <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
       <DevUnlock>
-        <span className="flex items-center">
+        <span className="flex shrink-0 items-center">
           <Logo height={28} />
         </span>
       </DevUnlock>

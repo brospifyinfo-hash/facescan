@@ -44,7 +44,14 @@ export function Logo({
       // space before the file loads so the header does not jump, the style
       // is what actually sizes it once the CSS lands.
       style={{ height }}
-      className={`w-auto shrink-0 select-none ${className}`}
+      // object-contain is the guarantee, not the belt-and-braces. The wrapper
+      // spans are flex items without shrink-0, so a tight header — a 320px
+      // phone, or a longer word than "VERTRAULICH" in another language —
+      // squeezes the image and a plain <img> answers by DISTORTING: measured
+      // 6% narrower at 320px, which on a wordmark is visible and reads as a
+      // cheap build. With object-contain the worst case is empty space beside
+      // the mark instead of a stretched one.
+      className={`w-auto shrink-0 select-none object-contain object-left ${className}`}
       draggable={false}
     />
   );

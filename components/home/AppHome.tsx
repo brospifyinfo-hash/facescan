@@ -151,7 +151,7 @@ export function AppHome() {
             the header this replaced — invisible, and the only way to review
             the paid report as a customer sees it. */}
         <DevUnlock>
-          <span className="flex items-center">
+          <span className="flex shrink-0 items-center">
             <Logo height={34} className="sm:!h-[42px]" />
           </span>
         </DevUnlock>
