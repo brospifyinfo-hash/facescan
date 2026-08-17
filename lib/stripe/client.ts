@@ -60,7 +60,15 @@ export const appearance: Appearance = {
       border: "1px solid rgba(255,255,255,0.10)",
       boxShadow: "none",
       padding: "12px 14px",
+      // EXPLICIT, not inherited. The card fields render inside Stripe own
+      // iframe, where none of this page CSS reaches and the only styling is
+      // this object. Relying on the theme to hand the right colour down left
+      // the typed digits invisible; naming the colour here cannot be
+      // overridden by a theme default.
+      color: "#fafafa",
+      fontSize: "16px",
     },
+    ".Input::placeholder": { color: "#6b7280" },
     ".Input:focus": {
       border: `1px solid ${alpha(BRAND.accent, 0.6)}`,
       boxShadow: `0 0 0 3px ${alpha(BRAND.accent, 0.12)}`,

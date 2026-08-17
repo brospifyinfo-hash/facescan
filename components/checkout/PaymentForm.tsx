@@ -85,6 +85,20 @@ export function PaymentForm({
    */
   const [charged, setCharged] = useState(false);
 
+  /**
+   * Whether any wallet is actually offered.
+   *
+   * ExpressCheckoutElement renders NOTHING when the browser has no wallet to
+   * show — Apple Pay outside Safari, Google Pay without a saved card, either
+   * of them before the domain is verified with Stripe. The element collapsing
+   * to zero height is correct; what was wrong is that the "or pay by card"
+   * divider under it stayed, so the payment step opened with an empty gap and
+   * a separator dividing nothing from everything.
+   *
+   * null = not decided yet, so nothing flashes on the way in.
+   */
+  const [hasWallets, setHasWallets] = useState<boolean | null>(null);
+
   const consented = acceptedTerms && acceptedWithdrawal;
 
   /**
@@ -240,9 +254,12 @@ export function PaymentForm({
       </section>
 
       {/* ---------- Express wallets ---------- */}
+      {/* Kept mounted even when empty: the element has to run to tell us
+          whether it has anything, so it is hidden rather than skipped. */}
       <div
         className={cn(
           "transition-opacity",
+          hasWallets === false && "hidden",
           consented ? "opacity-100" : "pointer-events-none opacity-40",
         )}
         onClickCapture={(e) => {
@@ -256,10 +273,15 @@ export function PaymentForm({
         <ExpressCheckoutElement
           options={{ buttonHeight: 46 }}
           onConfirm={() => confirm(true)}
+          onReady={({ availablePaymentMethods }) =>
+            setHasWallets(Boolean(availablePaymentMethods))
+          }
+          // A wallet that fails to load must not take the card form with it.
+          onLoadError={() => setHasWallets(false)}
         />
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className={cn("flex items-center gap-3", hasWallets !== true && "hidden")}>
         <span className="h-px flex-1 bg-white/[0.08]" />
         <span className="text-[11px] text-[var(--color-ink-tertiary)]">{t.pay.expressOr}</span>
         <span className="h-px flex-1 bg-white/[0.08]" />

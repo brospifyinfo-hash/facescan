@@ -870,3 +870,25 @@ body {
     stroke-dasharray: 90 193;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   FORM FIELDS ARE 16px. NOT A STYLE CHOICE — AN iOS RULE.
+
+   Mobile Safari zooms the viewport when a focused input has a font-size below
+   16px, and it does not zoom back out afterwards. The user lands on a page
+   that is suddenly too wide, with no obvious way to undo it. The email field
+   was 14px and did exactly this.
+
+   The alternative fix that gets copied around the web is
+   `maximum-scale=1, user-scalable=no` on the viewport meta. That works by
+   disabling pinch-zoom for everyone, permanently, including people who need
+   it to read. Sizing the fields correctly costs nothing and takes nobody's
+   zoom away.
+
+   16px is also simply the right size for something you type into.
+--------------------------------------------------------------------------- */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+textarea,
+select {
+  font-size: 16px;
+}
