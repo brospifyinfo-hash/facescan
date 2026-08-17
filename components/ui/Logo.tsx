@@ -14,7 +14,12 @@
 // The wordmark is white and the accent is the green, so it only works on a
 // dark ground. That is the only ground this app has.
 
-const RATIO = 640 / 157;
+// Both taken from the exported files. They are here so the width attribute
+// reserves the right box before the image loads — a wrong ratio shows up as
+// the header shifting sideways on first paint, which is exactly the kind of
+// thing nobody traces back to a constant.
+const RATIO_LOCKUP = 640 / 153;
+const RATIO_MARK = 177 / 256;
 
 export function Logo({
   /** Rendered height in px. Width follows the artwork. */
@@ -34,7 +39,7 @@ export function Logo({
       src={src}
       alt="malook"
       height={height}
-      width={mark ? Math.round(height * (256 / 234)) : Math.round(height * RATIO)}
+      width={Math.round(height * (mark ? RATIO_MARK : RATIO_LOCKUP))}
       // Explicit dimensions AND a style height: the attributes reserve the
       // space before the file loads so the header does not jump, the style
       // is what actually sizes it once the CSS lands.
