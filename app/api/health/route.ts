@@ -62,10 +62,19 @@ export async function GET() {
   // is reported because it is the difference between a shop and a demo, and
   // because while it holds, every entitlement gate in the app is standing
   // down rather than refusing. See entitlementsEnforceable().
+  //
+  // THE REASON IS COMPUTED, NOT ASSUMED. This line used to state "stripe key
+  // or webhook secret missing" whatever the actual cause was, and duly said
+  // exactly that while both were present and the real problem was the store.
+  // A diagnostic that guesses is worse than none: it sends you to check the
+  // one thing that is already fine.
   if (production && !entitlementsEnforceable()) {
-    degraded.push(
-      "purchases cannot be granted (stripe key or webhook secret missing); entitlement gates are not enforced",
-    );
+    const why = !process.env.STRIPE_SECRET_KEY
+      ? "STRIPE_SECRET_KEY is missing"
+      : !process.env.STRIPE_WEBHOOK_SECRET
+        ? "STRIPE_WEBHOOK_SECRET is missing"
+        : "the entitlement store cannot hold a purchase";
+    degraded.push(`purchases cannot be granted (${why}); entitlement gates are not enforced`);
   }
 
   return NextResponse.json({
