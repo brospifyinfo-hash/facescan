@@ -29,6 +29,7 @@ import { Logo } from "@/components/ui/Logo";
 import { bandFor } from "@/lib/tiers";
 import { useI18n, useT } from "@/lib/i18n";
 import { useFunnel } from "@/lib/store";
+import { cn } from "@/lib/cn";
 
 // The home screen.
 //
@@ -200,8 +201,10 @@ export function AppHome() {
             </p>
           </div>
 
-          {/* The supplied head faces LEFT, so its nose points into the copy. */}
-          <div className="relative">
+          {/* The supplied head faces LEFT, so its nose points into the copy.
+              parallax-deep: the figure drifts against its card as the page
+              scrolls — the one place depth is unmistakable on a phone. */}
+          <div className="parallax-deep relative">
             <CornerBrackets />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={art.hero} alt="" className="aspect-[340/435] w-full object-contain p-1" />
@@ -239,15 +242,19 @@ export function AppHome() {
       {/* ---- Stats ----------------------------------------------------- */}
       {/* pt-7 rather than py-4: the example marker sits in the corner and
           would otherwise land on top of the fourth icon. */}
-      {/* Four filled tiles on a two-by-two grid — widget proportions on every
-          width. The old four-across strip squeezed each figure into ~80px on
-          a phone, which is a table row, not a widget. */}
-      <section className="glass relative grid grid-cols-2 gap-2 p-2.5 pt-9 sm:gap-2.5 sm:p-3 sm:pt-10 lg:col-span-3">
+      {/* A two-by-two quadrant divided by hairlines — widget proportions
+          without boxes inside the box. Filled sub-tiles read as clutter on
+          the glass; one crossing hairline reads as a single instrument. */}
+      <section className="glass relative grid grid-cols-2 px-1 pb-2 pt-8 sm:px-2 sm:pb-3 sm:pt-9 lg:col-span-3">
         {preview ? <PreviewTag label={t.home.preview} /> : null}
         {stats.map((s, i) => (
           <div
             key={i}
-            className="fill flex flex-col items-center rounded-[var(--r-inner)] px-2 py-4 text-center sm:py-5"
+            className={cn(
+              "flex flex-col items-center px-2 py-4 text-center sm:py-5",
+              i % 2 === 1 && "border-l border-[var(--color-hairline)]",
+              i >= 2 && "border-t border-[var(--color-hairline)]",
+            )}
           >
             <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-hairline)] bg-white/[0.03] sm:h-12 sm:w-12">
               <s.icon className="h-[18px] w-[18px] text-[var(--color-accent)] sm:h-5 sm:w-5" aria-hidden />

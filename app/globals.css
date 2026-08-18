@@ -772,6 +772,57 @@ body {
   }
 }
 
+/* ---------------------------------------------------------------------------
+   CONTENT PARALLAX — the half you can actually SEE on a phone.
+
+   The background fields above sit BEHIND the glass, and on a phone the glass
+   covers nearly the whole viewport — whatever moves back there is blurred
+   into ambience. Perceptible parallax needs elements IN the content layer
+   moving relative to the page, so these two classes drift a decorative
+   element as it crosses the viewport: deep ±26px, soft ±14px.
+
+   CSS scroll-driven animations, element-relative by construction — a JS
+   scroll listener keyed to page offset would give every element far down
+   the page a huge standing offset instead. Progressive: engines without
+   view() timelines simply render the element static.
+
+   DECORATIVE ELEMENTS ONLY (artwork, figures). Never on a card or on text:
+   cards drifting against each other collide with their gaps, and moving
+   text is moving text.
+--------------------------------------------------------------------------- */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .parallax-deep,
+    .parallax-soft {
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: view();
+    }
+    .parallax-deep {
+      animation-name: plx-deep;
+    }
+    .parallax-soft {
+      animation-name: plx-soft;
+    }
+  }
+}
+@keyframes plx-deep {
+  from {
+    transform: translateY(26px);
+  }
+  to {
+    transform: translateY(-26px);
+  }
+}
+@keyframes plx-soft {
+  from {
+    transform: translateY(14px);
+  }
+  to {
+    transform: translateY(-14px);
+  }
+}
+
 /* The material itself. One rule for every card surface in the app, so the
    look arrives everywhere at once rather than being pasted per component.
 
@@ -789,23 +840,23 @@ body {
   position: relative;
   background: linear-gradient(
     180deg,
-    rgba(38, 51, 66, 0.54) 0%,
-    rgba(13, 20, 29, 0.5) 100%
+    rgba(36, 48, 62, 0.54) 0%,
+    rgba(14, 21, 30, 0.5) 100%
   );
-  backdrop-filter: blur(42px) saturate(210%) brightness(1.05);
-  border: 1px solid rgba(255, 255, 255, 0.19);
+  backdrop-filter: blur(36px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   box-shadow:
     /* The lit top edge — the single strongest glass cue. */
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.23),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.17),
     /* A faint return light along the bottom, as on a thick pane. */
-    inset 0 -1px 0 0 rgba(255, 255, 255, 0.045),
+    inset 0 -1px 0 0 rgba(255, 255, 255, 0.035),
     /* Side bevels: barely-there, but they close the ring of light that
        makes the pane read as a cut edge rather than a box with a top. */
-    inset 1px 0 0 0 rgba(255, 255, 255, 0.05),
-    inset -1px 0 0 0 rgba(255, 255, 255, 0.05),
+    inset 1px 0 0 0 rgba(255, 255, 255, 0.04),
+    inset -1px 0 0 0 rgba(255, 255, 255, 0.04),
     /* Contact, then ambient: the tile rests on something and lifts off it. */
     0 2px 8px -5px rgba(0, 0, 0, 0.7),
-    0 28px 72px -28px rgba(0, 0, 0, 0.92);
+    0 24px 64px -28px rgba(0, 0, 0, 0.9);
 }
 
 .glass {
@@ -841,12 +892,12 @@ body {
   background:
     linear-gradient(
       180deg,
-      rgba(255, 255, 255, 0.15) 0%,
+      rgba(255, 255, 255, 0.1) 0%,
       rgba(255, 255, 255, 0) 42%
     ),
     radial-gradient(
       130% 90% at 12% -12%,
-      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.06) 0%,
       rgba(255, 255, 255, 0) 52%
     );
 }
