@@ -728,8 +728,59 @@ body {
   background-repeat: no-repeat;
 }
 
+/* ---------------------------------------------------------------------------
+   PARALLAX LIGHT — the colour fields, given depth.
+
+   The four fields painted on the body above are the BASE and they do not
+   move: they exist so the glass always has light to refract, JavaScript or
+   not. On top of them ride a few extra fields in fixed layers that translate
+   at different rates as the page scrolls — nearer light drifts faster than
+   farther light, which is the entire optical claim of parallax. The factors
+   are small on purpose: ambience shifts, it does not scroll.
+
+   The transform arrives via --scroll-y, ONE custom property set on the strip
+   by a rAF-throttled listener (components/ui/ParallaxField.tsx). CSS owns
+   the factors; the script only reports the scroll position — so tuning the
+   depth never touches JavaScript again.
+
+   will-change is deliberately NOT set: four permanently-promoted viewport-
+   sized layers cost compositor memory on exactly the low-end phones that
+   struggle anyway, and translate3d already promotes while animating. */
+.parallax-strip {
+  position: fixed;
+  inset: 0;
+  z-index: -5;
+  pointer-events: none;
+  overflow: hidden;
+}
+.parallax-blob {
+  position: absolute;
+  border-radius: 999px;
+  transform: translate3d(0, calc(var(--scroll-y, 0) * var(--depth, 0) * 1px), 0);
+}
+
+/* Both switches mean "stop the ambience": the same people the material
+   drops its transparency for should not have light drifting behind text. */
+@media (prefers-reduced-motion: reduce) {
+  .parallax-blob {
+    transform: none;
+  }
+}
+@media (prefers-contrast: more), (prefers-reduced-transparency: reduce) {
+  .parallax-strip {
+    display: none;
+  }
+}
+
 /* The material itself. One rule for every card surface in the app, so the
-   look arrives everywhere at once rather than being pasted per component. */
+   look arrives everywhere at once rather than being pasted per component.
+
+   TURNED UP (18.08): deeper blur, more saturation bloom, a touch of
+   brightness so the colour fields behind genuinely POOL inside the pane, and
+   a second, wider specular. The plate still keeps ~0.54 top alpha — the
+   floor below which scrolling content walks through the text (recorded
+   above); the "extreme" reading comes from the edges and the light, never
+   from lowering that. */
 .panel,
 .surface,
 .surface-raised,
@@ -738,19 +789,23 @@ body {
   position: relative;
   background: linear-gradient(
     180deg,
-    rgba(36, 48, 62, 0.54) 0%,
-    rgba(14, 21, 30, 0.50) 100%
+    rgba(38, 51, 66, 0.54) 0%,
+    rgba(13, 20, 29, 0.5) 100%
   );
-  backdrop-filter: blur(34px) saturate(185%);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(42px) saturate(210%) brightness(1.05);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   box-shadow:
     /* The lit top edge — the single strongest glass cue. */
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.16),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.19),
     /* A faint return light along the bottom, as on a thick pane. */
-    inset 0 -1px 0 0 rgba(255, 255, 255, 0.035),
+    inset 0 -1px 0 0 rgba(255, 255, 255, 0.045),
+    /* Side bevels: barely-there, but they close the ring of light that
+       makes the pane read as a cut edge rather than a box with a top. */
+    inset 1px 0 0 0 rgba(255, 255, 255, 0.05),
+    inset -1px 0 0 0 rgba(255, 255, 255, 0.05),
     /* Contact, then ambient: the tile rests on something and lifts off it. */
     0 2px 8px -5px rgba(0, 0, 0, 0.7),
-    0 24px 64px -28px rgba(0, 0, 0, 0.9);
+    0 28px 72px -28px rgba(0, 0, 0, 0.92);
 }
 
 .glass {
@@ -761,16 +816,18 @@ body {
 .glass-strong {
   background: linear-gradient(
     180deg,
-    rgba(44, 56, 70, 0.68) 0%,
-    rgba(18, 26, 36, 0.64) 100%
+    rgba(46, 60, 76, 0.68) 0%,
+    rgba(17, 25, 35, 0.64) 100%
   );
-  backdrop-filter: blur(40px) saturate(185%);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(48px) saturate(210%) brightness(1.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
-/* The frost: a hairline of light that runs along the top of the pane and
-   fades out, the way a bevelled edge catches a room. Drawn as its own layer
-   so it survives whatever background a component sets. */
+/* The frost: light running along the top of the pane and fading out, the way
+   a bevelled edge catches a room — PLUS an oblique sheen falling across the
+   upper-left corner, which is the cue that makes iOS widgets read as lit
+   from somewhere rather than merely bordered. Both live on one layer so a
+   component background cannot bury them. */
 .panel::after,
 .surface::after,
 .surface-raised::after,
@@ -781,11 +838,43 @@ body {
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.10) 0%,
-    rgba(255, 255, 255, 0) 42%
-  );
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.12) 0%,
+      rgba(255, 255, 255, 0) 42%
+    ),
+    radial-gradient(
+      130% 90% at 12% -12%,
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(255, 255, 255, 0) 52%
+    );
+}
+
+/* Desktop glass answers the pointer: the pane brightens a breath under a
+   real cursor. Touch never sees it, and the press-scale from .interactive
+   stays the acknowledgement everywhere. */
+@media (hover: hover) and (pointer: fine) {
+  a.glass,
+  button.glass,
+  .glass.interactive,
+  .widget-tappable {
+    transition:
+      border-color var(--dur-fast) var(--ease-smooth),
+      box-shadow var(--dur-base) var(--ease-smooth),
+      transform var(--dur-fast) var(--ease-snappy);
+  }
+  a.glass:hover,
+  button.glass:hover,
+  .glass.interactive:hover,
+  .widget-tappable:hover {
+    border-color: rgba(255, 255, 255, 0.24);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.26),
+      inset 0 -1px 0 0 rgba(255, 255, 255, 0.05),
+      0 2px 8px -5px rgba(0, 0, 0, 0.7),
+      0 32px 84px -30px rgba(0, 0, 0, 0.95);
+  }
 }
 
 /* Nested blocks stay FILLS, never a second pane. Glass on glass reads as

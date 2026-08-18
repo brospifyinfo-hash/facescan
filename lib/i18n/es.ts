@@ -424,6 +424,11 @@ export const es: Dict = {
       errNotEntitled:
         "No hemos podido confirmar tu compra. Inicia sesión con el correo con el que compraste.",
     },
+    sections: {
+      analysis: "Tu análisis",
+      plan: "Tu plan",
+      extras: "Extras del Blueprint",
+    },
     tipTitle: "Tu consejo",
     tipBody:
       "La constancia es la palanca. Las pequeñas mejoras diarias se acumulan en grandes resultados.",

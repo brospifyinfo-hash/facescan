@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { I18nProvider } from "@/lib/i18n";
 import { META_DESCRIPTION, VISION_ACTIVE } from "@/lib/i18n/privacy";
+import { ParallaxField } from "@/components/ui/ParallaxField";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -44,6 +45,9 @@ export default function RootLayout({
               "radial-gradient(1100px 620px at 50% -12%, rgba(95,227,138,0.07), transparent 62%), radial-gradient(800px 500px at 88% 8%, rgba(84,140,214,0.05), transparent 60%), radial-gradient(700px 420px at 6% 32%, rgba(95,227,138,0.03), transparent 60%)",
           }}
         />
+        {/* The moving half of the light — the body paints the standing half,
+            so the glass refracts something even before hydration. */}
+        <ParallaxField />
         <I18nProvider>{children}</I18nProvider>
       </body>
     </html>

@@ -423,6 +423,11 @@ export const en: Dict = {
       errNotEntitled:
         "We could not confirm your purchase. Sign in with the email address you bought with.",
     },
+    sections: {
+      analysis: "Your analysis",
+      plan: "Your plan",
+      extras: "Blueprint extras",
+    },
     tipTitle: "Your tip",
     tipBody:
       "Consistency is the lever. Small daily improvements compound into large results.",

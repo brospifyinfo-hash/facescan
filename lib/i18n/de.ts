@@ -424,6 +424,11 @@ export const de: Dict = {
       errNotEntitled:
         "Dein Kauf konnte nicht bestätigt werden. Melde dich mit der E-Mail-Adresse an, mit der du gekauft hast.",
     },
+    sections: {
+      analysis: "Deine Analyse",
+      plan: "Dein Plan",
+      extras: "Blueprint-Extras",
+    },
     tipTitle: "Tipp für dich",
     tipBody:
       "Konsistenz ist der Schlüssel. Kleine tägliche Verbesserungen führen zu großen Ergebnissen.",

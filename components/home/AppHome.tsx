@@ -144,9 +144,12 @@ export function AppHome() {
   ];
 
   return (
-    <div className="flex flex-col gap-3.5 sm:gap-4">
+    // One column on a phone; a six-column widget board from lg. The spans
+    // below place the tiles: hero across the row, stats and last scan side
+    // by side, the quick links as a two-by-two block next to the tip.
+    <div className="flex flex-col gap-3.5 sm:gap-4 lg:grid lg:grid-cols-6 lg:items-stretch lg:gap-4">
       {/* ---- Header ---------------------------------------------------- */}
-      <header className="flex items-center justify-between gap-3 pt-1">
+      <header className="flex items-center justify-between gap-3 pt-1 lg:col-span-6">
         {/* The owner access code lives on the wordmark, exactly as it did on
             the header this replaced — invisible, and the only way to review
             the paid report as a customer sees it. */}
@@ -162,7 +165,7 @@ export function AppHome() {
       </header>
 
       {/* ---- Hero ------------------------------------------------------ */}
-      <section className="glass relative overflow-hidden rounded-[var(--r-window)] p-5 sm:p-8">
+      <section className="glass relative overflow-hidden rounded-[var(--r-window)] p-5 sm:p-8 lg:col-span-6">
         {/* The soft light behind the figure. In CSS rather than baked into the
             artwork, so a swapped-in image gets the same glow. */}
         <div
@@ -180,7 +183,7 @@ export function AppHome() {
             The figure takes less of the card as the card gets wider: on a
             phone the head needs the room to read at all, on a desktop the
             headline does. */}
-        <div className="relative grid grid-cols-[minmax(0,1fr)_40%] items-start gap-3 sm:grid-cols-[minmax(0,1fr)_38%] sm:gap-6">
+        <div className="relative grid grid-cols-[minmax(0,1fr)_40%] items-start gap-3 sm:grid-cols-[minmax(0,1fr)_38%] sm:gap-6 lg:grid-cols-[minmax(0,1fr)_27%] lg:items-center">
           <div className="min-w-0">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-hairline)] bg-white/[0.04] px-3 py-1.5 text-[9.5px] font-semibold uppercase leading-tight tracking-[0.05em] text-[var(--color-accent)] sm:text-[11.5px]">
               <Sparkles className="h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5" aria-hidden />
@@ -236,7 +239,7 @@ export function AppHome() {
       {/* ---- Stats ----------------------------------------------------- */}
       {/* pt-7 rather than py-4: the example marker sits in the corner and
           would otherwise land on top of the fourth icon. */}
-      <section className="glass relative grid grid-cols-4 px-1.5 pb-5 pt-8 sm:px-3 sm:pb-7 sm:pt-9">
+      <section className="glass relative grid grid-cols-4 px-1.5 pb-5 pt-8 sm:px-3 sm:pb-7 sm:pt-9 lg:col-span-3">
         {preview ? <PreviewTag label={t.home.preview} /> : null}
         {stats.map((s, i) => (
           <div
@@ -264,7 +267,7 @@ export function AppHome() {
       </section>
 
       {/* ---- Last scan -------------------------------------------------- */}
-      <section className="glass p-4 sm:p-6">
+      <section className="glass p-4 sm:p-6 lg:col-span-3">
         <div className="flex items-center justify-between gap-3">
           <h2 className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--color-accent)] sm:text-[13.5px]">
             {t.home.lastScan}
@@ -340,12 +343,14 @@ export function AppHome() {
       </section>
 
       {/* ---- Quick links ------------------------------------------------ */}
-      <nav className="grid grid-cols-4 gap-2.5 sm:gap-3">
+      {/* Four across on a phone; a two-by-two block beside the tip on the
+          board, where each tile finally gets widget proportions. */}
+      <nav className="grid grid-cols-4 gap-2.5 sm:gap-3 lg:col-span-3 lg:grid-cols-2 lg:gap-4">
         {tiles.map((tile, i) => (
           <Link
             key={i}
             href={tile.href}
-            className="glass interactive flex flex-col rounded-[var(--r-control)] p-3 sm:p-4"
+            className="glass interactive flex flex-col rounded-[var(--r-control)] p-3 sm:p-4 lg:justify-between lg:rounded-[var(--r-card)] lg:p-5"
           >
             <tile.icon className="h-5 w-5 text-[var(--color-accent)] sm:h-6 sm:w-6" aria-hidden />
             <span className="mt-2.5 text-[10.5px] font-bold uppercase tracking-[0.06em] text-[var(--color-ink)] sm:mt-3.5 sm:text-[12.5px]">
@@ -360,7 +365,7 @@ export function AppHome() {
       </nav>
 
       {/* ---- Tip of the day --------------------------------------------- */}
-      <section className="glass relative overflow-hidden p-4 sm:p-6">
+      <section className="glass relative overflow-hidden p-4 sm:p-6 lg:col-span-3">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           aria-hidden
@@ -392,8 +397,10 @@ export function AppHome() {
       </section>
 
       {/* ---- Products, routine, upgrade -------------------------------- */}
-      <ProductShowcase products={ranked} />
-      <RoutineStrip />
+      <div className="flex flex-col gap-3.5 sm:gap-4 lg:col-span-6">
+        <ProductShowcase products={ranked} />
+        <RoutineStrip />
+      </div>
     </div>
   );
 }

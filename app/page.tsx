@@ -141,10 +141,11 @@ export default function LandingPage() {
     <main className="flex min-h-dvh flex-col pb-[88px]">
       {/* ---------------- App home ----------------
           The reference screen: header, hero, statistics, last scan, quick
-          links, tip. A phone column even on a desktop, because that is what
-          it was designed as — stretching it to 1200px turns four stat tiles
-          into a dashboard nobody drew. */}
-      <div className="mx-auto w-full max-w-md px-4 pt-4 sm:max-w-2xl sm:px-6 sm:pt-7">
+          links, tip. A phone column on a phone; from lg the sections take
+          their places on a widget board — tiles on a strict grid, the way
+          the home screen the design quotes actually lays out on a bigger
+          canvas. AppHome itself declares the spans. */}
+      <div className="mx-auto w-full max-w-md px-4 pt-4 sm:max-w-2xl sm:px-6 sm:pt-7 lg:max-w-5xl lg:px-8">
         <AppHome />
       </div>
 

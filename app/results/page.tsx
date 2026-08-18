@@ -200,11 +200,12 @@ export default function ResultsPage() {
 
   return (
     <>
-      {/* max-w-md, not max-w-5xl. This is a phone report; on a laptop it sits
-          as a centred column rather than stretching six analysis tiles across
-          1200px, which is what made the old layout read as a dashboard. The
-          bottom padding clears the floating tab bar. */}
-      <main className="mx-auto w-full max-w-md px-4 pt-5 pb-16">
+      {/* A phone column on a phone, exactly as designed. From lg the scan and
+          the score become a sticky instrument rail on the left while the
+          reading continues on the right — the desktop gets a real report
+          layout instead of a stranded phone column. The bottom padding clears
+          the floating tab bar. */}
+      <main className="mx-auto w-full max-w-md px-4 pt-5 pb-16 lg:max-w-6xl lg:px-8 lg:pt-8">
         <ReportHeader demo={metrics.demo} />
 
         {locked ? (
@@ -213,33 +214,41 @@ export default function ResultsPage() {
           </div>
         ) : null}
 
-        <section className="mt-4 space-y-3">
-          <ScanStage
-            src={photos.front?.dataUrl}
-            mesh={metrics.mesh}
-            aspect={metrics.aspect}
-            reference={scanRef(metrics)}
-            date={scanDate}
-          />
+        <div className="lg:grid lg:grid-cols-[400px_minmax(0,1fr)] lg:items-start lg:gap-6">
+          {/* ---- Instrument rail: the face and its number ---- */}
+          <div className="lg:sticky lg:top-6">
+            <section className="mt-4 space-y-3">
+              <ScanStage
+                src={photos.front?.dataUrl}
+                mesh={metrics.mesh}
+                aspect={metrics.aspect}
+                reference={scanRef(metrics)}
+                date={scanDate}
+              />
 
-          <ScorePanel
-            score={metrics.overall}
-            band={band}
-            bandLabel={bandCopy.label}
-            bandBlurb={bandCopy.blurb}
-            potential={potential}
-          />
-        </section>
+              <ScorePanel
+                score={metrics.overall}
+                band={band}
+                bandLabel={bandCopy.label}
+                bandBlurb={bandCopy.blurb}
+                potential={potential}
+              />
+            </section>
 
-        {showRaw ? (
-          <div className="mt-3">
-            <RawDiagnostics metrics={metrics} />
+            {showRaw ? (
+              <div className="mt-3">
+                <RawDiagnostics metrics={metrics} />
+              </div>
+            ) : null}
           </div>
-        ) : null}
 
+          {/* ---- The reading ---- */}
+          <div className="min-w-0">
         {/* ================= LOCKED REGION ================= */}
-        <section className="relative mt-3">
+        <section className="relative mt-3 lg:mt-4">
           <div className="flex flex-col gap-3">
+            <SectionMark label={t.results.sections.analysis} />
+
             <LockedSection locked={locked}>
               <div>
                 <AnalysisGrid rows={rows} />
@@ -292,6 +301,8 @@ export default function ResultsPage() {
                 </p>
               </Collapsible>
             </LockedSection>
+
+            <SectionMark label={t.results.sections.plan} className="mt-2" />
 
             {/* Raw Data explicitly excludes the action plan, so it stays
                 blurred for that tier — the card would otherwise be lying. */}
@@ -376,6 +387,10 @@ export default function ResultsPage() {
           ) : null}
         </section>
 
+        {unlocked && (can(plan, "download") || can(plan, "hairstyle")) ? (
+          <SectionMark label={t.results.sections.extras} className="mt-6" />
+        ) : null}
+
         {/* Right after the plan it exports, and outside the locked region so
             it is never blurred out from the person who paid for it. */}
         {unlocked && can(plan, "download") ? (
@@ -414,8 +429,10 @@ export default function ResultsPage() {
             {t.results.unlocked}
           </p>
         ) : null}
+          </div>
+        </div>
 
-        <p className="t-caption mx-auto mt-8 text-center leading-relaxed text-[var(--color-ink-tertiary)]">
+        <p className="t-caption mx-auto mt-8 max-w-md text-center leading-relaxed text-[var(--color-ink-tertiary)]">
           {t.results.disclaimer}
         </p>
 
@@ -456,5 +473,17 @@ export default function ResultsPage() {
         }}
       />
     </>
+  );
+}
+
+/** A chapter mark: eyebrow plus a hairline running out to the edge. The
+ *  report reads as one long instrument without them; these give it a table
+ *  of contents the eye can catch while scrolling. */
+function SectionMark({ label, className }: { label: string; className?: string }) {
+  return (
+    <div className={`flex items-center gap-3 ${className ?? ""}`}>
+      <span className="t-eyebrow whitespace-nowrap">{label}</span>
+      <span aria-hidden className="h-px flex-1 bg-[var(--color-hairline)]" />
+    </div>
   );
 }

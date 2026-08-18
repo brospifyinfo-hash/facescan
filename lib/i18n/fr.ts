@@ -424,6 +424,11 @@ export const fr: Dict = {
       errNotEntitled:
         "Nous n'avons pas pu confirmer ton achat. Connecte-toi avec l'adresse e-mail utilisée pour l'achat.",
     },
+    sections: {
+      analysis: "Ton analyse",
+      plan: "Ton plan",
+      extras: "Extras du Blueprint",
+    },
     tipTitle: "Votre conseil",
     tipBody:
       "La régularité est le levier. De petites améliorations quotidiennes produisent de grands résultats.",

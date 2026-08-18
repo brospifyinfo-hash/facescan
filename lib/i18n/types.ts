@@ -274,6 +274,12 @@ export interface Dict {
       /** The server could not confirm the purchase (403 not_entitled). */
       errNotEntitled: string;
     };
+    /** Eyebrow labels that group the report into chapters. */
+    sections: {
+      analysis: string;
+      plan: string;
+      extras: string;
+    };
     tipTitle: string;
     tipBody: string;
     moreTips: string;
