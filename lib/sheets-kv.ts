@@ -120,11 +120,44 @@ async function post<T>(body: Record<string, unknown>): Promise<T> {
 /** The raw string, or null when absent or expired. */
 export async function skGet(key: string): Promise<string | null> {
   const { token } = config();
-  const res = await call<{ record: { value: string; expiresAt: number } | null }>({
+  const res = await call<{ record?: { value: string; expiresAt: number } | null }>({
     method: "GET",
     query: `?action=kv-get&token=${encodeURIComponent(token)}&key=${encodeURIComponent(key)}`,
   });
+
+  // THE RESPONSE MUST CARRY A `record` FIELD, even when it is null.
+  //
+  // An out-of-date Apps Script does not answer "unknown_action" to a GET the
+  // way it does to a POST — its doGet falls through to the DEFAULT branch and
+  // returns the product catalogue. That parses fine, has no `error`, and
+  // `res.record?.value ?? null` reads it as "no such key".
+  //
+  // So every read silently missed and the store looked EMPTY rather than
+  // broken: logins fell back to memory, entitlements were granted into one
+  // instance and gone from the next, and nothing anywhere reported a fault.
+  // A backend that cannot answer has to say so.
+  if (!("record" in res)) {
+    markDegraded(new Error("kv-get answered without a record field — the script is out of date"));
+    throw new Error("Sheets backend: kv unsupported");
+  }
   return res.record?.value ?? null;
+}
+
+/**
+ * Is the key-value backend actually there? One round trip, no side effects.
+ *
+ * Used by the health check, which until now reported "sheets" purely because
+ * the env vars existed — and therefore said storage was fine while every
+ * write was disappearing into per-instance memory.
+ */
+export async function probeSheetsKv(): Promise<boolean> {
+  if (!sheetsKvConfigured()) return false;
+  try {
+    await skGet("probe:health");
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /** JSON convenience. A corrupt value reads as absent rather than throwing. */

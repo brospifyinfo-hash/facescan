@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { kvConfigured } from "@/lib/kv";
+import { probeSheetsKv, sheetsKvConfigured } from "@/lib/sheets-kv";
 import { otpBacking } from "@/lib/auth/store";
 import { entitlementBacking, entitlementsEnforceable } from "@/lib/stripe/entitlements";
 
@@ -36,12 +37,23 @@ export async function GET() {
   const otp = otpBacking();
   const ent = entitlementBacking();
 
+  // ACTUALLY ASK, do not infer. Reporting "sheets" because SHEETS_URL is set
+  // is how this endpoint said storage was healthy while every write was
+  // vanishing into per-instance memory — the exact failure it exists to make
+  // visible.
+  const sheetsKvWorks = kvConfigured() ? null : await probeSheetsKv();
+
   const degraded: string[] = [];
   if (production && otp === "memory") {
     degraded.push("otp store is process-local; codes will fail across instances");
   }
   if (production && ent === "memory") {
     degraded.push("entitlement store is process-local; purchases will be lost");
+  }
+  if (production && sheetsKvWorks === false) {
+    degraded.push(
+      "the spreadsheet key-value backend is not answering; logins and purchases fall back to per-instance memory. Paste the current scripts/sheets-backend.gs and redeploy the web app.",
+    );
   }
   if (production && !process.env.AUTH_SECRET) {
     degraded.push("AUTH_SECRET is unset; session minting will throw");
@@ -59,7 +71,13 @@ export async function GET() {
   return NextResponse.json({
     ok: degraded.length === 0,
     engine: process.env.NEXT_PUBLIC_SCORE_ENGINE === "vision" ? "vision" : "geometry",
-    stores: { otp, entitlements: ent, kv: kvConfigured(), entitlementsEnforced: entitlementsEnforceable() },
+    stores: {
+      otp,
+      entitlements: ent,
+      kv: kvConfigured(),
+      sheetsKv: kvConfigured() ? "unused" : sheetsKvWorks ? "ok" : "unreachable",
+      entitlementsEnforced: entitlementsEnforceable(),
+    },
     configured: {
       openai: Boolean(process.env.OPENAI_API_KEY),
       resend: Boolean(process.env.RESEND_API_KEY),
