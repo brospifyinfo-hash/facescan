@@ -166,7 +166,7 @@ export default function LandingPage() {
           it, so it now lives under the app view and the anchors still work. */}
       <div className="mx-auto w-full max-w-4xl px-5 pt-16 sm:px-8">
         {/* ---------------- Trust ---------------- */}
-        <section className="grid gap-px overflow-hidden rounded-2xl border border-white/[0.09] bg-white/[0.06] sm:grid-cols-3">
+        <section className="grid gap-8 sm:grid-cols-3 sm:gap-10">
           {t.landing.trust.map((item, i) => {
             const Icon = TRUST_ICONS[i];
             return (
@@ -176,7 +176,6 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.45, delay: i * 0.08 }}
-                className="bg-[var(--color-canvas)] p-5"
               >
                 <Icon className="h-4 w-4 text-accent" />
                 <h3 className="mt-3.5 text-[13px] font-semibold">
@@ -237,7 +236,7 @@ export default function LandingPage() {
         <section id="method" className="pt-20">
           <SectionHead index="02" eyebrow="Method" title={t.landing.stepsTitle} />
 
-          <div className="mt-10 grid gap-px overflow-hidden rounded-2xl border border-white/[0.09] bg-white/[0.06] sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-10 grid gap-8 sm:grid-cols-2 sm:gap-10 lg:grid-cols-4">
             {t.landing.steps.map((step, i) => (
               <motion.div
                 key={step.title}
@@ -245,7 +244,6 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.45, delay: i * 0.06 }}
-                className="bg-[var(--color-canvas)] p-5"
               >
                 <span className="font-mono-terminal t-caption tabular-nums text-accent">
                   {String(i + 1).padStart(2, "0")}
@@ -274,7 +272,7 @@ export default function LandingPage() {
             sub={priv?.body ?? t.landing.privacyBody}
           />
 
-          <ul className="mt-9 grid gap-px overflow-hidden rounded-2xl border border-white/[0.09] bg-white/[0.06] sm:grid-cols-3">
+          <ul className="mt-9 grid gap-8 sm:grid-cols-3 sm:gap-10">
             {(priv?.points ?? t.landing.privacyPoints).map((p, i) => (
               <motion.li
                 key={p}
@@ -282,7 +280,7 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.45, delay: i * 0.07 }}
-                className="bg-[var(--color-canvas)] p-5 text-[12px] leading-relaxed text-[var(--color-ink-secondary)]"
+                className="text-[12px] leading-relaxed text-[var(--color-ink-secondary)]"
               >
                 <span className="font-mono-terminal mb-2.5 block t-caption tabular-nums text-accent">
                   {String(i + 1).padStart(2, "0")}

@@ -24,7 +24,7 @@ export function RoutineStrip() {
 
   return (
     <>
-      <section className="glass overflow-hidden p-4 sm:p-6">
+      <section className="border-t border-[var(--color-hairline)] pt-6 sm:pt-7">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h2 className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--color-ink)] sm:text-[13.5px]">
@@ -46,7 +46,7 @@ export function RoutineStrip() {
 
         {/* Five columns, scrolling sideways on a phone. A wrap would break the
             dashed thread that makes it read as a sequence rather than a list. */}
-        <div className="-mx-4 mt-5 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="mt-5 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <ol className="relative flex w-max gap-1 sm:w-full sm:justify-between">
             {/* The thread. Behind the marks, inset so it starts and ends at
                 the first and last circle rather than at the container edge. */}
@@ -92,7 +92,9 @@ export function RoutineStrip() {
       </section>
 
       {/* ---- Upgrade --------------------------------------------------- */}
-      <section className="glass relative overflow-hidden p-4 sm:p-6">
+      {/* The one conversion banner keeps a thin outline — it is a control-
+          sized object asking for a tap, not a content card. */}
+      <section className="relative overflow-hidden rounded-[var(--r-card)] border border-white/[0.08] bg-white/[0.02] p-4 sm:p-6">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           aria-hidden

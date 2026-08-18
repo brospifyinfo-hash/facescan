@@ -80,11 +80,10 @@ export default function QuizPage() {
         <LanguageSwitcher />
       </div>
 
-      {/* On a phone the question floats directly on the colour fields — that
-          look stays exactly as it is. From lg the same question sits on a
-          glass pane, so the desktop gets the widget material without taking
-          the background away: the pane is mostly the background, refracted. */}
-      <div className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center px-6 pb-16 lg:max-w-2xl lg:rounded-[var(--r-window)] lg:border lg:border-white/[0.14] lg:bg-white/[0.035] lg:p-12 lg:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.16),0_28px_72px_-28px_rgba(0,0,0,0.9)] lg:backdrop-blur-3xl lg:backdrop-saturate-200 lg:my-10 lg:flex-none">
+      {/* The question floats directly on the colour fields at every width —
+          this bare look is the design language of the whole site now, and
+          the quiz is where it was born. */}
+      <div className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center px-6 pb-16 lg:max-w-2xl">
         <p className="font-mono-terminal text-[11px] text-[var(--color-ink-tertiary)]">
           {fill(t.quiz.progress, { n: step + 1, total })}
         </p>

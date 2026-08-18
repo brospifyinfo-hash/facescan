@@ -145,10 +145,14 @@ export function AppHome() {
   ];
 
   return (
-    // One column on a phone; a six-column widget board from lg. The spans
-    // below place the tiles: hero across the row, stats and last scan side
-    // by side, the quick links as a two-by-two block next to the tip.
-    <div className="flex flex-col gap-3.5 sm:gap-4 lg:grid lg:grid-cols-6 lg:items-stretch lg:gap-4">
+    // NO CONTAINERS. The content floats directly on the colour fields — the
+    // quiz's look, made the system: separation comes from whitespace,
+    // hairline rules and type, never from boxes. The only chrome left is on
+    // CONTROLS (buttons, product tiles), which keep the quiz option's thin
+    // outline, and on the navigation layer (tab bar), which keeps its glass.
+    // One column on a phone; a six-column board from lg, same spans as
+    // before — columns of floating content instead of tiles.
+    <div className="flex flex-col gap-9 sm:gap-11 lg:grid lg:grid-cols-6 lg:items-start lg:gap-x-10 lg:gap-y-12">
       {/* ---- Header ---------------------------------------------------- */}
       <header className="flex items-center justify-between gap-3 pt-1 lg:col-span-6">
         {/* The owner access code lives on the wordmark, exactly as it did on
@@ -166,7 +170,7 @@ export function AppHome() {
       </header>
 
       {/* ---- Hero ------------------------------------------------------ */}
-      <section className="glass relative overflow-hidden rounded-[var(--r-window)] p-5 sm:p-8 lg:col-span-6">
+      <section className="relative lg:col-span-6">
         {/* The soft light behind the figure. In CSS rather than baked into the
             artwork, so a swapped-in image gets the same glow. */}
         <div
@@ -242,10 +246,10 @@ export function AppHome() {
       {/* ---- Stats ----------------------------------------------------- */}
       {/* pt-7 rather than py-4: the example marker sits in the corner and
           would otherwise land on top of the fourth icon. */}
-      {/* A two-by-two quadrant divided by hairlines — widget proportions
-          without boxes inside the box. Filled sub-tiles read as clutter on
-          the glass; one crossing hairline reads as a single instrument. */}
-      <section className="glass relative grid grid-cols-2 px-1 pb-2 pt-8 sm:px-2 sm:pb-3 sm:pt-9 lg:col-span-3">
+      {/* A two-by-two quadrant divided by one crossing hairline, floating
+          straight on the background — the numbers are the object, not a box
+          around them. */}
+      <section className="relative grid grid-cols-2 pt-6 lg:col-span-3 lg:pt-0">
         {preview ? <PreviewTag label={t.home.preview} /> : null}
         {stats.map((s, i) => (
           <div
@@ -275,7 +279,7 @@ export function AppHome() {
       </section>
 
       {/* ---- Last scan -------------------------------------------------- */}
-      <section className="glass p-4 sm:p-6 lg:col-span-3">
+      <section className="border-t border-[var(--color-hairline)] pt-6 lg:col-span-3 lg:border-t-0 lg:pt-0">
         <div className="flex items-center justify-between gap-3">
           <h2 className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--color-accent)] sm:text-[13.5px]">
             {t.home.lastScan}
@@ -351,14 +355,14 @@ export function AppHome() {
       </section>
 
       {/* ---- Quick links ------------------------------------------------ */}
-      {/* Two-by-two everywhere: four across on a phone left each tile ~80px
-          of label room, which is why they read as buttons, not widgets. */}
+      {/* The one place chrome remains: these are CONTROLS, and they wear the
+          quiz option's thin outline — the affordance the user already knows. */}
       <nav className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:col-span-3 lg:gap-4">
         {tiles.map((tile, i) => (
           <Link
             key={i}
             href={tile.href}
-            className="glass interactive flex flex-col rounded-[var(--r-card)] p-4 sm:p-5 lg:justify-between lg:p-5"
+            className="interactive flex flex-col rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 transition-colors hover:border-white/20 hover:bg-white/[0.05] sm:p-5 lg:justify-between"
           >
             <tile.icon className="h-5 w-5 text-[var(--color-accent)] sm:h-6 sm:w-6" aria-hidden />
             <span className="mt-2.5 text-[10.5px] font-bold uppercase tracking-[0.06em] text-[var(--color-ink)] sm:mt-3.5 sm:text-[12.5px]">
@@ -373,7 +377,7 @@ export function AppHome() {
       </nav>
 
       {/* ---- Tip of the day --------------------------------------------- */}
-      <section className="glass relative overflow-hidden p-4 sm:p-6 lg:col-span-3">
+      <section className="relative border-t border-[var(--color-hairline)] pt-6 lg:col-span-3 lg:border-t-0 lg:pt-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           aria-hidden
@@ -405,7 +409,7 @@ export function AppHome() {
       </section>
 
       {/* ---- Products, routine, upgrade -------------------------------- */}
-      <div className="flex flex-col gap-3.5 sm:gap-4 lg:col-span-6">
+      <div className="flex flex-col gap-9 sm:gap-11 lg:col-span-6">
         <ProductShowcase products={ranked} />
         <RoutineStrip />
       </div>
@@ -422,7 +426,7 @@ export function AppHome() {
  */
 function PreviewTag({ label }: { label: string }) {
   return (
-    <span className="absolute right-3 top-2.5 rounded-full border border-[var(--color-hairline)] bg-[var(--color-surface-raised)] px-2 py-0.5 text-[9.5px] font-medium text-[var(--color-ink-tertiary)] sm:text-[11px]">
+    <span className="absolute right-0 top-0 rounded-full border border-[var(--color-hairline)] bg-white/[0.04] px-2 py-0.5 text-[9.5px] font-medium text-[var(--color-ink-tertiary)] sm:text-[11px]">
       {label}
     </span>
   );

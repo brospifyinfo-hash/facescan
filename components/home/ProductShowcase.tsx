@@ -105,7 +105,7 @@ export function ProductShowcase({
   return (
     <>
       {/* ---- Recommendations ------------------------------------------- */}
-      <section className="glass overflow-hidden p-4 sm:p-6">
+      <section className="border-t border-[var(--color-hairline)] pt-6 sm:pt-7">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h2 className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--color-ink)] sm:text-[13.5px]">
@@ -127,7 +127,7 @@ export function ProductShowcase({
 
         {/* The filter rail. Scrolls sideways rather than wrapping, so the
             block keeps its height whatever the language does to the words. */}
-        <div className="-mx-4 mt-4 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="mt-4 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <ul className="flex w-max gap-2">
             {PRODUCT_CATEGORIES.map((cat) => {
               const Icon = CATEGORY_ICONS[cat.id];
@@ -160,7 +160,7 @@ export function ProductShowcase({
             {t.home.products.emptyCategory}
           </p>
         ) : (
-          <div className="-mx-4 mt-4 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="mt-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <ul className="flex w-max snap-x snap-mandatory gap-3">
               {shown.map((product, i) => (
                 <ProductCard
@@ -181,7 +181,7 @@ export function ProductShowcase({
       </section>
 
       {/* ---- Why these ------------------------------------------------- */}
-      <section className="glass grid grid-cols-2 gap-y-5 px-2 py-5 sm:grid-cols-4 sm:px-3 sm:py-6">
+      <section className="grid grid-cols-2 gap-y-6 border-t border-[var(--color-hairline)] pt-6 sm:grid-cols-4 sm:pt-7">
         {t.home.products.trust.map((item, i) => {
           const Icon = TRUST_ICONS[i];
           return (
@@ -226,7 +226,9 @@ function ProductCard({
 
   return (
     <li className="w-[210px] shrink-0 snap-start sm:w-[240px]">
-      <article className="glass-strong flex h-full flex-col overflow-hidden rounded-[var(--r-card)]">
+      {/* A product tile is a control (it links out), so it keeps the thin
+          outline — the same affordance as a quiz option. */}
+      <article className="flex h-full flex-col overflow-hidden rounded-[var(--r-card)] border border-white/[0.08] bg-white/[0.02]">
         <div className="relative aspect-square w-full overflow-hidden">
           {/* The halo behind the shot, as in the reference. Drawn rather than
               expected from the image, because a product photo from a
