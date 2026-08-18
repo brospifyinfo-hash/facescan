@@ -239,14 +239,15 @@ export function AppHome() {
       {/* ---- Stats ----------------------------------------------------- */}
       {/* pt-7 rather than py-4: the example marker sits in the corner and
           would otherwise land on top of the fourth icon. */}
-      <section className="glass relative grid grid-cols-4 px-1.5 pb-5 pt-8 sm:px-3 sm:pb-7 sm:pt-9 lg:col-span-3">
+      {/* Four filled tiles on a two-by-two grid — widget proportions on every
+          width. The old four-across strip squeezed each figure into ~80px on
+          a phone, which is a table row, not a widget. */}
+      <section className="glass relative grid grid-cols-2 gap-2 p-2.5 pt-9 sm:gap-2.5 sm:p-3 sm:pt-10 lg:col-span-3">
         {preview ? <PreviewTag label={t.home.preview} /> : null}
         {stats.map((s, i) => (
           <div
             key={i}
-            className={`flex flex-col items-center px-1.5 text-center sm:px-2 ${
-              i > 0 ? "border-l border-[var(--color-hairline)]" : ""
-            }`}
+            className="fill flex flex-col items-center rounded-[var(--r-inner)] px-2 py-4 text-center sm:py-5"
           >
             <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-hairline)] bg-white/[0.03] sm:h-12 sm:w-12">
               <s.icon className="h-[18px] w-[18px] text-[var(--color-accent)] sm:h-5 sm:w-5" aria-hidden />
@@ -343,14 +344,14 @@ export function AppHome() {
       </section>
 
       {/* ---- Quick links ------------------------------------------------ */}
-      {/* Four across on a phone; a two-by-two block beside the tip on the
-          board, where each tile finally gets widget proportions. */}
-      <nav className="grid grid-cols-4 gap-2.5 sm:gap-3 lg:col-span-3 lg:grid-cols-2 lg:gap-4">
+      {/* Two-by-two everywhere: four across on a phone left each tile ~80px
+          of label room, which is why they read as buttons, not widgets. */}
+      <nav className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:col-span-3 lg:gap-4">
         {tiles.map((tile, i) => (
           <Link
             key={i}
             href={tile.href}
-            className="glass interactive flex flex-col rounded-[var(--r-control)] p-3 sm:p-4 lg:justify-between lg:rounded-[var(--r-card)] lg:p-5"
+            className="glass interactive flex flex-col rounded-[var(--r-card)] p-4 sm:p-5 lg:justify-between lg:p-5"
           >
             <tile.icon className="h-5 w-5 text-[var(--color-accent)] sm:h-6 sm:w-6" aria-hidden />
             <span className="mt-2.5 text-[10.5px] font-bold uppercase tracking-[0.06em] text-[var(--color-ink)] sm:mt-3.5 sm:text-[12.5px]">

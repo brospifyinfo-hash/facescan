@@ -793,10 +793,10 @@ body {
     rgba(13, 20, 29, 0.5) 100%
   );
   backdrop-filter: blur(42px) saturate(210%) brightness(1.05);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.19);
   box-shadow:
     /* The lit top edge — the single strongest glass cue. */
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.19),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.23),
     /* A faint return light along the bottom, as on a thick pane. */
     inset 0 -1px 0 0 rgba(255, 255, 255, 0.045),
     /* Side bevels: barely-there, but they close the ring of light that
@@ -841,12 +841,12 @@ body {
   background:
     linear-gradient(
       180deg,
-      rgba(255, 255, 255, 0.12) 0%,
+      rgba(255, 255, 255, 0.15) 0%,
       rgba(255, 255, 255, 0) 42%
     ),
     radial-gradient(
       130% 90% at 12% -12%,
-      rgba(255, 255, 255, 0.08) 0%,
+      rgba(255, 255, 255, 0.1) 0%,
       rgba(255, 255, 255, 0) 52%
     );
 }

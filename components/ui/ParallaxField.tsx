@@ -28,49 +28,53 @@ type Blob = {
 // Positions are offset from the four static fields, so the moving light
 // layers WITH the standing light instead of doubling it. Alphas are low:
 // these add to an ambience that already exists.
+// Sizes are min(vw, rem)-shaped via vmin so a phone gets fields that still
+// fill a meaningful share of its viewport — pure vw made them coasters on a
+// 390px screen, and the whole effect disappeared exactly where scrolling
+// happens most.
 const BLOBS: Blob[] = [
   {
-    depth: -0.05,
+    depth: -0.07,
     style: {
       left: "16%",
       top: "12%",
-      width: "38vw",
-      height: "38vw",
+      width: "max(38vw, 60vmin)",
+      height: "max(38vw, 60vmin)",
       background:
-        "radial-gradient(closest-side, rgba(95, 227, 138, 0.10), transparent 70%)",
+        "radial-gradient(closest-side, rgba(95, 227, 138, 0.16), transparent 70%)",
     },
   },
   {
-    depth: -0.11,
+    depth: -0.14,
     style: {
       right: "4%",
       top: "42%",
-      width: "44vw",
-      height: "44vw",
+      width: "max(44vw, 66vmin)",
+      height: "max(44vw, 66vmin)",
       background:
-        "radial-gradient(closest-side, rgba(56, 152, 255, 0.09), transparent 72%)",
+        "radial-gradient(closest-side, rgba(56, 152, 255, 0.14), transparent 72%)",
     },
   },
   {
-    depth: -0.18,
+    depth: -0.22,
     style: {
       left: "30%",
       bottom: "-14%",
-      width: "48vw",
-      height: "48vw",
+      width: "max(48vw, 72vmin)",
+      height: "max(48vw, 72vmin)",
       background:
-        "radial-gradient(closest-side, rgba(132, 104, 255, 0.08), transparent 70%)",
+        "radial-gradient(closest-side, rgba(132, 104, 255, 0.13), transparent 70%)",
     },
   },
   {
-    depth: -0.08,
+    depth: -0.1,
     style: {
       left: "-8%",
       bottom: "18%",
-      width: "34vw",
-      height: "34vw",
+      width: "max(34vw, 54vmin)",
+      height: "max(34vw, 54vmin)",
       background:
-        "radial-gradient(closest-side, rgba(95, 227, 138, 0.06), transparent 70%)",
+        "radial-gradient(closest-side, rgba(95, 227, 138, 0.11), transparent 70%)",
     },
   },
 ];
