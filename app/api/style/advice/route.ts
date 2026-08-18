@@ -32,7 +32,12 @@ import type { QuizAnswers, ScanMetrics } from "@/lib/store";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const TIMEOUT_MS = Number(process.env.STYLE_TIMEOUT_MS ?? 40_000);
+// 22 s per attempt, NOT 40: the advice is a short JSON document that
+// typically returns in single-digit seconds, and two attempts have to fit
+// inside maxDuration together with the entitlement gate (a spreadsheet
+// round trip that can take seconds itself). 2 × 40 s was 80 s of budget in
+// a 60 s function — the "retry" was Vercel killing the socket.
+const TIMEOUT_MS = Number(process.env.STYLE_TIMEOUT_MS ?? 22_000);
 const MAX_ATTEMPTS = 2;
 
 const STATUS: Record<VisionError["kind"], number> = {

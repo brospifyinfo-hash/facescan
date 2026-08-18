@@ -74,9 +74,18 @@ function revive(raw: unknown): HistoryEntry | null {
 export class SheetsHistoryStore implements HistoryStore {
   async list(email: string): Promise<HistoryEntry[]> {
     const { url, token } = config();
-    const data = await call<{ scans: unknown[] }>(
+    const data = await call<{ scans?: unknown[] }>(
       `${url}?token=${encodeURIComponent(token)}&action=scans&email=${encodeURIComponent(email)}`,
     );
+    // THE RESPONSE MUST CARRY A `scans` FIELD. An out-of-date Apps Script
+    // answers a GET with its DEFAULT branch — the product catalogue — which
+    // parses fine and would read here as an empty history. Same guard, same
+    // reason as skGet() in lib/sheets-kv.ts.
+    if (!("scans" in data)) {
+      throw new Error(
+        "Sheets backend: action=scans is unsupported — the deployed Apps Script is out of date.",
+      );
+    }
     return (data.scans ?? [])
       .map(revive)
       .filter((e): e is HistoryEntry => e !== null)

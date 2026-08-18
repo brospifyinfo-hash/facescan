@@ -9,11 +9,18 @@ export const runtime = "nodejs";
 export async function GET() {
   const session = await currentSession();
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  const scans = await history.list(session.email);
-  return NextResponse.json({
-    scans,
-    quota: await scanQuota(session.email, scans.length),
-  });
+  // A store that cannot answer is an outage, not an empty history — the two
+  // must be distinguishable, or a backend failure reads as "no scans yet".
+  try {
+    const scans = await history.list(session.email);
+    return NextResponse.json({
+      scans,
+      quota: await scanQuota(session.email, scans),
+    });
+  } catch (err) {
+    console.error("[history] list failed:", err instanceof Error ? err.message : err);
+    return NextResponse.json({ error: "history_unavailable" }, { status: 503 });
+  }
 }
 
 /**
@@ -42,8 +49,14 @@ export async function POST(request: Request) {
   // The scan allowance, finally enforced where lib/pricing.ts always said it
   // was. Counted from the stored history rather than from a counter, so it
   // cannot drift away from what the customer can actually see in /konto.
-  const existing = await history.list(session.email);
-  const quota = await scanQuota(session.email, existing.length);
+  let quota;
+  try {
+    const existing = await history.list(session.email);
+    quota = await scanQuota(session.email, existing);
+  } catch (err) {
+    console.error("[history] quota read failed:", err instanceof Error ? err.message : err);
+    return NextResponse.json({ error: "history_unavailable" }, { status: 503 });
+  }
   if (quota.remaining <= 0) {
     return NextResponse.json({ error: "quota_exhausted", quota }, { status: 429 });
   }
@@ -75,9 +88,14 @@ export async function POST(request: Request) {
         : null,
   };
 
-  const scan = await history.add(session.email, entry);
-  return NextResponse.json(
-    { scan, quota: { ...quota, used: quota.used + 1, remaining: quota.remaining - 1 } },
-    { status: 201 },
-  );
+  try {
+    const scan = await history.add(session.email, entry);
+    return NextResponse.json(
+      { scan, quota: { ...quota, used: quota.used + 1, remaining: quota.remaining - 1 } },
+      { status: 201 },
+    );
+  } catch (err) {
+    console.error("[history] add failed:", err instanceof Error ? err.message : err);
+    return NextResponse.json({ error: "history_unavailable" }, { status: 503 });
+  }
 }

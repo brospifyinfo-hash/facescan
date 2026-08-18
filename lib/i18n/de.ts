@@ -421,6 +421,8 @@ export const de: Dict = {
       errNotImage: "Das war kein Bild, das wir lesen konnten. Nimm ein JPG oder PNG.",
       errSignIn: "Melde dich an, damit wir die Bilder deinem Konto zuordnen können.",
       errQuota: "Du hast alle Bilder aus deinem Paket verbraucht.",
+      errNotEntitled:
+        "Dein Kauf konnte nicht bestätigt werden. Melde dich mit der E-Mail-Adresse an, mit der du gekauft hast.",
     },
     tipTitle: "Tipp für dich",
     tipBody:
@@ -483,7 +485,7 @@ export const de: Dict = {
   },
   report: {
     title: "KI-Tiefenanalyse",
-    body: "Dein vollständiger Report wird von Claude Vision aus deinen beiden Fotos, deinen Messwerten und deinen Quiz-Antworten erstellt.",
+    body: "Dein vollständiger Report wird von unserer KI aus deinen beiden Fotos, deinen Messwerten und deinen Quiz-Antworten erstellt.",
     consent:
       "Ich bin damit einverstanden, dass meine beiden Fotos einmalig und verschlüsselt zur KI-Verarbeitung übertragen werden, um diesen Report zu erstellen. Sie werden nach der Verarbeitung nicht auf dem Server gespeichert.",
     generate: "Vollständigen Report erstellen",
@@ -492,6 +494,9 @@ export const de: Dict = {
     errNoPhotos:
       "Deine Fotos sind nicht mehr in dieser Browser-Sitzung (sie werden nie gespeichert). Starte einen neuen Scan, um den Report zu erstellen.",
     errNetwork: "Netzwerkfehler — bitte versuch es erneut.",
+    errSignIn: "Deine Anmeldung ist abgelaufen. Melde dich kurz neu an und versuch es nochmal.",
+    errNotEntitled:
+      "Dein Kauf konnte nicht bestätigt werden. Melde dich mit der E-Mail-Adresse an, mit der du gekauft hast.",
   },
   auth: {
     title: "Analyse sichern",

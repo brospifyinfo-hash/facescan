@@ -271,6 +271,8 @@ export interface Dict {
       errNotImage: string;
       errSignIn: string;
       errQuota: string;
+      /** The server could not confirm the purchase (403 not_entitled). */
+      errNotEntitled: string;
     };
     tipTitle: string;
     tipBody: string;
@@ -333,6 +335,10 @@ export interface Dict {
     oneTime: string;
     errNoPhotos: string;
     errNetwork: string;
+    /** The session cookie is missing or expired (401). */
+    errSignIn: string;
+    /** The server could not confirm the purchase (403 not_entitled). */
+    errNotEntitled: string;
   };
   auth: {
     title: string;

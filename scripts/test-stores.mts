@@ -23,7 +23,7 @@
 
 import { entitlementsEnforceable, entitlementBacking } from "../lib/stripe/entitlements";
 import { otpBacking } from "../lib/auth/store";
-import { limitFor } from "../lib/history/quota";
+import { limitFor, usedFor } from "../lib/history/quota";
 
 let failed = 0;
 let checks = 0;
@@ -108,12 +108,20 @@ ok("nothing at all → do NOT enforce", entitlementsEnforceable() === false);
 console.log("\nWhat that means downstream");
 
 ok(
-  "not enforcing means the top scan allowance, not the bottom",
-  limitFor(null, false) === 10,
-  "otherwise everyone is capped at one saved scan",
+  "no purchase means the top scan allowance, not the bottom",
+  limitFor(null) === 10,
+  "SCAN_QUOTA prices a purchase; applied to a non-purchase it capped everyone at one saved scan",
 );
-ok("enforcing means an unpurchased address gets the raw allowance", limitFor(null, true) === 1);
-ok("a known plan always wins over both", limitFor("blueprint", true) === 10 && limitFor("pro", false) === 1);
+ok("a known plan gets exactly its own quota", limitFor("blueprint") === 10 && limitFor("pro") === 1);
+ok(
+  "a purchase counts from its own grant, not from the account's first scan",
+  usedFor("pro", [{ at: 100 }, { at: 200 }, { at: 300 }], 250) === 1,
+  "the funnel forces a sign-in (and thus a save) BEFORE checkout — counting lifetime spent the plan's allowance before the purchase existed",
+);
+ok(
+  "without a plan everything counts against the free allowance",
+  usedFor(null, [{ at: 100 }, { at: 200 }], 0) === 2,
+);
 
 for (const k of KEYS) {
   if (saved[k] === undefined) delete process.env[k];

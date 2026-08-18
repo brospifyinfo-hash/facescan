@@ -56,6 +56,21 @@ export function StyleStudio({
     setSlots((prev) => prev.map((slot, idx) => (idx === i ? next : slot)));
   }, []);
 
+  // The gate answers with stable tokens, not sentences. Every one of them
+  // needs a translated message — "not_entitled" rendered verbatim was the
+  // most common thing a customer with a hiccuping entitlement read here.
+  const gateMessage = useCallback(
+    (token: unknown): string | null =>
+      token === "unauthorized"
+        ? s.errSignIn
+        : token === "not_entitled"
+          ? s.errNotEntitled
+          : token === "quota_exhausted"
+            ? s.errQuota
+            : null,
+    [s.errSignIn, s.errNotEntitled, s.errQuota],
+  );
+
   const render = useCallback(
     async (i: number, dataUrl: string, prompt: string, kind: "hairstyle" | "projection") => {
       setSlot(i, { status: "loading" });
@@ -65,9 +80,12 @@ export function StyleStudio({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ photo: dataUrl, prompt, kind }),
         });
-        const json = await res.json();
+        const json = await res.json().catch(() => null);
         if (!res.ok) {
-          setSlot(i, { status: "error", error: json?.error ?? s.errGeneric });
+          setSlot(i, {
+            status: "error",
+            error: gateMessage(json?.error) ?? json?.error ?? s.errGeneric,
+          });
           return;
         }
         if (typeof json?.quota?.remaining === "number") setRemaining(json.quota.remaining);
@@ -76,7 +94,7 @@ export function StyleStudio({
         setSlot(i, { status: "error", error: s.errGeneric });
       }
     },
-    [s.errGeneric, setSlot],
+    [gateMessage, s.errGeneric, setSlot],
   );
 
   const start = useCallback(
@@ -112,16 +130,10 @@ export function StyleStudio({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ photo: dataUrl, quiz, metrics, locale }),
         });
-        const json = await res.json();
+        const json = await res.json().catch(() => null);
         if (!res.ok) {
           setPhase("error");
-          setError(
-            json?.error === "unauthorized"
-              ? s.errSignIn
-              : json?.error === "quota_exhausted"
-                ? s.errQuota
-                : (json?.error ?? s.errGeneric),
-          );
+          setError(gateMessage(json?.error) ?? json?.error ?? s.errGeneric);
           return;
         }
 
@@ -144,7 +156,7 @@ export function StyleStudio({
         setError(s.errGeneric);
       }
     },
-    [locale, metrics, quiz, render, s, t],
+    [gateMessage, locale, metrics, quiz, render, s, t],
   );
 
   const retry = (i: number) => {

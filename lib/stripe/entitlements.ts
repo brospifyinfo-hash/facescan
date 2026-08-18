@@ -182,6 +182,27 @@ class SheetsEntitlementStore implements EntitlementStore {
   /** The old behaviour, kept as a floor. See SheetsOtpStore for why. */
   private fallback = new MemoryEntitlementStore();
 
+  /**
+   * Positive reads, remembered per instance.
+   *
+   * Two jobs. FRESH (under a minute) it answers without a round trip — one
+   * style-studio run gates four requests in quick succession, and four
+   * spreadsheet reads for one unchanged answer is how Apps-Script timeouts
+   * get provoked. STALE it is the answer of last resort when the backend
+   * errors: a purchase is permanent, so a positive read CANNOT go wrong by
+   * being old — while falling through to the empty memory floor turns one
+   * slow spreadsheet call into a 403 for somebody who paid.
+   *
+   * Only ever positive. A null is never cached, so a fresh purchase shows up
+   * on the next read rather than after a minute.
+   */
+  // Twenty seconds, not sixty: the burst this exists for — one advice call
+  // and three renders gating within a couple of seconds — fits easily, while
+  // the window in which an UPGRADE (pro → blueprint) can be answered with
+  // the old tier stays short. Stale-on-error has no such bound on purpose.
+  private seen = new Map<string, { ent: Entitlement; at: number }>();
+  private static FRESH_MS = 20_000;
+
   private async via<T>(remote: () => Promise<T>, local: () => Promise<T>): Promise<T> {
     if (!sheetsKvHealthy()) return local();
     try {
@@ -199,20 +220,34 @@ class SheetsEntitlementStore implements EntitlementStore {
         // No TTL. A purchase is permanent, and an entitlement that quietly
         // expired would take a customer access with it.
         await skSetJson(this.key(email), ent);
+        this.seen.set(email, { ent, at: Date.now() });
       },
       () => this.fallback.grant(email, ent),
     );
   }
 
   async get(email: string) {
+    const hit = this.seen.get(email);
+    if (hit && Date.now() - hit.at < SheetsEntitlementStore.FRESH_MS) return hit.ent;
+
     return this.via(
       async () => {
         const parsed = await skGetJson<Entitlement>(this.key(email));
         // A record naming an unknown plan cannot be honoured, and guessing
         // one would hand out access nobody paid for.
-        return parsed && parsed.plan in RANK ? parsed : null;
+        const ent = parsed && parsed.plan in RANK ? parsed : null;
+        if (ent) this.seen.set(email, { ent, at: Date.now() });
+        // The backend answered: its word beats any cache. (Entitlements are
+        // never revoked, so a null here after a positive would mean the row
+        // was removed by hand — honour that too.)
+        else this.seen.delete(email);
+        return ent;
       },
-      () => this.fallback.get(email),
+      () => {
+        // Backend error. A stale positive is still true — see above.
+        if (hit) return Promise.resolve(hit.ent);
+        return this.fallback.get(email);
+      },
     );
   }
 

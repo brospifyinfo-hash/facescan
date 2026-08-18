@@ -43,7 +43,7 @@ import {
   renderPrompt,
   toAdvice,
 } from "../lib/style/prompt";
-import { limitFor, MAX_QUOTA } from "../lib/history/quota";
+import { limitFor, usedFor, MAX_QUOTA } from "../lib/history/quota";
 import { SCAN_QUOTA } from "../lib/pricing";
 import { de } from "../lib/i18n/de";
 import { en } from "../lib/i18n/en";
@@ -262,19 +262,22 @@ ok("the projection prompt stays separate from the cuts", advice.projectionPrompt
 // out of their own history.
 console.log("\nScan allowance");
 
-ok("blueprint gets ten", limitFor("blueprint", true) === 10);
-ok("pro gets one", limitFor("pro", true) === 1);
-ok("raw gets one", limitFor("raw", true) === 1);
+ok("blueprint gets ten", limitFor("blueprint") === 10);
+ok("pro gets one", limitFor("pro") === 1);
+ok("raw gets one", limitFor("raw") === 1);
+// The important one. SCAN_QUOTA prices what a PURCHASE includes; applied to
+// an address that bought nothing it locked every signed-in customer out of
+// their own history after a single scan — the enforcement flip in production
+// did exactly that.
 ok(
-  "a readable store that reports no purchase means the raw allowance",
-  limitFor(null, true) === SCAN_QUOTA.raw,
+  "no purchase never rations below the top tier",
+  limitFor(null) === MAX_QUOTA && MAX_QUOTA === 10,
+  String(limitFor(null)),
 );
-// The important one. Stripe is unconfigured in production, so this is the
-// branch every real customer hits today.
 ok(
-  "an unreadable store never rations below the top tier",
-  limitFor(null, false) === MAX_QUOTA && MAX_QUOTA === 10,
-  String(limitFor(null, false)),
+  "a purchase counts its scans from grantedAt, not from the beginning",
+  usedFor("raw", [{ at: 1 }, { at: 5 }, { at: 9 }], 6) === 1 &&
+    usedFor(null, [{ at: 1 }, { at: 5 }, { at: 9 }], 6) === 3,
 );
 ok(
   "no tier is ever allowed zero scans",

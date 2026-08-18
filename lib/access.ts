@@ -23,6 +23,7 @@
 // went, so a caller can log the fact rather than the hole being invisible.
 
 import { currentSession } from "./auth/session";
+import { isAdmin } from "./admin";
 import { entitlements, entitlementsEnforceable } from "./stripe/entitlements";
 import { can, type Capability } from "./pricing";
 
@@ -51,6 +52,11 @@ export async function requireCapability(capability: Capability): Promise<AccessR
   if (enforced) {
     const ent = await entitlements.get(session.email);
     if (!ent || !can(ent.plan, capability)) {
+      // The owner's review path. The admin cookie is minted server-side from
+      // ADMIN_CODE (lib/admin.ts) and stands in for an entitlement, so the
+      // paid features can be exercised end-to-end without a test purchase.
+      // Reported as unenforced so the caller's log shows which way it went.
+      if (await isAdmin()) return { ok: true, email: session.email, enforced: false };
       return { ok: false, status: 403, error: "not_entitled" };
     }
   }

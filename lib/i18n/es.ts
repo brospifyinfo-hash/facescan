@@ -421,6 +421,8 @@ export const es: Dict = {
       errNotImage: "No pudimos leer eso como imagen. Usa un JPG o PNG.",
       errSignIn: "Inicia sesión para que podamos vincular las imágenes a tu cuenta.",
       errQuota: "Has usado todas las imágenes incluidas en tu plan.",
+      errNotEntitled:
+        "No hemos podido confirmar tu compra. Inicia sesión con el correo con el que compraste.",
     },
     tipTitle: "Tu consejo",
     tipBody:
@@ -476,7 +478,7 @@ export const es: Dict = {
   },
   report: {
     title: "Informe detallado de IA",
-    body: "Tu informe completo lo genera Claude Vision a partir de tus dos fotos, tus medidas y tus respuestas.",
+    body: "Tu informe completo lo genera nuestra IA a partir de tus dos fotos, tus medidas y tus respuestas.",
     consent:
       "Acepto que mis dos fotos se transmitan una sola vez, de forma segura, para su procesamiento por IA y la generación de este informe. No se almacenan en el servidor después del procesamiento.",
     generate: "Generar mi informe completo",
@@ -485,6 +487,9 @@ export const es: Dict = {
     errNoPhotos:
       "Tus fotos ya no están en esta sesión del navegador (nunca se almacenan). Haz un nuevo escaneo para generar el informe.",
     errNetwork: "Error de red — inténtalo de nuevo.",
+    errSignIn: "Tu sesión ha caducado. Vuelve a iniciar sesión e inténtalo de nuevo.",
+    errNotEntitled:
+      "No hemos podido confirmar tu compra. Inicia sesión con el correo con el que compraste.",
   },
   auth: {
     title: "Guarda tu análisis",

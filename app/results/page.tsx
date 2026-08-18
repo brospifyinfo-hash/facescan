@@ -77,6 +77,27 @@ export default function ResultsPage() {
     fetchSession().then(setSignedInAs);
   }, []);
 
+  // Restore a purchase on load. `plan`/`unlocked` live only in browser
+  // memory, so without this a paying customer who reloads (or comes back
+  // tomorrow) sees the paywall over features they own. The server stays the
+  // authority: the plan comes from what the webhook actually granted, and
+  // `admin` is the owner's review cookie standing in for a purchase.
+  useEffect(() => {
+    if (!signedInAs || unlocked) return;
+    let cancelled = false;
+    void fetch("/api/stripe/entitlement")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled || !data) return;
+        const plan = data.plan ?? (data.admin ? "blueprint" : null);
+        if (plan) unlock(signedInAs, plan);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [signedInAs, unlocked, unlock]);
+
   // Calibration aid, opened with ?raw=1 on ANY page of the funnel — the flag
   // rides in sessionStorage because reloading /results would drop the scan
   // (it only ever lives in memory). Deliberately outside the paywall: this is
@@ -119,15 +140,29 @@ export default function ResultsPage() {
         potential: potentialFor(metrics)?.score ?? null,
       }),
       // A failed save must not interrupt the report the customer just paid
-      // for. It is recoverable — the next scan writes again.
-    }).catch(() => {});
+      // for — but it must not be silently final either. Releasing the ref on
+      // a transient failure lets the next run of this effect (sign-in, or a
+      // remount) try again; a 4xx is a deliberate refusal and is left alone.
+    })
+      .then((res) => {
+        if (!res.ok) {
+          console.warn(`[history] save refused (${res.status})`);
+          if (res.status >= 500) saved.current = false;
+        }
+      })
+      .catch(() => {
+        saved.current = false;
+      });
   }, [signedInAs, metrics]);
 
   // Owner access code — unlocks every gated section with no visible marker,
   // so the paid experience can be reviewed exactly as a customer sees it.
+  // "Every" has to mean the top tier: the store's default plan is "pro",
+  // which has hairstyle/blueprint false — under it the review never showed
+  // the two features the owner most needs to check.
   useEffect(() => {
     const apply = () => {
-      if (hasAccessCode()) unlock("owner@local");
+      if (hasAccessCode()) unlock("owner@local", "blueprint");
     };
     apply();
     window.addEventListener("facescan:access", apply);

@@ -96,10 +96,11 @@ npm install
 npm run dev
 ```
 
-For the paid AI report, create `.env.local`:
+For the paid AI report, the vision scoring and the style studio, create
+`.env.local`:
 
 ```
-ANTHROPIC_API_KEY=sk-ant-...
+OPENAI_API_KEY=sk-...
 ```
 
 `/scan?demo=1` (development only) runs the flow with seeded demo metrics so

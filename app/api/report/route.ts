@@ -30,9 +30,15 @@ import { sha256 } from "@/lib/vision/cache";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-/** Long enough for a full document; three attempts still fit maxDuration. */
+/**
+ * Long enough for a full document — GPT-4.1 takes 20-40 s for ~1,200 words —
+ * and deliberately ONE attempt: a second 50 s try cannot fit inside
+ * maxDuration, so it would not be a retry, it would be Vercel killing the
+ * function mid-write and the customer getting a dead socket instead of the
+ * classified error below. A failed run is retried by the button, not here.
+ */
 const TIMEOUT_MS = Number(process.env.REPORT_TIMEOUT_MS ?? 50_000);
-const MAX_ATTEMPTS = 2;
+const MAX_ATTEMPTS = 1;
 /**
  * The report runs to roughly 1,200 words across six sections. 6000 leaves
  * generous headroom — and a truncated Markdown document is not degraded, it
