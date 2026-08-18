@@ -85,6 +85,10 @@ export function PaymentForm({
    */
   const [charged, setCharged] = useState(false);
 
+  /** The intent Stripe just charged. The fallback below has nothing to ask
+   *  about without it. */
+  const [intentId, setIntentId] = useState<string | null>(null);
+
   /**
    * Whether any wallet is actually offered.
    *
@@ -106,7 +110,7 @@ export function PaymentForm({
    * success we wait for the entitlement to actually appear rather than
    * unlocking on the client's say-so.
    */
-  const waitForEntitlement = useCallback(async () => {
+  const waitForEntitlement = useCallback(async (pi?: string | null) => {
     setPhase("confirming");
     for (let i = 0; i < 20; i++) {
       try {
@@ -122,6 +126,31 @@ export function PaymentForm({
       }
       await new Promise((r) => setTimeout(r, 700));
     }
+    // The webhook has not arrived. Before giving up, ask Stripe directly:
+    // the webhook is a PUSH and can be misconfigured, in the wrong mode or
+    // merely slow, and none of that should leave a paying customer locked out
+    // of what they bought. The server verifies the intent against Stripe, so
+    // this is the same authority pulled instead of pushed — see
+    // app/api/stripe/confirm/route.ts.
+    const id = pi ?? intentId;
+    if (id) {
+      try {
+        const res = await fetch("/api/stripe/confirm", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ paymentIntentId: id }),
+        });
+        const data = await res.json();
+        if (res.ok && data.plan) {
+          setPhase("done");
+          onPaid(data.plan as PlanId);
+          return;
+        }
+      } catch {
+        /* fall through to the honest message */
+      }
+    }
+
     // Paid but not yet granted — say so honestly instead of failing silently.
     //
     // busy and phase deliberately STAY where they are. Resetting them was the
@@ -130,7 +159,7 @@ export function PaymentForm({
     // out of here is the "check again" control, which re-polls; there is no
     // path that pays twice.
     setError(t.pay.errors.timeout);
-  }, [onPaid, t]);
+  }, [onPaid, t, intentId]);
 
   const confirm = async (viaExpress: boolean) => {
     if (!stripe || !elements) return;
@@ -150,7 +179,7 @@ export function PaymentForm({
       return;
     }
 
-    const { error: err } = await stripe.confirmPayment({
+    const { error: err, paymentIntent } = await stripe.confirmPayment({
       elements,
       redirect: "if_required",
       confirmParams: { return_url: `${window.location.origin}/results` },
@@ -166,7 +195,8 @@ export function PaymentForm({
     // Past this line the money has moved. Latch before polling, so even an
     // exception inside waitForEntitlement cannot leave a payable button.
     setCharged(true);
-    await waitForEntitlement();
+    setIntentId(paymentIntent?.id ?? null);
+    await waitForEntitlement(paymentIntent?.id ?? null);
   };
 
   // Express wallets must not bypass the legal confirmations, so the element

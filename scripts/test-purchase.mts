@@ -40,6 +40,7 @@ for (const k of [
 const { POST } = await import("../app/api/stripe/webhook/route");
 const { entitlements } = await import("../lib/stripe/entitlements");
 const { can } = await import("../lib/pricing");
+const { mayClaim } = await import("../lib/stripe/claim");
 
 let failed = 0;
 let checks = 0;
@@ -203,6 +204,44 @@ res = await post(trailing, "t=1,v1=deadbeef");
 ok("and does not open a hole", res.status === 400);
 
 process.env.STRIPE_WEBHOOK_SECRET = SECRET;
+
+
+// ---------------------------------------------------------------------------
+console.log("\nPull-Fallback: wer darf eine Zahlung beanspruchen");
+
+// /api/stripe/confirm exists because the webhook is a PUSH and can be
+// misconfigured, in the wrong mode, or merely slow — none of which should
+// leave a paying customer locked out. It grants from an intent id the browser
+// supplies, so the guard below is the only thing between it and handing
+// access to whoever can guess an id.
+const paid = (email: string, plan: string) => ({
+  status: "succeeded",
+  metadata: { email, plan },
+});
+
+ok("a succeeded intent for this address grants", (() => {
+  const v = mayClaim(paid("kunde@example.com", "blueprint"), "kunde@example.com");
+  return v.ok && v.plan === "blueprint";
+})());
+
+ok(
+  "SOMEBODY ELSE’S payment is refused",
+  mayClaim(paid("fremd@example.com", "blueprint"), "kunde@example.com").ok === false,
+  "without this the endpoint grants to whoever guesses an intent id",
+);
+ok(
+  "and says why",
+  (mayClaim(paid("fremd@example.com", "pro"), "kunde@example.com") as { reason: string }).reason === "not_yours",
+);
+
+// Stripe returns whatever string was written; the store normalises.
+ok("case and whitespace do not matter", mayClaim(paid("  Kunde@Example.COM ", "pro"), "kunde@example.com").ok);
+
+ok("an unpaid intent grants nothing", mayClaim({ status: "requires_payment_method", metadata: { email: "kunde@example.com", plan: "pro" } }, "kunde@example.com").ok === false);
+ok("a canceled intent grants nothing", mayClaim({ status: "canceled", metadata: { email: "kunde@example.com", plan: "pro" } }, "kunde@example.com").ok === false);
+ok("an unknown plan grants nothing", mayClaim(paid("kunde@example.com", "premium_deluxe"), "kunde@example.com").ok === false);
+ok("missing metadata grants nothing", mayClaim({ status: "succeeded" }, "kunde@example.com").ok === false);
+ok("an empty address grants nothing", mayClaim(paid("", "pro"), "kunde@example.com").ok === false);
 
 console.log(
   failed === 0
