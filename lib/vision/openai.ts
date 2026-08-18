@@ -2,13 +2,17 @@
 //
 // WHY fetch AND NOT THE SDK
 // -------------------------
-// This project already ships one AI SDK (@anthropic-ai/sdk, for the paid
-// Markdown report). Adding a second one buys a typed wrapper around a
-// single POST and costs a dependency that has to be kept in step with the
-// runtime. The Responses API is one endpoint with a JSON body; everything
-// that actually matters here — the retry policy, the timeout, how a 429 is
-// read — has to be written by hand either way, and writing it against
-// fetch means it is visible rather than buried in a client's defaults.
+// An SDK buys a typed wrapper around a single POST and costs a dependency
+// that has to be kept in step with the runtime. The Responses API is one
+// endpoint with a JSON body; everything that actually matters here — the
+// retry policy, the timeout, how a 429 is read — has to be written by hand
+// either way, and writing it against fetch means it is visible rather than
+// buried in a client's defaults.
+//
+// This paragraph used to justify itself by pointing at @anthropic-ai/sdk,
+// which the paid report ran on. That dependency is gone: the report now uses
+// this transport too, so the whole product speaks to one provider with one
+// key. The argument stands on its own.
 //
 // WHAT THE RETRY POLICY IS FOR, AND WHAT IT IS NOT FOR
 // ----------------------------------------------------
@@ -41,7 +45,15 @@ export interface CallOptions {
   system: string;
   instruction: string;
   images: VisionImage[];
-  responseFormat: Record<string, unknown>;
+  /**
+   * Strict structured output. OMITTED for prose.
+   *
+   * Optional because two callers want JSON with a schema and one — the paid
+   * deep-dive report — wants Markdown. Forcing a schema on the report would
+   * mean wrapping a whole document in a JSON string field, which buys nothing
+   * and costs an escaping layer that can truncate mid-document.
+   */
+  responseFormat?: Record<string, unknown>;
   /** Per-attempt timeout in ms. */
   timeoutMs: number;
   maxAttempts: number;
@@ -172,7 +184,7 @@ export async function callVisionModel(opts: CallOptions): Promise<CallResult> {
         ],
       },
     ],
-    text: { format: opts.responseFormat },
+    ...(opts.responseFormat ? { text: { format: opts.responseFormat } } : {}),
   };
 
   const base: LogFields = {
