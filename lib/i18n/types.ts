@@ -453,6 +453,13 @@ export interface Dict {
   navAccount: string;
   navAdmin: string;
   /** The customer profile at /konto. */
+  /** The cookie/consent banner. */
+  consent: {
+    title: string;
+    body: string;
+    accept: string;
+    essential: string;
+  };
   account: {
     title: string;
     loading: string;

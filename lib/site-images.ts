@@ -16,7 +16,7 @@
 // see the current value in the spreadsheet. Two URLs is not worth a tab of
 // its own.
 
-export const IMAGE_SLOTS = ["hero", "tip"] as const;
+export const IMAGE_SLOTS = ["hero", "tip", "avatar"] as const;
 export type ImageSlot = (typeof IMAGE_SLOTS)[number];
 
 export interface SlotSpec {
@@ -46,6 +46,12 @@ export const SLOT_SPECS: Record<ImageSlot, SlotSpec> = {
     hint: "Der Verlauf im Block „Tipp des Tages“. Transparenter Hintergrund, quer.",
     fallback: "/tip-chart.svg",
     aspect: "16 / 9",
+  },
+  avatar: {
+    label: "Kreis-Grafik (Letzter Scan)",
+    hint: "Das Bild im Ring der Karte „Letzter Scan“, solange kein eigenes Scan-Foto da ist. Wird kreisrund beschnitten — quadratisch anliefern.",
+    fallback: "/strengths-mesh.webp",
+    aspect: "1 / 1",
   },
 };
 

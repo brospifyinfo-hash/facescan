@@ -61,6 +61,7 @@ export function AppHome() {
   const [art, setArt] = useState<Record<string, string>>({
     hero: SLOT_SPECS.hero.fallback,
     tip: SLOT_SPECS.tip.fallback,
+    avatar: SLOT_SPECS.avatar.fallback,
   });
 
   // Both are progressive: the page is complete without either, and neither
@@ -154,7 +155,7 @@ export function AppHome() {
     // before — columns of floating content instead of tiles.
     <div className="flex flex-col gap-9 sm:gap-11 lg:grid lg:grid-cols-6 lg:items-start lg:gap-x-10 lg:gap-y-12">
       {/* ---- Header ---------------------------------------------------- */}
-      <header className="flex items-center justify-between gap-3 pt-1 lg:col-span-6">
+      <header className="order-1 flex items-center justify-between gap-3 pt-1 lg:col-span-6">
         {/* The owner access code lives on the wordmark, exactly as it did on
             the header this replaced — invisible, and the only way to review
             the paid report as a customer sees it. */}
@@ -170,7 +171,7 @@ export function AppHome() {
       </header>
 
       {/* ---- Hero ------------------------------------------------------ */}
-      <section className="relative lg:col-span-6">
+      <section className="order-2 relative lg:col-span-6">
         {/* The soft light behind the figure. In CSS rather than baked into the
             artwork, so a swapped-in image gets the same glow. */}
         <div
@@ -248,8 +249,9 @@ export function AppHome() {
           would otherwise land on top of the fourth icon. */}
       {/* A two-by-two quadrant divided by one crossing hairline, floating
           straight on the background — the numbers are the object, not a box
-          around them. */}
-      <section className="relative grid grid-cols-2 pt-6 lg:col-span-3 lg:pt-0">
+          around them. Ordered AFTER the last scan: the reading you just got
+          makes sense before the aggregate it feeds into. */}
+      <section className="order-4 relative grid grid-cols-2 border-t border-[var(--color-hairline)] pt-6 lg:col-span-3 lg:border-t-0 lg:pt-0">
         {preview ? <PreviewTag label={t.home.preview} /> : null}
         {stats.map((s, i) => (
           <div
@@ -278,8 +280,9 @@ export function AppHome() {
         ))}
       </section>
 
-      {/* ---- Last scan -------------------------------------------------- */}
-      <section className="border-t border-[var(--color-hairline)] pt-6 lg:col-span-3 lg:border-t-0 lg:pt-0">
+      {/* ---- Last scan — the customer's own result, straight after the
+          hero: the page answers "where do I stand" before it aggregates. */}
+      <section className="order-3 border-t border-[var(--color-hairline)] pt-6 lg:col-span-3 lg:border-t-0 lg:pt-0">
         <div className="flex items-center justify-between gap-3">
           <h2 className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--color-accent)] sm:text-[13.5px]">
             {t.home.lastScan}
@@ -302,7 +305,7 @@ export function AppHome() {
           // No scan on record. The layout keeps its shape and says what is
           // missing, rather than filling the slots with the mock's numbers.
           <div className="mt-4 flex flex-col items-center gap-2.5 py-3 text-center">
-            <ScoreAvatar src={null} value={null} size={72} />
+            <ScoreAvatar src={null} value={null} size={72} fallbackSrc={art.avatar} />
             <p className="text-[15px] font-semibold text-[var(--color-ink)] sm:text-[17px]">{t.home.emptyTitle}</p>
             <p className="max-w-[300px] text-[12.5px] leading-relaxed text-[var(--color-ink-tertiary)] sm:text-[14px]">
               {t.home.emptyBody}
@@ -310,7 +313,12 @@ export function AppHome() {
           </div>
         ) : (
           <div className="mt-3.5 flex items-center gap-3">
-            <ScoreAvatar src={photos?.front?.dataUrl ?? null} value={shownScore} size={92} />
+            <ScoreAvatar
+              src={photos?.front?.dataUrl ?? null}
+              value={shownScore}
+              size={92}
+              fallbackSrc={art.avatar}
+            />
 
             <div className="min-w-0 flex-1">
               {shownDate ? (
@@ -357,7 +365,7 @@ export function AppHome() {
       {/* ---- Quick links ------------------------------------------------ */}
       {/* The one place chrome remains: these are CONTROLS, and they wear the
           quiz option's thin outline — the affordance the user already knows. */}
-      <nav className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:col-span-3 lg:gap-4">
+      <nav className="order-5 grid grid-cols-2 gap-2.5 sm:gap-3 lg:col-span-3 lg:gap-4">
         {tiles.map((tile, i) => (
           <Link
             key={i}
@@ -377,7 +385,7 @@ export function AppHome() {
       </nav>
 
       {/* ---- Tip of the day --------------------------------------------- */}
-      <section className="relative border-t border-[var(--color-hairline)] pt-6 lg:col-span-3 lg:border-t-0 lg:pt-0">
+      <section className="order-6 relative border-t border-[var(--color-hairline)] pt-6 lg:col-span-3 lg:border-t-0 lg:pt-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           aria-hidden
@@ -409,7 +417,7 @@ export function AppHome() {
       </section>
 
       {/* ---- Products, routine, upgrade -------------------------------- */}
-      <div className="flex flex-col gap-9 sm:gap-11 lg:col-span-6">
+      <div className="order-7 flex flex-col gap-9 sm:gap-11 lg:col-span-6">
         <ProductShowcase products={ranked} />
         <RoutineStrip />
       </div>

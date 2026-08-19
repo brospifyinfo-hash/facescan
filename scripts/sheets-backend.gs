@@ -287,6 +287,54 @@ function kvDel_(key) {
  * the limit — which is the entire value of a brute-force limit. Under the
  * script lock this is a single serialised operation.
  */
+/**
+ * Every unexpired record whose key starts with the prefix. Powers the admin
+ * live view (prefix "live:") and the customer merge (prefixes "ent:" and
+ * "pay:"). Bounded to 500 matches; the kv tab is pruned, not archival.
+ */
+function kvScan_(prefix) {
+  var sh = kvSheet_();
+  var last = sh.getLastRow();
+  if (last < 2) return [];
+  var values = sh.getRange(2, 1, last - 1, KV_COLUMNS.length).getValues();
+  var now = Date.now();
+  var out = [];
+  for (var i = 0; i < values.length && out.length < 500; i++) {
+    var key = String(values[i][0] || "");
+    if (prefix && key.indexOf(prefix) !== 0) continue;
+    var exp = Number(values[i][2]) || 0;
+    if (exp > 0 && now > exp) continue;
+    out.push({ key: key, value: String(values[i][1] || ""), expiresAt: exp });
+  }
+  return out;
+}
+
+/** Per-address aggregates over the scans tab — the admin's customer list. */
+function customersFor_() {
+  var sh = scanSheet_();
+  var last = sh.getLastRow();
+  if (last < 2) return [];
+  var values = sh.getRange(2, 1, last - 1, SCAN_COLUMNS.length).getValues();
+  var byEmail = {};
+  for (var i = 0; i < values.length; i++) {
+    var email = String(values[i][1] || "").trim().toLowerCase();
+    if (!email) continue;
+    var at = Number(values[i][2]) || 0;
+    var overall = Number(values[i][3]) || 0;
+    var cur = byEmail[email];
+    if (!cur) {
+      cur = byEmail[email] = { email: email, scans: 0, firstAt: at, lastAt: at, best: overall };
+    }
+    cur.scans += 1;
+    if (at < cur.firstAt) cur.firstAt = at;
+    if (at > cur.lastAt) cur.lastAt = at;
+    if (overall > cur.best) cur.best = overall;
+  }
+  var out = [];
+  for (var k in byEmail) out.push(byEmail[k]);
+  return out;
+}
+
 function kvBump_(key, field, by) {
   var sh = kvSheet_();
   var row = kvFindRow_(sh, key);
@@ -322,6 +370,8 @@ function doGet(e) {
   if (!authed_(p.token)) return json_({ error: "unauthorized" });
   if (p.action === "scans") return json_({ scans: scansFor_(p.email) });
   if (p.action === "kv-get") return json_({ record: kvGet_(String(p.key || "")) });
+  if (p.action === "kv-scan") return json_({ records: kvScan_(String(p.prefix || "")) });
+  if (p.action === "customers") return json_({ customers: customersFor_() });
   return json_({ products: readAll_(sheet_()) });
 }
 

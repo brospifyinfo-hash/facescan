@@ -171,6 +171,28 @@ export async function skGetJson<T>(key: string): Promise<T | null> {
   }
 }
 
+/**
+ * Every unexpired record whose key starts with the prefix — the admin's
+ * window into the store (live sessions, entitlements, receipts). Same
+ * out-of-date-script guard as skGet: a doGet that predates the action
+ * answers with the catalogue default, which must read as "unsupported",
+ * never as "empty".
+ */
+export async function skScan(
+  prefix: string,
+): Promise<Array<{ key: string; value: string; expiresAt: number }>> {
+  const { token } = config();
+  const res = await call<{ records?: Array<{ key: string; value: string; expiresAt: number }> }>({
+    method: "GET",
+    query: `?action=kv-scan&token=${encodeURIComponent(token)}&prefix=${encodeURIComponent(prefix)}`,
+  });
+  if (!("records" in res)) {
+    markDegraded(new Error("kv-scan answered without a records field — the script is out of date"));
+    throw new Error("Sheets backend: kv-scan unsupported");
+  }
+  return res.records ?? [];
+}
+
 /** `ttlMs` of 0 or undefined means no expiry — used for purchases. */
 export async function skSet(key: string, value: string, ttlMs?: number): Promise<void> {
   await post({

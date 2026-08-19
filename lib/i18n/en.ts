@@ -603,6 +603,12 @@ export const en: Dict = {
   },
   navAccount: "Account",
   navAdmin: "Admin",
+  consent: {
+    title: "Cookies & statistics",
+    body: "We use essential cookies for sign-in and checkout. “Accept all” additionally allows anonymous visit statistics (page views, country, time on page) that help us improve the site.",
+    accept: "Accept all",
+    essential: "Essential only",
+  },
   account: {
     title: "Your account",
     loading: "Loading…",

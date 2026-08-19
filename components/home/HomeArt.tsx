@@ -56,10 +56,13 @@ export function ScoreAvatar({
   src,
   value,
   size = 86,
+  fallbackSrc = "/strengths-mesh.webp",
 }: {
   src: string | null;
   value: number | null;
   size?: number;
+  /** Shown when no scan photo exists — the admin-swappable "avatar" slot. */
+  fallbackSrc?: string;
 }) {
   const r = 46;
   const circumference = 2 * Math.PI * r;
@@ -87,7 +90,7 @@ export function ScoreAvatar({
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src="/strengths-mesh.webp"
+            src={fallbackSrc}
             alt=""
             className="h-full w-full scale-[1.3] object-contain opacity-60"
           />

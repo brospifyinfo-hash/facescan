@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import { I18nProvider } from "@/lib/i18n";
 import { META_DESCRIPTION, VISION_ACTIVE } from "@/lib/i18n/privacy";
 import { ParallaxField } from "@/components/ui/ParallaxField";
+import { ConsentBanner } from "@/components/ui/ConsentBanner";
+import { Tracker } from "@/components/ui/Tracker";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -51,7 +53,13 @@ export default function RootLayout({
         {/* The moving half of the light — the body paints the standing half,
             so the glass refracts something even before hydration. */}
         <ParallaxField />
-        <I18nProvider>{children}</I18nProvider>
+        <I18nProvider>
+          {children}
+          {/* Consent first, statistics second: the tracker checks the choice
+              the banner wrote and stays silent without an "accept all". */}
+          <ConsentBanner />
+          <Tracker />
+        </I18nProvider>
       </body>
     </html>
   );

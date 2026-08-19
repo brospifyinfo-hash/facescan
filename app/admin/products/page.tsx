@@ -1,5 +1,6 @@
 import { isAdmin, adminConfigured } from "@/lib/admin";
 import { AdminLogin } from "@/components/admin/AdminLogin";
+import { AdminNav } from "@/components/admin/AdminNav";
 import { ProductAdmin } from "@/components/admin/ProductAdmin";
 import { SiteImageAdmin } from "@/components/admin/SiteImageAdmin";
 
@@ -29,6 +30,9 @@ export default async function AdminProductsPage() {
 
   return (
     <>
+      <div className="mx-auto w-full max-w-3xl px-4 pt-8">
+        <AdminNav active="produkte" />
+      </div>
       <ProductAdmin />
       {/* Same page, same gate. A second admin URL would be a second thing to
           remember and a second thing to protect. */}

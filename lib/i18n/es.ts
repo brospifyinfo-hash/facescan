@@ -604,6 +604,12 @@ export const es: Dict = {
   },
   navAccount: "Cuenta",
   navAdmin: "Admin",
+  consent: {
+    title: "Cookies y estadísticas",
+    body: "Usamos cookies esenciales para el inicio de sesión y la compra. Con «Aceptar todo» permites además estadísticas anónimas de visitas (páginas vistas, país, tiempo en la página) que nos ayudan a mejorar.",
+    accept: "Aceptar todo",
+    essential: "Solo esenciales",
+  },
   account: {
     title: "Tu cuenta",
     loading: "Cargando…",
