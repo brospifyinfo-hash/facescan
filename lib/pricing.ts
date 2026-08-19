@@ -8,10 +8,9 @@
 // Stripe is wired up, create Price objects in these same currencies rather
 // than converting at charge time.
 //
-// ⚠️ `blueprint` advertises AI-generated projection images that DO NOT EXIST
-// yet — see components/dashboard/GlowUpProjection.tsx. Either ship an image
-// model behind it or remove that line before taking real money, because
-// advertising an undelivered feature is misleading under EU consumer law.
+// The projection image blueprint advertises is real since the style studio
+// shipped (gpt-image-1, /api/style/render kind:"projection") — the warning
+// that used to live here is settled.
 
 import type { Locale } from "./i18n/types";
 
@@ -42,12 +41,18 @@ export const SCAN_QUOTA: Record<PlanId, number> = {
 /**
  * Capability flags — the UI asks these, never the plan id directly.
  *
- * `products` is the affiliate recommendation block. It rides with the action
- * plan and above, because the recommendations ARE the action plan pointed at
- * things you can buy: the ranking comes from the same buildPlan() weights, so
- * a tier that cannot see the plan has nothing to hang them on. Expressed here
- * rather than as `plan === "pro"` in the component, so adding a tier later is
- * still a change to this file and nothing else.
+ * THE THREE TIERS, AS THE OWNER DEFINED THEM (19.08.2026):
+ *
+ *   1.95  raw        the general analysis, nothing else
+ *   5.95  pro        the full analysis plus the product recommendations
+ *  18.95  blueprint  everything: the glow-up plan (action plan), the
+ *                    four-week plan, products, the hairstyle studio, the
+ *                    result image (projection), the AI deep-dive, the export
+ *
+ * The card copy in the dictionaries has to match this table LINE FOR LINE —
+ * they drifted apart once (pro advertised the four-week programme its own
+ * flag denied) and a plan card that promises what the gate refuses is a
+ * refund waiting to happen.
  */
 export const CAPABILITIES = {
   // 1.95 — the analysis, and nothing else.
@@ -63,11 +68,12 @@ export const CAPABILITIES = {
     blueprint: false,
     download: false,
   },
-  // 5.95 — everything above, plus the product recommendations and the
-  // re-scan simulation that plays once the purchase lands.
+  // 5.95 — the analysis plus the product recommendations (and the account
+  // history to come back to; the unlock simulation is a moment, not a
+  // listed feature). The PLANS live in blueprint.
   pro: {
     metrics: true,
-    actionPlan: true,
+    actionPlan: false,
     history: true,
     products: true,
     simulation: true,
@@ -75,7 +81,7 @@ export const CAPABILITIES = {
     hairstyle: false,
     projection: false,
     blueprint: false,
-    download: true,
+    download: false,
   },
   // 18.95 — everything.
   blueprint: {

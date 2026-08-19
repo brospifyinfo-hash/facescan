@@ -344,7 +344,7 @@ export default function ResultsPage() {
                   {t.monthly.upsellBody}
                 </p>
                 <Button className="mt-4" onClick={() => startUnlock()}>
-                  {t.monthly.upsellCta} — {formatPrice(locale, "pro")}
+                  {t.monthly.upsellCta} — {formatPrice(locale, "blueprint")}
                 </Button>
               </section>
             ) : null}
