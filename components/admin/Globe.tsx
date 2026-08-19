@@ -2,13 +2,16 @@
 
 import { useEffect, useRef } from "react";
 
-// The live globe: a wireframe sphere in the scanner's own language, with an
-// accent dot per country that currently has visitors. Canvas 2D and ~90
-// lines of projection math — no three.js for one sphere.
+// The live globe, v2: real country outlines (Natural Earth 110m, public
+// domain, compacted to /world-110m.json at 135 KB) on an orthographic
+// sphere, and the owner can GRAB it — drag rotates in both axes, and the
+// slow auto-spin resumes a few seconds after letting go.
 //
-// The rotation runs on requestAnimationFrame, which stops by itself when
-// the tab is hidden — an admin dashboard left open in a background tab
-// costs nothing.
+// Still canvas 2D, still no dependency. Per frame: batched strokes per
+// country ring, front hemisphere only (~10k points total — comfortable).
+// Countries with active visitors glow: accent border, and a soft fill when
+// the whole outline faces the viewer (filling a limb-crossing polygon in an
+// orthographic projection needs horizon clipping, which buys nothing here).
 
 export interface GlobePoint {
   /** ISO 3166-1 alpha-2, upper case. */
@@ -16,8 +19,13 @@ export interface GlobePoint {
   count: number;
 }
 
-/** Rough centroids for the countries that plausibly show up. Unknown codes
- *  fall back to (0,0) mid-Atlantic — visible, honest, slightly lost. */
+interface CountryShape {
+  c: string;
+  n: string;
+  r: [number, number][][];
+}
+
+/** Dot anchors — rough centroids; unknown codes land mid-Atlantic. */
 const COORDS: Record<string, [number, number]> = {
   AD: [42.5, 1.5], AE: [24, 54], AL: [41, 20], AR: [-34, -64], AT: [47.5, 14],
   AU: [-25, 133], BA: [44, 18], BE: [50.8, 4.5], BG: [43, 25], BR: [-10, -55],
@@ -37,30 +45,27 @@ const COORDS: Record<string, [number, number]> = {
   VN: [16, 108], ZA: [-29, 24],
 };
 
-const TILT = (-22 * Math.PI) / 180;
-
-function project(
-  latDeg: number,
-  lonDeg: number,
-  theta: number,
-  radius: number,
-): { x: number; y: number; z: number } {
-  const lat = (latDeg * Math.PI) / 180;
-  const lon = (lonDeg * Math.PI) / 180 + theta;
-  // Sphere → 3D.
-  let x = Math.cos(lat) * Math.sin(lon);
-  let y = Math.sin(lat);
-  let z = Math.cos(lat) * Math.cos(lon);
-  // Tilt around X so the northern hemisphere faces the viewer a little.
-  const y2 = y * Math.cos(TILT) - z * Math.sin(TILT);
-  const z2 = y * Math.sin(TILT) + z * Math.cos(TILT);
-  return { x: x * radius, y: y2 * radius, z: z2 };
-}
+/** How long after a drag before the auto-spin picks back up. */
+const RESUME_MS = 4_000;
 
 export function Globe({ points, size = 360 }: { points: GlobePoint[]; size?: number }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const live = useRef<GlobePoint[]>(points);
   live.current = points;
+  const world = useRef<CountryShape[] | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    fetch("/world-110m.json")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (alive && Array.isArray(data)) world.current = data as CountryShape[];
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   useEffect(() => {
     const el = canvas.current;
@@ -72,88 +77,201 @@ export function Globe({ points, size = 360 }: { points: GlobePoint[]; size?: num
     el.width = size * dpr;
     el.height = size * dpr;
 
-    let frame = 0;
-    let theta = 0;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let frame = 0;
+    let yaw = 0.55; // start with Europe facing the viewer
+    let pitch = (-24 * Math.PI) / 180;
+    let dragging = false;
+    let lastX = 0;
+    let lastY = 0;
+    let idleSince = 0;
+
+    const R = (size / 2) * 0.84;
+    const cx = size / 2;
+    const cy = size / 2;
+
+    // Projection: sphere → yaw around Y → pitch around X → orthographic.
+    let sinYaw = 0, cosYaw = 1, sinPitch = 0, cosPitch = 1;
+    const setAngles = () => {
+      sinYaw = Math.sin(yaw);
+      cosYaw = Math.cos(yaw);
+      sinPitch = Math.sin(pitch);
+      cosPitch = Math.cos(pitch);
+    };
+    const project = (latDeg: number, lonDeg: number) => {
+      const lat = (latDeg * Math.PI) / 180;
+      const lon = (lonDeg * Math.PI) / 180;
+      const cosLat = Math.cos(lat);
+      const x0 = cosLat * Math.sin(lon);
+      const y0 = Math.sin(lat);
+      const z0 = cosLat * Math.cos(lon);
+      const x1 = x0 * cosYaw + z0 * sinYaw;
+      const z1 = -x0 * sinYaw + z0 * cosYaw;
+      const y2 = y0 * cosPitch - z1 * sinPitch;
+      const z2 = y0 * sinPitch + z1 * cosPitch;
+      return { x: cx + x1 * R, y: cy - y2 * R, z: z2 };
+    };
+
+    /** One ring as a batched path of its front-facing stretches. */
+    const tracePath = (ring: [number, number][]): { allFront: boolean } => {
+      let allFront = true;
+      let pen = false;
+      ctx.beginPath();
+      for (const [lon, lat] of ring) {
+        const p = project(lat, lon);
+        if (p.z > 0) {
+          if (pen) ctx.lineTo(p.x, p.y);
+          else {
+            ctx.moveTo(p.x, p.y);
+            pen = true;
+          }
+        } else {
+          allFront = false;
+          pen = false;
+        }
+      }
+      return { allFront };
+    };
 
     const draw = () => {
-      const R = (size / 2) * 0.82;
-      const cx = size / 2;
-      const cy = size / 2;
+      const now = performance.now();
+      if (!dragging && !reduce && now - idleSince > RESUME_MS) yaw += 0.0022;
+      setAngles();
+
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, size, size);
 
-      // Sphere limb.
+      // Sphere limb + a whisper of ocean so the disk reads as a body.
       ctx.beginPath();
       ctx.arc(cx, cy, R, 0, Math.PI * 2);
-      ctx.strokeStyle = "rgba(95, 227, 138, 0.35)";
+      ctx.fillStyle = "rgba(95, 227, 138, 0.028)";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(95, 227, 138, 0.4)";
       ctx.lineWidth = 1;
       ctx.stroke();
 
-      // Graticule: latitude rings and meridians, front brighter than back.
-      const seg = 72;
-      const stroke = (pts: Array<{ x: number; y: number; z: number }>) => {
-        for (let i = 1; i < pts.length; i++) {
-          const a = pts[i - 1];
-          const b = pts[i];
-          ctx.beginPath();
-          ctx.moveTo(cx + a.x, cy - a.y);
-          ctx.lineTo(cx + b.x, cy - b.y);
-          ctx.strokeStyle =
-            a.z > 0 && b.z > 0 ? "rgba(95, 227, 138, 0.22)" : "rgba(95, 227, 138, 0.05)";
-          ctx.stroke();
+      // Light graticule under the land, front only.
+      ctx.lineWidth = 1;
+      const grat = (ptsList: Array<{ lat: number; lon: number }>) => {
+        ctx.beginPath();
+        let pen = false;
+        for (const g of ptsList) {
+          const p = project(g.lat, g.lon);
+          if (p.z > 0) {
+            if (pen) ctx.lineTo(p.x, p.y);
+            else {
+              ctx.moveTo(p.x, p.y);
+              pen = true;
+            }
+          } else pen = false;
         }
+        ctx.strokeStyle = "rgba(95, 227, 138, 0.07)";
+        ctx.stroke();
       };
       for (let lat = -60; lat <= 60; lat += 30) {
-        const pts = [];
-        for (let i = 0; i <= seg; i++) pts.push(project(lat, (i / seg) * 360, theta, R));
-        stroke(pts);
+        const row = [];
+        for (let i = 0; i <= 90; i++) row.push({ lat, lon: (i / 90) * 360 });
+        grat(row);
       }
       for (let lon = 0; lon < 360; lon += 30) {
-        const pts = [];
-        for (let i = 0; i <= seg; i++) pts.push(project(-90 + (i / seg) * 180, lon, theta, R));
-        stroke(pts);
+        const col = [];
+        for (let i = 0; i <= 60; i++) col.push({ lat: -90 + (i / 60) * 180, lon });
+        grat(col);
       }
 
-      // Visitor dots — one per country, sized by head count.
+      // Countries. Visitors' countries glow; everyone else is a quiet line.
+      const activeSet = new Set(live.current.map((p) => p.country));
+      const shapes = world.current ?? [];
+      for (const shape of shapes) {
+        const active = activeSet.has(shape.c);
+        for (const ring of shape.r) {
+          const { allFront } = tracePath(ring);
+          if (active) {
+            if (allFront) {
+              ctx.fillStyle = "rgba(95, 227, 138, 0.14)";
+              ctx.fill();
+            }
+            ctx.strokeStyle = "rgba(95, 227, 138, 0.85)";
+            ctx.lineWidth = 1.2;
+          } else {
+            ctx.strokeStyle = "rgba(190, 230, 205, 0.22)";
+            ctx.lineWidth = 0.8;
+          }
+          ctx.stroke();
+        }
+      }
+
+      // Visitor dots + labels on top.
       for (const p of live.current) {
         const [lat, lon] = COORDS[p.country] ?? [0, 0];
-        const pos = project(lat, lon, theta, R);
-        const front = pos.z > 0;
+        const pos = project(lat, lon);
+        if (pos.z <= 0) continue;
         const r = Math.min(11, 3.5 + Math.log2(p.count + 1) * 2.5);
         ctx.beginPath();
-        ctx.arc(cx + pos.x, cy - pos.y, front ? r : r * 0.55, 0, Math.PI * 2);
-        if (front) {
-          ctx.fillStyle = "rgba(95, 227, 138, 0.95)";
-          ctx.shadowColor = "rgba(95, 227, 138, 0.9)";
-          ctx.shadowBlur = 14;
-        } else {
-          ctx.fillStyle = "rgba(95, 227, 138, 0.16)";
-          ctx.shadowBlur = 0;
-        }
+        ctx.arc(pos.x, pos.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(95, 227, 138, 0.95)";
+        ctx.shadowColor = "rgba(95, 227, 138, 0.9)";
+        ctx.shadowBlur = 14;
         ctx.fill();
         ctx.shadowBlur = 0;
-        if (front) {
-          ctx.fillStyle = "rgba(245, 247, 248, 0.9)";
-          ctx.font = "600 10px ui-monospace, monospace";
-          ctx.fillText(`${p.country} ${p.count}`, cx + pos.x + r + 4, cy - pos.y + 3);
-        }
+        ctx.fillStyle = "rgba(245, 247, 248, 0.92)";
+        ctx.font = "600 10px ui-monospace, monospace";
+        ctx.fillText(`${p.country} ${p.count}`, pos.x + r + 4, pos.y + 3);
       }
 
-      theta += reduce ? 0 : 0.0035;
       frame = requestAnimationFrame(draw);
     };
 
+    // Grab to rotate — pointer events cover mouse and touch alike.
+    const onDown = (e: PointerEvent) => {
+      dragging = true;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      el.setPointerCapture(e.pointerId);
+      el.style.cursor = "grabbing";
+    };
+    const onMove = (e: PointerEvent) => {
+      if (!dragging) return;
+      yaw += (e.clientX - lastX) * 0.006;
+      pitch += (e.clientY - lastY) * 0.005;
+      // Keep the poles from flipping over the top.
+      pitch = Math.max(-1.35, Math.min(1.35, pitch));
+      lastX = e.clientX;
+      lastY = e.clientY;
+      idleSince = performance.now();
+    };
+    const onUp = (e: PointerEvent) => {
+      dragging = false;
+      idleSince = performance.now();
+      el.style.cursor = "grab";
+      try {
+        el.releasePointerCapture(e.pointerId);
+      } catch {
+        /* already released */
+      }
+    };
+    el.addEventListener("pointerdown", onDown);
+    el.addEventListener("pointermove", onMove);
+    el.addEventListener("pointerup", onUp);
+    el.addEventListener("pointercancel", onUp);
+
+    idleSince = -RESUME_MS; // spin immediately on load
     frame = requestAnimationFrame(draw);
-    return () => cancelAnimationFrame(frame);
+    return () => {
+      cancelAnimationFrame(frame);
+      el.removeEventListener("pointerdown", onDown);
+      el.removeEventListener("pointermove", onMove);
+      el.removeEventListener("pointerup", onUp);
+      el.removeEventListener("pointercancel", onUp);
+    };
   }, [size]);
 
   return (
     <canvas
       ref={canvas}
-      style={{ width: size, height: size }}
-      className="mx-auto"
-      aria-label="Live-Weltkarte der Besucher"
+      style={{ width: size, height: size, touchAction: "none", cursor: "grab" }}
+      className="mx-auto select-none"
+      aria-label="Live-Weltkugel der Besucher — ziehen zum Drehen"
       role="img"
     />
   );

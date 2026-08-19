@@ -138,7 +138,7 @@ export function AdminLive() {
       <section className="mt-6 grid gap-6 lg:grid-cols-[380px_minmax(0,1fr)] lg:items-start">
         <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
           <div className="flex items-center justify-between">
-            <p className="t-eyebrow">Live-Weltkugel</p>
+            <p className="t-eyebrow">Live-Weltkugel · ziehen zum Drehen</p>
             <span className="flex items-center gap-1.5 text-[10.5px] text-[var(--color-ink-tertiary)]">
               <RefreshCw className={cn("h-3 w-3", tick % 2 === 0 && "opacity-60")} aria-hidden />
               alle 10 s
