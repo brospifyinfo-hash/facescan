@@ -28,53 +28,89 @@ type Blob = {
 // Positions are offset from the four static fields, so the moving light
 // layers WITH the standing light instead of doubling it. Alphas are low:
 // these add to an ambience that already exists.
-// Sizes are min(vw, rem)-shaped via vmin so a phone gets fields that still
-// fill a meaningful share of its viewport — pure vw made them coasters on a
-// 390px screen, and the whole effect disappeared exactly where scrolling
-// happens most.
+// THESE ARE THE SITE'S COLOUR FIELDS — the quiz's beloved glow, owned by
+// this layer since the body background failed on long pages (see the note
+// in globals.css). Alphas at the original body strength, sizes with a vmin
+// floor so a phone is filled, positions in viewport terms.
+//
+// The depths mix directions on purpose. All-negative factors would empty
+// the viewport by the bottom of a long page (every field having drifted
+// up and away); a slow positive drift plus two fields that START below the
+// fold and rise into view keeps every scroll position lit — and two fields
+// crossing each other is the strongest parallax cue there is.
 const BLOBS: Blob[] = [
   {
-    depth: -0.07,
+    // The quiz's top-left green, drifting down slowly: stays with the top.
+    depth: 0.04,
     style: {
-      left: "16%",
-      top: "12%",
-      width: "max(38vw, 60vmin)",
-      height: "max(38vw, 60vmin)",
+      left: "-6%",
+      top: "-8%",
+      width: "max(46vw, 68vmin)",
+      height: "max(46vw, 68vmin)",
       background:
-        "radial-gradient(closest-side, rgba(95, 227, 138, 0.16), transparent 70%)",
+        "radial-gradient(closest-side, rgba(95, 227, 138, 0.26), transparent 70%)",
     },
   },
   {
-    depth: -0.14,
+    // The blue, rising gently.
+    depth: -0.09,
     style: {
-      right: "4%",
-      top: "42%",
-      width: "max(44vw, 66vmin)",
-      height: "max(44vw, 66vmin)",
+      right: "-10%",
+      top: "10%",
+      width: "max(52vw, 74vmin)",
+      height: "max(52vw, 74vmin)",
       background:
-        "radial-gradient(closest-side, rgba(56, 152, 255, 0.14), transparent 72%)",
+        "radial-gradient(closest-side, rgba(56, 152, 255, 0.18), transparent 72%)",
     },
   },
   {
-    depth: -0.22,
+    // The lower green — the near layer, rising fastest.
+    depth: -0.16,
     style: {
-      left: "30%",
-      bottom: "-14%",
-      width: "max(48vw, 72vmin)",
-      height: "max(48vw, 72vmin)",
+      left: "58%",
+      top: "72%",
+      width: "max(46vw, 66vmin)",
+      height: "max(46vw, 66vmin)",
       background:
-        "radial-gradient(closest-side, rgba(132, 104, 255, 0.13), transparent 70%)",
+        "radial-gradient(closest-side, rgba(95, 227, 138, 0.15), transparent 70%)",
     },
   },
   {
-    depth: -0.1,
+    // The violet, mid depth.
+    depth: -0.06,
     style: {
-      left: "-8%",
-      bottom: "18%",
-      width: "max(34vw, 54vmin)",
-      height: "max(34vw, 54vmin)",
+      left: "-4%",
+      top: "52%",
+      width: "max(40vw, 58vmin)",
+      height: "max(40vw, 58vmin)",
       background:
-        "radial-gradient(closest-side, rgba(95, 227, 138, 0.11), transparent 70%)",
+        "radial-gradient(closest-side, rgba(132, 104, 255, 0.14), transparent 70%)",
+    },
+  },
+  {
+    // Starts one viewport below the fold and rises in as the page scrolls —
+    // the light that keeps the middle of a long page from going black.
+    depth: -0.12,
+    style: {
+      left: "24%",
+      top: "115%",
+      width: "max(56vw, 80vmin)",
+      height: "max(56vw, 80vmin)",
+      background:
+        "radial-gradient(closest-side, rgba(56, 200, 190, 0.13), transparent 72%)",
+    },
+  },
+  {
+    // And one more from far below, for the tail of the page — deep enough
+    // that ~4500px of scroll actually carries it into view.
+    depth: -0.2,
+    style: {
+      left: "52%",
+      top: "190%",
+      width: "max(48vw, 70vmin)",
+      height: "max(48vw, 70vmin)",
+      background:
+        "radial-gradient(closest-side, rgba(132, 104, 255, 0.12), transparent 70%)",
     },
   },
 ];

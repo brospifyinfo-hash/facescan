@@ -31,7 +31,10 @@ export default function RootLayout({
   // `lang` is corrected on the client once the browser language is known.
   return (
     <html lang="en" className={inter.variable}>
-      <body className="min-h-dvh bg-[var(--color-canvas)] font-sans text-[var(--color-ink)] antialiased">
+      {/* No background on the body — the canvas is html's alone, so the
+          fixed light layers behind the content are not painted over. See
+          the body note in globals.css. */}
+      <body className="min-h-dvh font-sans text-[var(--color-ink)] antialiased">
         {/* Ambient field — gives the glass panels something to refract, and
             keeps the canvas from reading as flat black behind the report's
             near-black plates. Weaker than the previous pass: at the new

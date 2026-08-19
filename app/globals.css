@@ -163,8 +163,13 @@ html {
   text-rendering: optimizeLegibility;
 }
 
+/* THE BODY IS DELIBERATELY TRANSPARENT. The canvas colour comes from the
+   html element ALONE. When both html and body carry a background, the
+   body's paints as an ordinary in-flow background — which lands ON TOP of
+   every negative-z-index fixed layer, and silently buried the ambient
+   light and the parallax fields under an opaque near-black sheet. One
+   canvas owner, and the layers behind the content can actually show. */
 body {
-  background: var(--color-canvas);
   color: var(--color-ink);
 }
 
@@ -717,16 +722,17 @@ body {
    them and the entire material collapses to a slightly transparent box.
 --------------------------------------------------------------------------- */
 
-body {
-  background-color: var(--color-canvas);
-  background-image:
-    radial-gradient(44vw 44vw at 8% 2%, rgba(95, 227, 138, 0.26), transparent 70%),
-    radial-gradient(52vw 52vw at 94% 14%, rgba(56, 152, 255, 0.18), transparent 72%),
-    radial-gradient(46vw 46vw at 76% 84%, rgba(95, 227, 138, 0.15), transparent 70%),
-    radial-gradient(40vw 40vw at 14% 66%, rgba(132, 104, 255, 0.14), transparent 70%);
-  background-attachment: fixed;
-  background-repeat: no-repeat;
-}
+/* THE COLOUR FIELDS LIVE IN THE PARALLAX STRIP NOW, not on the body.
+   They used to be a body background-image with background-attachment: fixed,
+   and that failed twice at once: iOS ignores fixed attachment, so the fields
+   were laid out against the FULL PAGE BOX — on a five-screen page they
+   spread out until nearly every viewport was plain black, which is exactly
+   why the quiz (one screen tall) glowed and the home page did not. As fixed
+   DIVS in components/ui/ParallaxField.tsx they are viewport-anchored on
+   every engine, every page glows like the quiz, and each field can carry
+   its own scroll depth — which is what makes the parallax visible at last.
+   The glass invariant is unchanged: the strip sits behind every pane, so
+   backdrop-filter still has this light to refract. */
 
 /* ---------------------------------------------------------------------------
    PARALLAX LIGHT — the colour fields, given depth.
@@ -957,9 +963,6 @@ body {
     backdrop-filter: none;
     border-color: rgba(255, 255, 255, 0.5);
   }
-  body {
-    background-image: none;
-  }
 }
 
 @media (prefers-reduced-transparency: reduce) {
@@ -971,9 +974,6 @@ body {
   .glass-strong {
     background: var(--color-surface);
     backdrop-filter: none;
-  }
-  body {
-    background-image: none;
   }
 }
 
