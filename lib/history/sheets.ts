@@ -13,7 +13,7 @@
 // the privacy policy, and a deletion request has to be answerable by removing
 // the rows. Worth deciding deliberately rather than discovering later.
 
-import type { HistoryEntry, HistoryInput, HistoryStore } from "./store";
+import type { HistoryEntry, HistoryInput, HistoryStore, ScanDetailPoint } from "./store";
 
 export const historySheetConfigured = (): boolean =>
   Boolean(process.env.SHEETS_URL && process.env.SHEETS_TOKEN);
@@ -53,8 +53,36 @@ async function call<T>(url: string, init?: RequestInit): Promise<T> {
 
 const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : Number(v) || 0);
 
+/**
+ * The detail column travels as a JSON string (one cell), so it has to be
+ * parsed and re-validated here — a hand-edited cell must degrade to "no
+ * detail", never to a crash in every list call.
+ */
+function reviveDetail(raw: unknown): ScanDetailPoint[] | null {
+  if (typeof raw !== "string" || raw.length === 0) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return null;
+    const points = parsed
+      .map((p) =>
+        p && typeof p.id === "string" && Number.isFinite(Number(p.score))
+          ? {
+              id: p.id.slice(0, 40),
+              score: Math.min(100, Math.max(0, Number(p.score))),
+              display: typeof p.display === "string" ? p.display.slice(0, 24) : "",
+            }
+          : null,
+      )
+      .filter((p): p is ScanDetailPoint => p !== null)
+      .slice(0, 25);
+    return points.length > 0 ? points : null;
+  } catch {
+    return null;
+  }
+}
+
 function revive(raw: unknown): HistoryEntry | null {
-  const e = raw as Partial<HistoryEntry> | null;
+  const e = raw as (Partial<HistoryEntry> & { detail?: unknown }) | null;
   if (!e || typeof e.id !== "string" || e.id.length === 0) return null;
   return {
     id: e.id,
@@ -68,6 +96,7 @@ function revive(raw: unknown): HistoryEntry | null {
     midfaceScore: num(e.midfaceScore),
     source: e.source === "vision" ? "vision" : "geometry",
     potential: typeof e.potential === "number" && Number.isFinite(e.potential) ? e.potential : null,
+    detail: reviveDetail(e.detail),
   };
 }
 
@@ -105,7 +134,14 @@ export class SheetsHistoryStore implements HistoryStore {
         token,
         action: "scan-add",
         email: `'${email}`,
-        entry: { ...entry, id: `'${entry.id}`, band: `'${entry.band}` },
+        entry: {
+          ...entry,
+          id: `'${entry.id}`,
+          band: `'${entry.band}`,
+          // One JSON cell. The apostrophe is Sheets' text marker (consumed on
+          // write), so the stored value parses cleanly on the way back.
+          detail: entry.detail?.length ? `'${JSON.stringify(entry.detail)}` : "",
+        },
       }),
     });
     return entry;

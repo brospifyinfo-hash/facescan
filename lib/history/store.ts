@@ -50,6 +50,25 @@ export interface HistoryEntry {
    * follows: an unknown number is left out rather than guessed at.
    */
   potential?: number | null;
+  /**
+   * The full measurement set — every dial the scan produced, so an old scan
+   * can be opened again in the account with all of its readings, not just
+   * the headline. Same optionality story as `potential`: rows written before
+   * the column existed (or through an older Apps Script) simply have none,
+   * and the account renders the summary alone for those.
+   *
+   * NO PHOTOS AND NO RAW GEOMETRY — ids, scores and the display strings, the
+   * same numbers the customer already saw on screen.
+   */
+  detail?: ScanDetailPoint[] | null;
+}
+
+export interface ScanDetailPoint {
+  id: string;
+  /** 0–100, as on the dial. */
+  score: number;
+  /** The rendered value ("1.92", "+3.4°") — locale-independent. */
+  display: string;
 }
 
 export type HistoryInput = Omit<HistoryEntry, "id" | "at">;

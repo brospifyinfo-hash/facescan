@@ -71,7 +71,23 @@ export async function POST(request: Request) {
   const num = (v: unknown, max: number) =>
     typeof v === "number" && Number.isFinite(v) ? Math.min(max, Math.max(0, v)) : 0;
 
+  // The full measurement set, re-clamped like every other client number.
+  const detail = (Array.isArray(body.detail) ? body.detail : [])
+    .map((d) => {
+      const p = d as { id?: unknown; score?: unknown; display?: unknown };
+      return typeof p?.id === "string" && p.id.length > 0
+        ? {
+            id: p.id.slice(0, 40),
+            score: num(p.score, 100),
+            display: typeof p.display === "string" ? p.display.slice(0, 24) : "",
+          }
+        : null;
+    })
+    .filter((d): d is NonNullable<typeof d> => d !== null)
+    .slice(0, 25);
+
   const entry: HistoryInput = {
+    detail: detail.length > 0 ? detail : null,
     overall: num(body.overall, 10),
     band: typeof body.band === "string" ? body.band.slice(0, 32) : "",
     symmetry: num(body.symmetry, 100),

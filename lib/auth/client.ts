@@ -48,6 +48,25 @@ export async function verifyCode(
   }
 }
 
+export type PasswordLoginResult =
+  | { ok: true; email: string }
+  | { ok: false; error: "wrong_password" | "locked" | "unavailable" | "invalid_input" | "failed" };
+
+export async function passwordLogin(email: string, password: string): Promise<PasswordLoginResult> {
+  try {
+    const res = await fetch("/api/auth/password/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) return { ok: false, error: data.error ?? "failed" };
+    return { ok: true, email: data.email };
+  } catch {
+    return { ok: false, error: "failed" };
+  }
+}
+
 export async function fetchSession(): Promise<string | null> {
   try {
     const res = await fetch("/api/auth/session");

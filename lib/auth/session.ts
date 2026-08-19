@@ -10,7 +10,15 @@ import { createHmac, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 
 export const SESSION_COOKIE = "facescan_session";
-export const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+/**
+ * A year, minus nothing. "Stay signed in" is the product decision: the
+ * account exists to hold scan history, and being thrown out of it monthly
+ * cost more support than it bought security. Chrome caps cookie lifetimes
+ * at 400 days anyway; on top of the long TTL the session route RENEWS the
+ * cookie on every check, so anyone who visits even occasionally never
+ * reaches the edge of it.
+ */
+export const SESSION_TTL_MS = 365 * 24 * 60 * 60 * 1000;
 
 const DEV_SECRET = "facescan-dev-only-not-for-production";
 

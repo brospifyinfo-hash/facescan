@@ -375,6 +375,15 @@ export interface Dict {
     changeEmail: string;
     devHint: string;
     privacy: string;
+    /** The two ways in, as tab labels. */
+    tabCode: string;
+    tabPassword: string;
+    passwordPlaceholder: string;
+    passwordSubmit: string;
+    /** Under the password form: the code is the way to get a password. */
+    passwordHint: string;
+    /** Divider word above the Google button. */
+    or: string;
     errors: {
       invalidEmail: string;
       cooldown: string;
@@ -384,6 +393,9 @@ export interface Dict {
       wrongCode: string; // contains {n}
       expired: string;
       locked: string;
+      wrongPassword: string;
+      pwdLocked: string;
+      unavailable: string;
     };
   };
   pay: {
@@ -456,6 +468,25 @@ export interface Dict {
     paymentsTitle: string;
     noPayments: string;
     newScan: string;
+    /** Security section: managing the optional password. */
+    securityTitle: string;
+    passwordActive: string;
+    passwordNone: string;
+    passwordSet: string;
+    passwordChange: string;
+    passwordNew: string;
+    passwordRepeat: string;
+    passwordSave: string;
+    passwordSaved: string;
+    passwordMismatch: string;
+    passwordShort: string;
+    passwordError: string;
+    /** Scan detail view. */
+    engineGeometry: string;
+    engineVision: string;
+    potential: string;
+    detailMetrics: string;
+    bestScore: string;
   };
   /** The affiliate block on the paid report. */
   products: {

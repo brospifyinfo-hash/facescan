@@ -91,18 +91,22 @@ export function FullReport() {
       </h2>
 
       {report ? (
-        <div className="mt-6 space-y-7">
-          {/* Overview — the honest headline, set as the document's lede. */}
-          <p className="t-body leading-relaxed text-[var(--color-ink)]">{report.overview}</p>
+        <div className="mt-6 space-y-8">
+          {/* Overview — the document's lede, set off by the accent edge the
+              way a pull quote is: this is the sentence the customer paid to
+              read, and it must not look like body copy. */}
+          <p className="border-l-2 border-[var(--color-accent)] pl-4 text-[15px] font-medium leading-relaxed text-[var(--color-ink)]">
+            {report.overview}
+          </p>
 
           {/* Measurements, explained — the readings as a grouped list. */}
           <section>
             <SectionHeading label={t.report.secMeasurements} />
-            <dl className="group-rows mt-3">
+            <dl className="group-rows mt-4">
               {report.measurements.map((m) => (
-                <div key={m.area} className="py-2.5 first:pt-0 last:pb-0">
+                <div key={m.area} className="py-3 first:pt-0 last:pb-0">
                   <dt className="text-[13px] font-semibold text-[var(--color-ink)]">{m.area}</dt>
-                  <dd className="mt-0.5 text-[12.5px] leading-relaxed text-[var(--color-ink-secondary)]">
+                  <dd className="mt-1 text-[12.5px] leading-relaxed text-[var(--color-ink-secondary)]">
                     {m.note}
                   </dd>
                 </div>
@@ -113,12 +117,12 @@ export function FullReport() {
           {/* Strengths — marked with the accent dot, never with checkmarks. */}
           <section>
             <SectionHeading label={t.report.secStrengths} />
-            <ul className="mt-3 space-y-2">
+            <ul className="mt-4 space-y-2.5">
               {report.strengths.map((s) => (
-                <li key={s} className="flex items-start gap-2.5">
+                <li key={s} className="flex items-start gap-3">
                   <span
                     aria-hidden
-                    className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-accent)]"
+                    className="mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-accent)] shadow-[0_0_8px_rgba(95,227,138,0.6)]"
                   />
                   <span className="text-[13px] leading-relaxed text-[var(--color-ink-secondary)]">
                     {s}
@@ -128,24 +132,32 @@ export function FullReport() {
             </ul>
           </section>
 
-          {/* The three levers — numbered, why + action clearly separated. */}
+          {/* The three levers — each a card, ranked, with the action set off
+              as the thing to actually do. */}
           <section>
             <SectionHeading label={t.report.secFocus} />
-            <ol className="mt-3 space-y-4">
+            <ol className="mt-4 space-y-3">
               {report.focus.map((f, i) => (
-                <li key={f.title}>
-                  <p className="flex items-baseline gap-2.5">
-                    <span className="font-mono-terminal tnum t-caption text-[var(--color-ink-quaternary)]">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <span className="text-[14px] font-semibold text-[var(--color-ink)]">
-                      {f.title}
-                    </span>
+                <li
+                  key={f.title}
+                  className="fill relative overflow-hidden rounded-[var(--r-inner)] p-4 pl-5"
+                >
+                  <span
+                    aria-hidden
+                    className="font-mono-terminal tnum pointer-events-none absolute -right-1 -top-3 text-[56px] font-bold leading-none text-white/[0.05]"
+                  >
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <p className="relative text-[14.5px] font-semibold text-[var(--color-ink)]">
+                    {f.title}
                   </p>
-                  <p className="mt-1 pl-[26px] text-[12.5px] leading-relaxed text-[var(--color-ink-secondary)]">
+                  <p className="relative mt-1.5 text-[12.5px] leading-relaxed text-[var(--color-ink-secondary)]">
                     {f.why}
                   </p>
-                  <p className="mt-1.5 pl-[26px] text-[12.5px] font-medium leading-relaxed text-[var(--color-accent)]">
+                  <p className="relative mt-3 flex items-start gap-2 rounded-xl bg-[var(--color-accent)]/[0.08] px-3 py-2.5 text-[12.5px] font-medium leading-relaxed text-[var(--color-accent)]">
+                    <span aria-hidden className="mt-px shrink-0">
+                      →
+                    </span>
                     {f.action}
                   </p>
                 </li>
@@ -153,14 +165,20 @@ export function FullReport() {
             </ol>
           </section>
 
-          {/* The four weeks — themed blocks, steps as compact lists. */}
+          {/* The four weeks — a timeline: one thread, four stations. */}
           <section>
             <SectionHeading label={t.report.secPlan} />
-            <ol className="mt-3 space-y-4">
+            <ol className="relative mt-4 space-y-6 before:absolute before:bottom-2 before:left-[5px] before:top-2 before:w-px before:bg-[var(--color-hairline)]">
               {report.weeks.map((w, i) => (
-                <li key={i} className="fill rounded-[var(--r-inner)] p-3.5">
-                  <p className="t-eyebrow">{fill(t.report.week, { n: i + 1 })}</p>
-                  <p className="mt-1 text-[13.5px] font-semibold text-[var(--color-ink)]">
+                <li key={i} className="relative pl-7">
+                  <span
+                    aria-hidden
+                    className="absolute left-0 top-[3px] h-[11px] w-[11px] rounded-full border-2 border-[var(--color-accent)] bg-[var(--color-canvas)]"
+                  />
+                  <p className="t-eyebrow text-[var(--color-accent)]">
+                    {fill(t.report.week, { n: i + 1 })}
+                  </p>
+                  <p className="mt-1 text-[14px] font-semibold text-[var(--color-ink)]">
                     {w.theme}
                   </p>
                   <ul className="mt-2 space-y-1.5">
@@ -182,7 +200,7 @@ export function FullReport() {
             </ol>
           </section>
 
-          <p className="text-[13px] italic leading-relaxed text-[var(--color-ink-tertiary)]">
+          <p className="border-t border-[var(--color-hairline)] pt-5 text-center text-[13px] italic leading-relaxed text-[var(--color-ink-tertiary)]">
             {report.closing}
           </p>
         </div>

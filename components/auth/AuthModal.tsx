@@ -2,15 +2,23 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2, Mail, ShieldCheck, X } from "lucide-react";
+import { ArrowLeft, KeyRound, Loader2, Mail, ShieldCheck, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { CodeInput } from "./CodeInput";
-import { requestCode, verifyCode } from "@/lib/auth/client";
+import { GoogleButton } from "./GoogleButton";
+import { passwordLogin, requestCode, verifyCode } from "@/lib/auth/client";
 import { fill, useT } from "@/lib/i18n";
+import { cn } from "@/lib/cn";
 
 type Stage = "email" | "code";
+type Mode = "code" | "password";
 
-/** Passwordless sign-in: address → six-digit code → session cookie. */
+/**
+ * Sign-in: three ways to the same session. The email code is the root (it
+ * proves the inbox and doubles as the password reset), the password is the
+ * convenience for return visits, and Google appears whenever a client id is
+ * configured — all of them end in the identical cookie.
+ */
 export function AuthModal({
   open,
   onClose,
@@ -22,7 +30,9 @@ export function AuthModal({
 }) {
   const t = useT();
   const [stage, setStage] = useState<Stage>("email");
+  const [mode, setMode] = useState<Mode>("code");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,6 +45,7 @@ export function AuthModal({
     // Reset so a reopened modal never shows a stale code or error.
     setStage("email");
     setCode("");
+    setPassword("");
     setBusy(false);
     setError(null);
     verifying.current = false;
@@ -55,7 +66,11 @@ export function AuthModal({
 
   const errorText = (key: string, n?: number) => {
     const e = t.auth.errors as Record<string, string>;
-    const raw = e[key] ?? e.failed;
+    // The server speaks snake_case ("wrong_code"), the dictionary camelCase
+    // ("wrongCode") — without this normalisation every specific error fell
+    // through to the generic "failed" text.
+    const camel = key.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase());
+    const raw = e[camel] ?? e[key] ?? e.failed;
     return n === undefined ? raw : fill(raw, { n });
   };
 
@@ -96,6 +111,27 @@ export function AuthModal({
     onSignedIn(res.email);
   };
 
+  const loginWithPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setBusy(true);
+    const res = await passwordLogin(email, password);
+    setBusy(false);
+    if (!res.ok) {
+      // "locked" means something different here than on the code path, so
+      // it maps to its own text rather than through errorText().
+      setError(
+        res.error === "locked"
+          ? t.auth.errors.pwdLocked
+          : res.error === "unavailable"
+            ? t.auth.errors.unavailable
+            : t.auth.errors.wrongPassword,
+      );
+      return;
+    }
+    onSignedIn(res.email);
+  };
+
   if (!open) return null;
 
   return (
@@ -125,9 +161,13 @@ export function AuthModal({
         </button>
 
         {stage === "email" ? (
-          <form onSubmit={send}>
+          <div>
             <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/[0.1] bg-white/[0.04]">
-              <Mail className="h-4 w-4 text-accent" />
+              {mode === "code" ? (
+                <Mail className="h-4 w-4 text-accent" />
+              ) : (
+                <KeyRound className="h-4 w-4 text-accent" />
+              )}
             </span>
             <h2 className="mt-5 text-xl font-semibold tracking-tight">
               {t.auth.title}
@@ -136,35 +176,87 @@ export function AuthModal({
               {t.auth.sub}
             </p>
 
-            <input
-              autoFocus
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder={t.auth.emailPlaceholder}
-              className="mt-5 w-full rounded-2xl border border-white/[0.1] bg-white/[0.03] px-4 py-3 text-sm outline-none transition-colors placeholder:text-[var(--color-ink-tertiary)] focus:border-accent/60"
-            />
+            {/* The two ways in, as a segmented control. */}
+            <div className="fill mt-5 grid grid-cols-2 gap-1 rounded-full p-1">
+              {(["code", "password"] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => {
+                    setMode(m);
+                    setError(null);
+                  }}
+                  aria-pressed={mode === m}
+                  className={cn(
+                    "rounded-full py-2 text-[12.5px] font-semibold transition-colors",
+                    mode === m
+                      ? "bg-white/[0.1] text-[var(--color-ink)]"
+                      : "text-[var(--color-ink-tertiary)]",
+                  )}
+                >
+                  {m === "code" ? t.auth.tabCode : t.auth.tabPassword}
+                </button>
+              ))}
+            </div>
 
-            {error ? (
-              <p className="mt-2.5 text-[12px] text-red-400">{error}</p>
+            <form onSubmit={mode === "code" ? send : loginWithPassword}>
+              <input
+                autoFocus
+                type="email"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={t.auth.emailPlaceholder}
+                className="mt-4 w-full rounded-2xl border border-white/[0.1] bg-white/[0.03] px-4 py-3 text-sm outline-none transition-colors placeholder:text-[var(--color-ink-tertiary)] focus:border-accent/60"
+              />
+
+              {mode === "password" ? (
+                <input
+                  type="password"
+                  required
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={t.auth.passwordPlaceholder}
+                  className="mt-2.5 w-full rounded-2xl border border-white/[0.1] bg-white/[0.03] px-4 py-3 text-sm outline-none transition-colors placeholder:text-[var(--color-ink-tertiary)] focus:border-accent/60"
+                />
+              ) : null}
+
+              {error ? (
+                <p className="mt-2.5 text-[12px] text-red-400">{error}</p>
+              ) : null}
+
+              <Button type="submit" size="lg" className="mt-4 w-full" disabled={busy}>
+                {busy ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" /> {t.auth.sending}
+                  </>
+                ) : mode === "code" ? (
+                  t.auth.sendCode
+                ) : (
+                  t.auth.passwordSubmit
+                )}
+              </Button>
+            </form>
+
+            {mode === "password" ? (
+              <p className="mt-3 text-[11px] leading-relaxed text-[var(--color-ink-tertiary)]">
+                {t.auth.passwordHint}
+              </p>
             ) : null}
 
-            <Button type="submit" size="lg" className="mt-4 w-full" disabled={busy}>
-              {busy ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> {t.auth.sending}
-                </>
-              ) : (
-                t.auth.sendCode
-              )}
-            </Button>
+            <GoogleButton
+              onSignedIn={(mail) => {
+                onSignedIn(mail);
+              }}
+            />
 
             <p className="mt-3.5 flex items-start gap-2 text-[11px] leading-relaxed text-[var(--color-ink-tertiary)]">
               <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" />
               {t.auth.privacy}
             </p>
-          </form>
+          </div>
         ) : (
           <div>
             <button

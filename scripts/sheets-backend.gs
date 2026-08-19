@@ -146,6 +146,9 @@ var SCAN_COLUMNS = [
   // sheet written by the previous version of this script simply has the last
   // cell empty.
   "potential",
+  // The full measurement set as one JSON cell — parsed and validated by the
+  // app on read, so a hand-edited cell degrades to "no detail".
+  "detail",
 ];
 
 function scanSheet_() {
@@ -179,6 +182,7 @@ function scansFor_(email) {
       midfaceScore: Number(o.midfaceScore) || 0,
       source: String(o.source) === "vision" ? "vision" : "geometry",
       potential: o.potential === "" || o.potential == null ? null : Number(o.potential),
+      detail: o.detail == null || o.detail === "" ? "" : String(o.detail),
     });
   }
   return out;
@@ -189,6 +193,7 @@ function addScan_(email, e) {
     e.id, email, e.at, e.overall, e.band,
     e.symmetry, e.eyesScore, e.jawScore, e.proportionsScore, e.midfaceScore, e.source,
     e.potential == null ? "" : e.potential,
+    e.detail == null ? "" : e.detail,
   ]);
 }
 

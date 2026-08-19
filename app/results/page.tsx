@@ -139,6 +139,8 @@ export default function ResultsPage() {
         // further down, and depending on it would make this effect break the
         // day someone reorders the file.
         potential: potentialFor(metrics)?.score ?? null,
+        // Every dial, so the account can reopen this scan in full later.
+        detail: metrics.metrics.map((m) => ({ id: m.id, score: m.score, display: m.display })),
       }),
       // A failed save must not interrupt the report the customer just paid
       // for — but it must not be silently final either. Releasing the ref on
