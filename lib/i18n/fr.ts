@@ -429,6 +429,12 @@ export const fr: Dict = {
       plan: "Ton plan",
       extras: "Extras du Blueprint",
     },
+    nav: {
+      result: "Résultat",
+      analysis: "Analyse",
+      plan: "Plan",
+      extras: "Extras",
+    },
     tipTitle: "Votre conseil",
     tipBody:
       "La régularité est le levier. De petites améliorations quotidiennes produisent de grands résultats.",
@@ -495,6 +501,11 @@ export const fr: Dict = {
     errSignIn: "Ta session a expiré. Reconnecte-toi et réessaie.",
     errNotEntitled:
       "Nous n'avons pas pu confirmer ton achat. Connecte-toi avec l'adresse e-mail utilisée pour l'achat.",
+    secMeasurements: "Tes mesures, expliquées",
+    secStrengths: "Tes points forts",
+    secFocus: "Tes trois leviers",
+    secPlan: "Ton plan sur 4 semaines",
+    week: "Semaine {n}",
   },
   auth: {
     title: "Sauvegardez votre analyse",

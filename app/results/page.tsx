@@ -28,6 +28,7 @@ import { Recommendations } from "@/components/report/Recommendations";
 import { UnlockSimulation } from "@/components/report/UnlockSimulation";
 import { DownloadPlan } from "@/components/report/DownloadPlan";
 import { StyleStudio } from "@/components/report/StyleStudio";
+import { SectionNav, type NavSection } from "@/components/report/SectionNav";
 import { AccountCard } from "@/components/report/AccountCard";
 import { can, formatPrice } from "@/lib/pricing";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -180,6 +181,17 @@ export default function ResultsPage() {
   const optimisations = optimisationsOf(quiz, metrics);
   const potential = potentialFor(metrics);
 
+  // The floating chapter navigation. Extras only exists once it is bought —
+  // a chip that scrolls to a section that is not there is a broken promise.
+  const hasExtras =
+    unlocked && (can(plan, "download") || can(plan, "hairstyle") || can(plan, "blueprint"));
+  const navSections: NavSection[] = [
+    { id: "sec-result", label: t.results.nav.result },
+    { id: "sec-analysis", label: t.results.nav.analysis },
+    { id: "sec-plan", label: t.results.nav.plan },
+    ...(hasExtras ? [{ id: "sec-extras", label: t.results.nav.extras }] : []),
+  ];
+
   // The scan happened in this session — there is no stored timestamp to read,
   // because nothing is stored. `new Date()` is the honest answer and it is
   // only ever evaluated on the client (this component renders null until the
@@ -205,7 +217,7 @@ export default function ResultsPage() {
           reading continues on the right — the desktop gets a real report
           layout instead of a stranded phone column. The bottom padding clears
           the floating tab bar. */}
-      <main className="mx-auto w-full max-w-md px-4 pt-5 pb-16 lg:max-w-6xl lg:px-8 lg:pt-8">
+      <main className="mx-auto w-full max-w-md px-4 pt-5 pb-32 lg:max-w-6xl lg:px-8 lg:pt-8">
         <ReportHeader demo={metrics.demo} />
 
         {locked ? (
@@ -217,7 +229,7 @@ export default function ResultsPage() {
         <div className="lg:grid lg:grid-cols-[400px_minmax(0,1fr)] lg:items-start lg:gap-6">
           {/* ---- Instrument rail: the face and its number ---- */}
           <div className="lg:sticky lg:top-6">
-            <section className="mt-4 space-y-3">
+            <section id="sec-result" className="mt-4 scroll-mt-6 space-y-3">
               <ScanStage
                 src={photos.front?.dataUrl}
                 mesh={metrics.mesh}
@@ -247,7 +259,7 @@ export default function ResultsPage() {
         {/* ================= LOCKED REGION ================= */}
         <section className="relative mt-3 lg:mt-4">
           <div className="flex flex-col gap-3">
-            <SectionMark label={t.results.sections.analysis} />
+            <SectionMark id="sec-analysis" label={t.results.sections.analysis} />
 
             <LockedSection locked={locked}>
               <div>
@@ -302,7 +314,7 @@ export default function ResultsPage() {
               </Collapsible>
             </LockedSection>
 
-            <SectionMark label={t.results.sections.plan} className="mt-2" />
+            <SectionMark id="sec-plan" label={t.results.sections.plan} className="mt-2" />
 
             {/* Raw Data explicitly excludes the action plan, so it stays
                 blurred for that tier — the card would otherwise be lying. */}
@@ -322,8 +334,6 @@ export default function ResultsPage() {
             {unlocked && can(plan, "actionPlan") ? (
               <MonthlyProgram quiz={quiz} metrics={metrics} collapsible />
             ) : null}
-
-            {unlocked && can(plan, "blueprint") ? <FullReport /> : null}
 
             {unlocked && !can(plan, "actionPlan") ? (
               <section className="panel p-[var(--pad-panel)]">
@@ -387,8 +397,16 @@ export default function ResultsPage() {
           ) : null}
         </section>
 
-        {unlocked && (can(plan, "download") || can(plan, "hairstyle")) ? (
-          <SectionMark label={t.results.sections.extras} className="mt-6" />
+        {hasExtras ? (
+          <SectionMark id="sec-extras" label={t.results.sections.extras} className="mt-6" />
+        ) : null}
+
+        {/* The deep-dive lives under Extras: it is the blueprint's flagship
+            and was buried mid-plan, where nobody scrolling for it found it. */}
+        {unlocked && can(plan, "blueprint") ? (
+          <div className="mt-3">
+            <FullReport />
+          </div>
         ) : null}
 
         {/* Right after the plan it exports, and outside the locked region so
@@ -441,6 +459,9 @@ export default function ResultsPage() {
         </div>
       </main>
 
+      {/* The chapter navigation floats over everything — the report's map. */}
+      <SectionNav sections={navSections} />
+
       {/* Plays once, straight after the purchase lands. */}
       {unlocked && can(plan, "simulation") ? (
         <UnlockSimulation
@@ -478,10 +499,20 @@ export default function ResultsPage() {
 
 /** A chapter mark: eyebrow plus a hairline running out to the edge. The
  *  report reads as one long instrument without them; these give it a table
- *  of contents the eye can catch while scrolling. */
-function SectionMark({ label, className }: { label: string; className?: string }) {
+ *  of contents the eye can catch while scrolling. The id is the anchor the
+ *  floating SectionNav jumps to; scroll-mt keeps the mark clear of the
+ *  viewport edge after the jump. */
+function SectionMark({
+  label,
+  className,
+  id,
+}: {
+  label: string;
+  className?: string;
+  id?: string;
+}) {
   return (
-    <div className={`flex items-center gap-3 ${className ?? ""}`}>
+    <div id={id} className={`flex scroll-mt-6 items-center gap-3 ${className ?? ""}`}>
       <span className="t-eyebrow whitespace-nowrap">{label}</span>
       <span aria-hidden className="h-px flex-1 bg-[var(--color-hairline)]" />
     </div>

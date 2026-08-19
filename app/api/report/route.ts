@@ -5,6 +5,13 @@ import { parseDataUrl } from "@/lib/vision/image";
 import { VISION_MODEL } from "@/lib/vision/contract";
 import { imageRef, log, newRequestId } from "@/lib/vision/log";
 import { sha256 } from "@/lib/vision/cache";
+import {
+  REPORT_RESPONSE_FORMAT,
+  reportInstruction,
+  reportSystemPrompt,
+  validateReport,
+} from "@/lib/report/contract";
+import { LOCALES, type Locale } from "@/lib/i18n/types";
 
 // The paid deep-dive report.
 //
@@ -18,10 +25,11 @@ import { sha256 } from "@/lib/vision/cache";
 // IT REUSES lib/vision/openai.ts rather than posting to the API itself. That
 // transport already owns the parts that are easy to get wrong and tedious to
 // write twice: what is retried and what is not, the per-attempt timeout, how
-// a 429 is read, and a log that never prints a photograph. Its structured
-// output is now optional, because a report is Markdown rather than JSON —
-// wrapping a document in a JSON string field buys nothing and adds an
-// escaping layer that can truncate mid-sentence.
+// a 429 is read, and a log that never prints a photograph.
+//
+// STRUCTURED, IN THE CUSTOMER'S LANGUAGE. The contract (schema, prompts,
+// validation) lives in lib/report/contract.ts, shared with the live smoke
+// test — see the header there for why the report stopped being Markdown.
 //
 // GATED SERVER-SIDE on requireCapability("blueprint"): a signed session for
 // the address, plus the entitlement whenever one could exist. See
@@ -46,27 +54,6 @@ const MAX_ATTEMPTS = 1;
  * than tight.
  */
 const MAX_OUTPUT_TOKENS = Number(process.env.REPORT_MAX_OUTPUT_TOKENS ?? 6000);
-
-const SYSTEM = `You are a facial-aesthetics coach writing a personalized report.
-You receive one or two photos (front, and optionally a side profile),
-on-device geometric measurements (0-100 heuristic scores plus canthal tilt in
-degrees), and the user's quiz answers.
-
-Rules:
-- Be honest and specific, but constructive and respectful. Never demean.
-- No medical or dermatological diagnoses. For skin/hair concerns that look
-  clinical, recommend seeing a professional.
-- Ground every observation in what is actually visible or measured.
-- Do not invent numeric ratings beyond the provided metrics.
-
-Structure the report in Markdown with these sections:
-1. Overview — two or three sentences summarizing the overall picture.
-2. Your measurements, explained — what each score means for this face.
-3. Strengths — what already works well (be specific).
-4. Three focus areas — the biggest realistic levers, with reasoning.
-5. 4-week action plan — concrete weekly steps covering skincare (AM/PM),
-   jawline & posture, grooming/hairstyle suggestions, and lifestyle.
-6. Closing note — brief, encouraging, no fluff.`;
 
 const STATUS: Record<VisionError["kind"], number> = {
   not_configured: 501,
@@ -96,12 +83,17 @@ export async function POST(req: Request) {
   let side: ReturnType<typeof parseDataUrl> | null = null;
   let quiz: unknown;
   let metrics: unknown;
+  // German is the default because it is the product's home market — the
+  // same fallback the style studio uses. The old route never named a
+  // language at all, so every report came back in English.
+  let locale: Locale = "de";
   try {
     const body = await req.json();
     front = parseDataUrl(body?.front, "front");
     side = body?.side ? parseDataUrl(body.side, "side") : null;
     quiz = body?.quiz ?? {};
     metrics = body?.metrics ?? {};
+    if (LOCALES.includes(body?.locale)) locale = body.locale;
   } catch (err) {
     const message =
       err instanceof VisionError ? err.message : "The request body could not be read.";
@@ -111,26 +103,28 @@ export async function POST(req: Request) {
 
   const ref = imageRef(sha256(front.base64));
 
-  const instruction = [
-    `Quiz answers:\n${JSON.stringify(quiz, null, 2)}`,
-    `\nOn-device scan metrics:\n${JSON.stringify(metrics, null, 2)}`,
-    `\nWrite the personalized report now. The first image is the front profile${
-      side ? ", the second is the side profile" : " (no side profile provided)"
-    }.`,
-  ].join("\n");
-
   try {
     const call = await callVisionModel({
       model: VISION_MODEL,
-      system: SYSTEM,
-      instruction,
+      system: reportSystemPrompt(locale),
+      instruction: reportInstruction(quiz, metrics, side !== null),
       images: side ? [front, side] : [front],
+      responseFormat: REPORT_RESPONSE_FORMAT,
       timeoutMs: TIMEOUT_MS,
       maxAttempts: MAX_ATTEMPTS,
       maxOutputTokens: MAX_OUTPUT_TOKENS,
       requestId,
       logFields: { imageRef: ref },
     });
+
+    const report = validateReport(JSON.parse(call.text));
+    if (!report) {
+      log.error("report_malformed", { requestId, imageRef: ref });
+      return NextResponse.json(
+        { error: "The report came back incomplete. Please try again." },
+        { status: 502 },
+      );
+    }
 
     log.info("report_served", {
       requestId,
@@ -141,7 +135,7 @@ export async function POST(req: Request) {
       outputTokens: call.outputTokens,
     });
 
-    return NextResponse.json({ report: call.text });
+    return NextResponse.json({ report });
   } catch (err) {
     if (err instanceof VisionError) {
       log.error("report_failed", {

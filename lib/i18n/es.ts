@@ -429,6 +429,12 @@ export const es: Dict = {
       plan: "Tu plan",
       extras: "Extras del Blueprint",
     },
+    nav: {
+      result: "Resultado",
+      analysis: "Análisis",
+      plan: "Plan",
+      extras: "Extras",
+    },
     tipTitle: "Tu consejo",
     tipBody:
       "La constancia es la palanca. Las pequeñas mejoras diarias se acumulan en grandes resultados.",
@@ -495,6 +501,11 @@ export const es: Dict = {
     errSignIn: "Tu sesión ha caducado. Vuelve a iniciar sesión e inténtalo de nuevo.",
     errNotEntitled:
       "No hemos podido confirmar tu compra. Inicia sesión con el correo con el que compraste.",
+    secMeasurements: "Tus mediciones, explicadas",
+    secStrengths: "Tus puntos fuertes",
+    secFocus: "Tus tres palancas",
+    secPlan: "Tu plan de 4 semanas",
+    week: "Semana {n}",
   },
   auth: {
     title: "Guarda tu análisis",

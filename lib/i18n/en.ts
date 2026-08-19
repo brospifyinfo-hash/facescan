@@ -428,6 +428,12 @@ export const en: Dict = {
       plan: "Your plan",
       extras: "Blueprint extras",
     },
+    nav: {
+      result: "Result",
+      analysis: "Analysis",
+      plan: "Plan",
+      extras: "Extras",
+    },
     tipTitle: "Your tip",
     tipBody:
       "Consistency is the lever. Small daily improvements compound into large results.",
@@ -494,6 +500,11 @@ export const en: Dict = {
     errSignIn: "Your sign-in has expired. Sign in again and retry.",
     errNotEntitled:
       "We could not confirm your purchase. Sign in with the email address you bought with.",
+    secMeasurements: "Your measurements, explained",
+    secStrengths: "Your strengths",
+    secFocus: "Your three levers",
+    secPlan: "Your 4-week plan",
+    week: "Week {n}",
   },
   auth: {
     title: "Save your analysis",

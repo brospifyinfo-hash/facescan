@@ -280,6 +280,13 @@ export interface Dict {
       plan: string;
       extras: string;
     };
+    /** Short labels for the floating section navigation. */
+    nav: {
+      result: string;
+      analysis: string;
+      plan: string;
+      extras: string;
+    };
     tipTitle: string;
     tipBody: string;
     moreTips: string;
@@ -345,6 +352,13 @@ export interface Dict {
     errSignIn: string;
     /** The server could not confirm the purchase (403 not_entitled). */
     errNotEntitled: string;
+    /** Section headings of the structured deep-dive document. */
+    secMeasurements: string;
+    secStrengths: string;
+    secFocus: string;
+    secPlan: string;
+    /** Contains {n} — the week number in the four-week plan. */
+    week: string;
   };
   auth: {
     title: string;

@@ -429,6 +429,12 @@ export const de: Dict = {
       plan: "Dein Plan",
       extras: "Blueprint-Extras",
     },
+    nav: {
+      result: "Ergebnis",
+      analysis: "Analyse",
+      plan: "Plan",
+      extras: "Extras",
+    },
     tipTitle: "Tipp für dich",
     tipBody:
       "Konsistenz ist der Schlüssel. Kleine tägliche Verbesserungen führen zu großen Ergebnissen.",
@@ -502,6 +508,11 @@ export const de: Dict = {
     errSignIn: "Deine Anmeldung ist abgelaufen. Melde dich kurz neu an und versuch es nochmal.",
     errNotEntitled:
       "Dein Kauf konnte nicht bestätigt werden. Melde dich mit der E-Mail-Adresse an, mit der du gekauft hast.",
+    secMeasurements: "Deine Messwerte, erklärt",
+    secStrengths: "Deine Stärken",
+    secFocus: "Deine drei Hebel",
+    secPlan: "Dein 4-Wochen-Plan",
+    week: "Woche {n}",
   },
   auth: {
     title: "Analyse sichern",
