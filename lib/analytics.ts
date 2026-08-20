@@ -11,6 +11,9 @@ export interface LiveSession {
   path: string;
   country: string;
   city: string;
+  /** IP-derived coordinates (Vercel headers) — absent on older records. */
+  lat?: number;
+  lon?: number;
   ip: string;
   ua: string;
   startedAt: number;

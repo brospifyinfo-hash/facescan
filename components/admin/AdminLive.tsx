@@ -92,12 +92,27 @@ export function AdminLive() {
     };
   }, []);
 
+  // One dot per PLACE, not per country: sessions carrying coordinates sit
+  // on their city, labelled with its name; the rest fall back to the
+  // country centroid.
   const globePoints: GlobePoint[] = useMemo(() => {
-    const byCountry = new Map<string, number>();
+    const groups = new Map<string, GlobePoint>();
     for (const s of data?.sessions ?? []) {
-      byCountry.set(s.country, (byCountry.get(s.country) ?? 0) + 1);
+      const key = s.city ? `${s.city}|${s.country}` : s.country;
+      const cur = groups.get(key);
+      if (cur) {
+        cur.count += 1;
+      } else {
+        groups.set(key, {
+          country: s.country,
+          count: 1,
+          lat: s.lat,
+          lon: s.lon,
+          label: s.city || undefined,
+        });
+      }
     }
-    return [...byCountry.entries()].map(([country, count]) => ({ country, count }));
+    return [...groups.values()];
   }, [data]);
 
   const viewsToday = Object.values(data?.today.views ?? {}).reduce((a, b) => a + b, 0);

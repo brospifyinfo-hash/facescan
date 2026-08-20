@@ -14,11 +14,11 @@ export default function GlobeDemo() {
       <Globe
         size={520}
         points={[
-          { country: "DE", count: 4 },
-          { country: "US", count: 2 },
-          { country: "BR", count: 1 },
-          { country: "JP", count: 3 },
-          { country: "AU", count: 1 },
+          { country: "DE", count: 4, lat: 48.14, lon: 11.58, label: "München" },
+          { country: "DE", count: 1, lat: 52.52, lon: 13.4, label: "Berlin" },
+          { country: "US", count: 2, lat: 40.71, lon: -74.01, label: "New York" },
+          { country: "BR", count: 1, lat: -23.55, lon: -46.63, label: "São Paulo" },
+          { country: "JP", count: 3, lat: 35.68, lon: 139.69, label: "Tokio" },
         ]}
       />
     </main>

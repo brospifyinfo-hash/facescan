@@ -88,13 +88,28 @@ export async function POST(req: Request) {
   } catch {
     city = req.headers.get("x-vercel-ip-city") ?? "";
   }
+  // Vercel stamps the IP's coordinates too — that is what puts the dot on
+  // the actual CITY on the globe instead of the country's centroid.
+  const lat = Number(req.headers.get("x-vercel-ip-latitude"));
+  const lon = Number(req.headers.get("x-vercel-ip-longitude"));
+  const hasGeo = Number.isFinite(lat) && Number.isFinite(lon);
   const ip = (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim();
   const ua = (req.headers.get("user-agent") ?? "").slice(0, 120);
 
   try {
     await skSetJson(
       `live:${sid}`,
-      { path, country, city, ip, ua, startedAt, lastAt: Date.now(), pages },
+      {
+        path,
+        country,
+        city,
+        ...(hasGeo ? { lat, lon } : {}),
+        ip,
+        ua,
+        startedAt,
+        lastAt: Date.now(),
+        pages,
+      },
       LIVE_TTL_MS,
     );
     if (event === "view") {

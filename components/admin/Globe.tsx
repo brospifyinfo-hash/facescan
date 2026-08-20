@@ -17,6 +17,12 @@ export interface GlobePoint {
   /** ISO 3166-1 alpha-2, upper case. */
   country: string;
   count: number;
+  /** Exact coordinates (from the visitor's IP) — the dot sits on the CITY.
+   *  Absent: the country centroid stands in. */
+  lat?: number;
+  lon?: number;
+  /** What the dot says — the city name, falling back to the country code. */
+  label?: string;
 }
 
 interface CountryShape {
@@ -201,9 +207,13 @@ export function Globe({ points, size = 360 }: { points: GlobePoint[]; size?: num
         }
       }
 
-      // Visitor dots + labels on top.
+      // Visitor dots + labels on top — on the exact city when the
+      // coordinates are known, on the country centroid otherwise.
       for (const p of live.current) {
-        const [lat, lon] = COORDS[p.country] ?? [0, 0];
+        const [lat, lon] =
+          typeof p.lat === "number" && typeof p.lon === "number"
+            ? [p.lat, p.lon]
+            : (COORDS[p.country] ?? [0, 0]);
         const pos = project(lat, lon);
         if (pos.z <= 0) continue;
         const r = Math.min(11, 3.5 + Math.log2(p.count + 1) * 2.5);
@@ -214,9 +224,14 @@ export function Globe({ points, size = 360 }: { points: GlobePoint[]; size?: num
         ctx.shadowBlur = 14;
         ctx.fill();
         ctx.shadowBlur = 0;
-        ctx.fillStyle = "rgba(245, 247, 248, 0.92)";
+        const label = `${p.label || p.country}${p.count > 1 ? ` · ${p.count}` : ""}`;
         ctx.font = "600 10px ui-monospace, monospace";
-        ctx.fillText(`${p.country} ${p.count}`, pos.x + r + 4, pos.y + 3);
+        // A dark backing bar keeps the name readable over land lines.
+        const w = ctx.measureText(label).width;
+        ctx.fillStyle = "rgba(5, 8, 13, 0.72)";
+        ctx.fillRect(pos.x + r + 2, pos.y - 6, w + 6, 13);
+        ctx.fillStyle = "rgba(245, 247, 248, 0.94)";
+        ctx.fillText(label, pos.x + r + 5, pos.y + 4);
       }
 
       frame = requestAnimationFrame(draw);
