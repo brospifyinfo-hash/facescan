@@ -7,12 +7,22 @@ import { Globe } from "@/components/admin/Globe";
 // clutter pretending to be a feature.
 export const dynamic = "force-dynamic";
 
-export default function GlobeDemo() {
+export default async function GlobeDemo({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   if (process.env.NODE_ENV === "production") notFound();
+  const params = await searchParams;
+  const num = (v: string | string[] | undefined) => {
+    const n = Number(Array.isArray(v) ? v[0] : v);
+    return Number.isFinite(n) ? n : undefined;
+  };
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-2xl items-center justify-center px-4">
       <Globe
         size={520}
+        initial={{ zoom: num(params.zoom), lat: num(params.lat), lon: num(params.lon) }}
         points={[
           { country: "DE", count: 4, lat: 48.14, lon: 11.58, label: "München" },
           { country: "DE", count: 1, lat: 52.52, lon: 13.4, label: "Berlin" },
