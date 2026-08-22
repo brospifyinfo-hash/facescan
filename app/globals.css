@@ -1638,3 +1638,131 @@ select {
 .auth-google:disabled {
   opacity: 0.55;
 }
+
+/* ===========================================================================
+   PAYMENT CONFIRMED — the one moment in the funnel worth celebrating.
+   ===========================================================================
+
+   Money moved, and until now the app marked that with a line of text on a
+   button. The unlock reveal on the report is a separate thing that plays
+   later; THIS is the receipt beat, and it belongs where the customer is
+   still looking — inside the sheet they paid in.
+
+   Three beats over about 1.5 seconds, then the sheet hands over:
+     the ring draws itself   — a circle completing reads as "settled"
+     the check draws inside  — the verdict, in the product's own accent
+     the words rise          — what was bought, so the beat is informative
+                               and not merely decorative
+
+   Everything is stroke-dashoffset, transform and opacity: the compositor
+   draws all of it, and nothing here runs JavaScript per frame.
+--------------------------------------------------------------------------- */
+
+.paid {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 24px;
+  text-align: center;
+  border-radius: inherit;
+  /* Dense enough to take over the sheet, translucent enough that the order
+     it belongs to stays visible behind it. */
+  background: radial-gradient(120% 80% at 50% 40%, rgba(9, 14, 20, 0.94), rgba(5, 8, 13, 0.97));
+  animation: paid-in 260ms var(--ease-smooth) both;
+}
+@keyframes paid-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.paid__mark {
+  position: relative;
+  width: 96px;
+  height: 96px;
+}
+.paid__ring {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  /* The circumference at r=45, so the dash covers exactly one lap. */
+  stroke-dasharray: 283;
+  stroke-dashoffset: 283;
+  transform-origin: 50% 50%;
+  transform: rotate(-90deg);
+  filter: drop-shadow(0 0 10px rgba(95, 227, 138, 0.55));
+}
+.paid__check {
+  fill: none;
+  stroke: var(--color-accent-bright);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 44;
+  stroke-dashoffset: 44;
+  filter: drop-shadow(0 0 8px rgba(95, 227, 138, 0.9));
+}
+/* The bloom that fires as the check lands — a single expanding ring, not a
+   shower of particles: this is a receipt, not a slot machine. */
+.paid__halo {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 1px solid var(--color-accent);
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .paid__ring {
+    animation: paid-draw-ring 620ms var(--ease-smooth) 60ms forwards;
+  }
+  .paid__check {
+    animation: paid-draw-check 420ms var(--ease-smooth) 560ms forwards;
+  }
+  .paid__halo {
+    animation: paid-halo 700ms var(--ease-smooth) 640ms forwards;
+  }
+  .paid__text {
+    animation: paid-rise 460ms var(--ease-smooth) 760ms both;
+  }
+}
+/* Without motion the same state, simply already arrived. */
+@media (prefers-reduced-motion: reduce) {
+  .paid__ring,
+  .paid__check {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes paid-draw-ring {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes paid-draw-check {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes paid-halo {
+  0% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+@keyframes paid-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}

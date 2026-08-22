@@ -588,6 +588,8 @@ export const en: Dict = {
     processing: "Processing payment…",
     confirming: "Confirming payment…",
     succeeded: "Payment successful — unlocking your analysis.",
+    paidTitle: "Payment confirmed",
+    paidUnlocking: "Unlocking …",
     expressOr: "or pay by card",
     securedBy: "Payments handled by Stripe. Card details never touch our servers.",
     unconfigured: "Payments aren't configured yet.",

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AuthModal } from "./AuthModal";
 import { OrbitCode } from "./OrbitCode";
+import { PaidBurst } from "@/components/checkout/PaidBurst";
 
 /** Dev-only harness — see app/admin/auth-demo/page.tsx. */
 export function AuthDemo({
@@ -13,6 +14,16 @@ export function AuthDemo({
   what: string;
 }) {
   const [code, setCode] = useState("482913");
+
+  if (what === "paid") {
+    return (
+      <main className="flex min-h-dvh items-center justify-center p-6">
+        <div className="relative h-[420px] w-full max-w-sm rounded-[28px] border border-white/10">
+          <PaidBurst plan="blueprint" onDone={() => {}} />
+        </div>
+      </main>
+    );
+  }
 
   if (what === "orbit") {
     return (

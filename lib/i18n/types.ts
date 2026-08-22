@@ -438,6 +438,9 @@ export interface Dict {
     processing: string;
     confirming: string;
     succeeded: string;
+    /** The confirmation beat inside the sheet, after the charge. */
+    paidTitle: string;
+    paidUnlocking: string;
     expressOr: string;
     securedBy: string;
     unconfigured: string;

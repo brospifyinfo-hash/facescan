@@ -589,6 +589,8 @@ export const es: Dict = {
     processing: "Procesando el pago…",
     confirming: "Confirmando el pago…",
     succeeded: "Pago correcto: desbloqueando tu análisis.",
+    paidTitle: "Pago confirmado",
+    paidUnlocking: "Desbloqueando …",
     expressOr: "o paga con tarjeta",
     securedBy: "Pagos gestionados por Stripe. Los datos de tarjeta nunca tocan nuestros servidores.",
     unconfigured: "Los pagos aún no están configurados.",

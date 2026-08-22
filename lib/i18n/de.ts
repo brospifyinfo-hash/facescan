@@ -596,6 +596,8 @@ export const de: Dict = {
     processing: "Zahlung wird verarbeitet…",
     confirming: "Zahlung wird bestätigt…",
     succeeded: "Zahlung erfolgreich — deine Analyse wird freigeschaltet.",
+    paidTitle: "Zahlung bestätigt",
+    paidUnlocking: "Wird freigeschaltet …",
     expressOr: "oder mit Karte bezahlen",
     securedBy: "Zahlungsabwicklung über Stripe. Kartendaten erreichen unsere Server nie.",
     unconfigured: "Die Zahlungsabwicklung ist noch nicht eingerichtet.",

@@ -14,6 +14,7 @@ import { fill, useT } from "@/lib/i18n";
 import { VAT_RATE_PERCENT, type Amounts } from "@/lib/stripe/client";
 import type { PlanId } from "@/lib/pricing";
 import { cn } from "@/lib/cn";
+import { PaidBurst } from "./PaidBurst";
 
 /** Map Stripe's machine codes onto sentences a buyer can act on. */
 function messageFor(err: StripeError, t: ReturnType<typeof useT>): string {
@@ -88,6 +89,15 @@ export function PaymentForm({
   /** The intent Stripe just charged. The fallback below has nothing to ask
    *  about without it. */
   const [intentId, setIntentId] = useState<string | null>(null);
+  /**
+   * The plan whose confirmation is currently playing.
+   *
+   * onPaid is what closes this sheet, so it must NOT fire the instant the
+   * entitlement lands — that would cut the confirmation off mid-draw. The
+   * grant is held here, PaidBurst renders, and the handover happens when
+   * the beat has been seen.
+   */
+  const [paidPlan, setPaidPlan] = useState<PlanId | null>(null);
 
   /**
    * Whether any wallet is actually offered.
@@ -136,7 +146,7 @@ export function PaymentForm({
           const data = await res.json();
           if (res.ok && data.plan) {
             setPhase("done");
-            onPaid(data.plan as PlanId);
+            setPaidPlan(data.plan as PlanId);
             return;
           }
         } catch {
@@ -154,7 +164,7 @@ export function PaymentForm({
           const data = await res.json();
           if (data.plan) {
             setPhase("done");
-            onPaid(data.plan as PlanId);
+            setPaidPlan(data.plan as PlanId);
             return;
           }
         } catch {
@@ -256,7 +266,9 @@ export function PaymentForm({
   };
 
   return (
-    <div className="flex flex-col gap-5">
+    // relative, because the confirmation beat covers this form: it is the
+    // sheet the customer paid in, and the receipt belongs on top of it.
+    <div className="relative flex flex-col gap-5">
       {/* ---------- Order summary ---------- */}
       <section className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
         <h3 className="font-mono-terminal t-eyebrow text-[var(--color-ink-tertiary)]">
@@ -405,6 +417,10 @@ export function PaymentForm({
             </button>
           ) : null}
         </div>
+      ) : null}
+
+      {paidPlan ? (
+        <PaidBurst plan={paidPlan} onDone={() => onPaid(paidPlan)} />
       ) : null}
 
       {/* ---------- The legally mandated order button ---------- */}
