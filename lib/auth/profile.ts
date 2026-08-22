@@ -18,6 +18,8 @@ import { skGetJson, skSetJson, sheetsKvConfigured, sheetsKvHealthy } from "../sh
 export interface Profile {
   name?: string;
   picture?: string;
+  /** True once the customer named themselves — see mergeProfile. */
+  nameSetByUser?: boolean;
 }
 
 const key = (email: string) => `profile:${email}`;
@@ -43,7 +45,13 @@ export async function getProfile(email: string): Promise<Profile> {
   if (sheetsKvConfigured() && sheetsKvHealthy()) {
     try {
       const p = await skGetJson<Profile>(key(email));
-      if (p) return { name: clean(p.name, 60), picture: cleanPicture(p.picture) };
+      if (p) {
+        return {
+          name: clean(p.name, 60),
+          picture: cleanPicture(p.picture),
+          nameSetByUser: p.nameSetByUser === true,
+        };
+      }
     } catch {
       /* fall through to the floor */
     }
@@ -52,15 +60,25 @@ export async function getProfile(email: string): Promise<Profile> {
 }
 
 /**
- * Merge in what an identity provider told us. Fields already set are kept:
- * a customer who renamed themselves must not be renamed back by their next
- * Google sign-in.
+ * Merge in what an identity provider told us.
+ *
+ * THE PICTURE ALWAYS REFRESHES. It is Google's, not ours and not the
+ * customer's — nothing in this app edits it — so keeping a stale copy
+ * would mean somebody who changes their Google photo, or who signed in
+ * before this app stored pictures at all, is stuck with what we happened
+ * to capture first. Signing in again is then the fix for a missing avatar,
+ * which is a thing a person can actually do.
+ *
+ * THE NAME DOES NOT, once the customer has set their own: being renamed
+ * back by an identity provider is the kind of thing that feels like the
+ * app forgetting who you are.
  */
 export async function mergeProfile(email: string, incoming: Profile): Promise<void> {
   const current = await getProfile(email);
   const next: Profile = {
-    name: current.name ?? clean(incoming.name, 60),
-    picture: current.picture ?? cleanPicture(incoming.picture),
+    name: current.nameSetByUser ? current.name : (clean(incoming.name, 60) ?? current.name),
+    picture: cleanPicture(incoming.picture) ?? current.picture,
+    nameSetByUser: current.nameSetByUser,
   };
   if (!next.name && !next.picture) return;
 
@@ -77,7 +95,7 @@ export async function mergeProfile(email: string, incoming: Profile): Promise<vo
 /** Set by the customer themselves, so it overwrites. */
 export async function setProfileName(email: string, name: string): Promise<void> {
   const current = await getProfile(email);
-  const next: Profile = { ...current, name: clean(name, 60) };
+  const next: Profile = { ...current, name: clean(name, 60), nameSetByUser: true };
   memory.set(email, next);
   if (sheetsKvConfigured() && sheetsKvHealthy()) {
     try {
