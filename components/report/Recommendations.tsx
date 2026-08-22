@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowUpRight, Sparkles } from "lucide-react";
+import { ArrowUpRight, Check, Sparkles, Tag } from "lucide-react";
 import { fill, useT } from "@/lib/i18n";
 import { recommend, type Recommendations as Ranked } from "@/lib/products/match";
+import { sharedRewardsCode } from "@/lib/products/rewards";
 import { PLAN_FOR_TAG, type Product } from "@/lib/products/types";
 import type { QuizAnswers, ScanMetrics } from "@/lib/store";
 import { cn } from "@/lib/cn";
@@ -29,6 +30,10 @@ export function Recommendations({
 }) {
   const t = useT();
   const [ranked, setRanked] = useState<Ranked | null>(null);
+  // The whole catalogue, not just what was recommended: the code is only
+  // advertised when EVERY link carries it, and "every" has to mean every
+  // product the customer can reach from here.
+  const [code, setCode] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -37,7 +42,9 @@ export function Recommendations({
         const res = await fetch("/api/products");
         if (!res.ok) return;
         const data = (await res.json()) as { products: Product[] };
-        if (!cancelled) setRanked(recommend(data.products, quiz, metrics));
+        if (cancelled) return;
+        setRanked(recommend(data.products, quiz, metrics));
+        setCode(sharedRewardsCode(data.products));
       } catch {
         // A catalogue that will not load is not worth an error state on a
         // report page. The section simply does not appear.
@@ -77,6 +84,15 @@ export function Recommendations({
         </>
       ) : null}
 
+      {/* The discount code, shown ONLY when every link carries the same one.
+          The paid tiers advertise it, so it has to be visible somewhere the
+          customer can actually read and copy it — a code that exists solely
+          inside a query string is a promise nobody can see being kept.
+
+          What it is worth is deliberately not stated: iHerb owns those terms
+          and can change them tomorrow. See lib/products/rewards.ts. */}
+      {code ? <RewardsCode code={code} /> : null}
+
       {/* Not fine print by choice — a paid report that quietly earns a
           commission on what it recommends has to say so, and saying it
           plainly costs nothing. */}
@@ -84,6 +100,56 @@ export function Recommendations({
         {t.products.disclosure}
       </p>
     </section>
+  );
+}
+
+/**
+ * The merchant discount code, copyable.
+ *
+ * Copy-to-clipboard rather than a decorative badge: the code is only useful
+ * in iHerb's promo field, and retyping a random eight-character string off a
+ * phone screen is exactly where a discount quietly stops being claimed.
+ * Falls back to plain selectable text wherever the clipboard API is refused.
+ */
+function RewardsCode({ code }: { code: string }) {
+  const t = useT();
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) return;
+    const id = window.setTimeout(() => setCopied(false), 1600);
+    return () => window.clearTimeout(id);
+  }, [copied]);
+
+  return (
+    <div className="mt-4 flex items-start gap-3 rounded-[16px] border border-[var(--color-accent)]/25 bg-[var(--color-accent)]/[0.06] px-3.5 py-3">
+      <Tag className="mt-[3px] h-3.5 w-3.5 shrink-0 text-[var(--color-accent)]" aria-hidden />
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-ink-tertiary)]">
+            {t.products.discountLabel}
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              navigator.clipboard?.writeText(code).then(
+                () => setCopied(true),
+                () => {},
+              );
+            }}
+            className="interactive font-mono-terminal rounded-md bg-white/[0.07] px-2 py-0.5 text-[12.5px] font-bold tracking-[0.06em] text-[var(--color-accent)] hover:bg-white/[0.12]"
+          >
+            {code}
+          </button>
+          {copied ? (
+            <Check className="h-3.5 w-3.5 text-[var(--color-accent)]" aria-hidden />
+          ) : null}
+        </div>
+        <p className="mt-1 text-[11px] leading-relaxed text-[var(--color-ink-tertiary)]">
+          {t.products.discountNote}
+        </p>
+      </div>
+    </div>
   );
 }
 

@@ -11,6 +11,7 @@ import { recommend, tagWeights, TOP_N } from "../lib/products/match";
 import { validateProduct, PROBLEM_TAGS, TAG_FOR_PLAN } from "../lib/products/types";
 import type { Product, ProblemTag } from "../lib/products/types";
 import { parseCsv, productsFromRows } from "../lib/products/sheet-csv";
+import { rewardsCodeOf, sharedRewardsCode } from "../lib/products/rewards";
 import { buildPlan } from "../lib/plan";
 import type { QuizAnswers, ScanMetrics } from "../lib/store";
 import { makeMetric, METRIC_ORDER, SPECS } from "../lib/specs";
@@ -312,6 +313,57 @@ console.log("\nSheet CSV\n---------");
 }
 
 check("an empty sheet is an empty catalogue, not a crash", productsFromRows(parseCsv("")).length === 0);
+
+// ---- The merchant discount code --------------------------------------------
+//
+// The paid tiers ADVERTISE this code, so the property that matters is not
+// "does it parse" but "does it ever show a code the customer cannot use".
+// Every case below is a way that could happen.
+
+function withLinks(...links: string[]) {
+  return links.map((affiliateLink, i) => ({
+    id: String(i),
+    title: `P${i}`,
+    description: "",
+    imageUrl: "",
+    affiliateLink,
+    tags: [],
+    active: true,
+    createdAt: 0,
+  })) as unknown as Parameters<typeof sharedRewardsCode>[0];
+}
+
+console.log("\nRabattcode aus den Links");
+
+check(
+  "reads rcode off a real iHerb link",
+  rewardsCodeOf("https://iherb.co/jLK1UB8M?rcode=GAO0633&utm_medium=appshare") === "GAO0633",
+);
+check(
+  "accepts the older pcode and rsref spellings",
+  rewardsCodeOf("https://de.iherb.com/pr/x/1?pcode=ABC123") === "ABC123" &&
+    rewardsCodeOf("https://de.iherb.com/pr/x/1?rsref=ABC123") === "ABC123",
+);
+check("a link without the parameter has no code", rewardsCodeOf("https://de.iherb.com/pr/x/1") === null);
+check(
+  "a truncated '?rcode' with no value is not a code",
+  rewardsCodeOf("https://de.iherb.com/pr/x/1?rcode") === null,
+);
+check("a link that is not a URL does not throw", rewardsCodeOf("kaputt") === null);
+
+check(
+  "one shared code across the catalogue is the code",
+  sharedRewardsCode(withLinks("https://a.de/1?rcode=X1", "https://b.de/2?rcode=X1")) === "X1",
+);
+check(
+  "ONE product without a code silences the whole claim",
+  sharedRewardsCode(withLinks("https://a.de/1?rcode=X1", "https://b.de/2")) === null,
+);
+check(
+  "two different codes are not a shared code",
+  sharedRewardsCode(withLinks("https://a.de/1?rcode=X1", "https://b.de/2?rcode=X2")) === null,
+);
+check("an empty catalogue advertises nothing", sharedRewardsCode(withLinks()) === null);
 
 console.log(`\n${checks - failures}/${checks} checks passed`);
 if (failures > 0) process.exitCode = 1;
