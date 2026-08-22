@@ -554,17 +554,14 @@ export interface Dict {
      */
     improves: Record<ProblemTag, string>;
     /**
-     * The merchant discount code, shown only when EVERY product link carries
-     * the same one — see lib/products/rewards.ts. Contains {code}.
+     * Advertising disclosure. Legally required, not decorative.
      *
-     * The paid tiers advertise this, so the string must describe what the
-     * code IS and leave what it is WORTH to the merchant: iHerb sets and
-     * changes its own terms, and a percentage printed here would be a
-     * promise this product cannot keep.
+     * It says the merchant pays us rather than "your price is unchanged".
+     * The old sentence asserted something about the CUSTOMER'S price that we
+     * cannot verify — iHerb can attach or withdraw a link-level discount
+     * without telling us, and a disclosure that guesses about the other
+     * party's pricing is worse than one that only states our own side.
      */
-    discountLabel: string;
-    discountNote: string;
-    /** Advertising disclosure. Legally required, not decorative. */
     disclosure: string;
   };
   /** The catalogue editor. Owner-facing, but typed like everything else. */

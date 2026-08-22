@@ -230,7 +230,7 @@ export const es: Dict = {
         "Tus puntos fuertes y áreas de mejora",
       ],
       excluded: [
-        "Recomendaciones de productos y código de descuento",
+        "Recomendaciones de productos con enlaces directos",
         "Plan glow-up y plan de 4 semanas",
         "Estudio de peinado e imagen de resultado",
       ],
@@ -241,7 +241,6 @@ export const es: Dict = {
       features: [
         "El análisis completo — las 15 mediciones en detalle",
         "Recomendaciones de productos con enlace directo a cada artículo",
-        "Nuestro código de descuento de iHerb va incluido en cada enlace",
         "Historial de escaneos en tu cuenta",
       ],
       excluded: [
@@ -257,7 +256,7 @@ export const es: Dict = {
         "Todo lo de Base y Pro",
         "Plan glow-up — tu plan de acción personal",
         "Plan de 4 semanas, semana a semana",
-        "Recomendaciones de productos con enlaces y código de descuento",
+        "Recomendaciones de productos con enlace directo a cada artículo",
         "Estudio de peinado para tu forma de cara",
         "Tu imagen de resultado — cómo podrías verte",
         "Informe de IA como documento + exportación PDF",
@@ -697,11 +696,8 @@ export const es: Dict = {
       smoking: "Mejor circulación, tono más fresco y envejecimiento más lento.",
       training: "Más músculo y menos grasa corporal, también visible en el rostro.",
     },
-    discountLabel: "Código de descuento",
-    discountNote:
-      "Ya va incluido en cada enlace — también puedes introducirlo a mano en el campo de cupón de iHerb. Las condiciones las fija iHerb, no nosotros.",
     disclosure:
-      "Publicidad · Enlaces de afiliado. Si compras a través de uno, recibimos una comisión del vendedor. La selección sigue tus medidas, no el importe de la comisión.",
+      "Publicidad · Enlaces de afiliado. Si compras a través de uno, el vendedor nos paga una comisión — la paga el vendedor y no se añade a tu precio. La selección sigue tus medidas, no el importe de la comisión.",
   },
   admin: {
     title: "Productos",

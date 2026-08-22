@@ -230,7 +230,7 @@ export const fr: Dict = {
         "Tes points forts et axes d'amélioration",
       ],
       excluded: [
-        "Recommandations de produits et code de réduction",
+        "Recommandations de produits avec liens directs",
         "Plan glow-up et plan de 4 semaines",
         "Studio coiffure et image de résultat",
       ],
@@ -241,7 +241,6 @@ export const fr: Dict = {
       features: [
         "L'analyse complète — les 15 mesures en détail",
         "Recommandations de produits avec un lien direct vers chaque article",
-        "Notre code de réduction iHerb est intégré à chaque lien",
         "Historique des scans dans ton compte",
       ],
       excluded: [
@@ -257,7 +256,7 @@ export const fr: Dict = {
         "Tout ce que contiennent Base et Pro",
         "Plan glow-up — ton plan d'action personnel",
         "Plan de 4 semaines, semaine par semaine",
-        "Recommandations de produits avec liens et code de réduction",
+        "Recommandations de produits avec un lien direct vers chaque article",
         "Studio coiffure pour la forme de ton visage",
         "Ton image de résultat — à quoi tu pourrais ressembler",
         "Rapport IA en document + export PDF",
@@ -697,11 +696,8 @@ export const fr: Dict = {
       smoking: "Meilleure circulation, teint plus frais et vieillissement ralenti.",
       training: "Plus de muscle et moins de gras — visible aussi sur le visage.",
     },
-    discountLabel: "Code de réduction",
-    discountNote:
-      "Déjà intégré à chaque lien — vous pouvez aussi le saisir vous-même dans le champ promo d'iHerb. C'est iHerb qui en fixe les conditions, pas nous.",
     disclosure:
-      "Publicité · Liens affiliés. Si vous achetez via l'un d'eux, nous percevons une commission du marchand. La sélection suit vos mesures, pas le montant de la commission.",
+      "Publicité · Liens affiliés. Si vous achetez via l'un d'eux, le marchand nous verse une commission — c'est le marchand qui la paie, elle n'est pas ajoutée à votre prix. La sélection suit vos mesures, pas le montant de la commission.",
   },
   admin: {
     title: "Produits",

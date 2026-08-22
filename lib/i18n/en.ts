@@ -229,7 +229,7 @@ export const en: Dict = {
         "Your strengths & optimisation areas",
       ],
       excluded: [
-        "Product recommendations & discount code",
+        "Product recommendations with direct links",
         "Glow-up plan & 4-week plan",
         "Hairstyle studio & result image",
       ],
@@ -240,7 +240,6 @@ export const en: Dict = {
       features: [
         "The complete analysis — all 15 measurements in detail",
         "Personal product recommendations with a direct link to each item",
-        "Our iHerb discount code is built into every link",
         "Scan history in your account",
       ],
       excluded: [
@@ -256,7 +255,7 @@ export const en: Dict = {
         "Everything in Base & Pro",
         "Glow-up plan — your personal action plan",
         "4-week plan, week by week",
-        "Product recommendations with links & discount code",
+        "Product recommendations with a direct link to each item",
         "Hairstyle studio for your face shape",
         "Your result image — how you could look",
         "AI deep-dive document + PDF export",
@@ -696,11 +695,8 @@ export const en: Dict = {
       smoking: "Better circulation, fresher skin tone and slower skin ageing.",
       training: "More muscle and less body fat — visible in the face too.",
     },
-    discountLabel: "Discount code",
-    discountNote:
-      "Already built into every link — you can also type it into iHerb's promo field yourself. iHerb sets the terms, not us.",
     disclosure:
-      "Advertisement · Affiliate links. If you buy through one of these we receive a commission from the merchant. The selection follows your measurements, not the size of the commission.",
+      "Advertisement · Affiliate links. If you buy through one of these, the merchant pays us a commission — the merchant pays it, and it is not added to your price. The selection follows your measurements, not the size of the commission.",
   },
   admin: {
     title: "Products",

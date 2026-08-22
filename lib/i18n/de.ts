@@ -230,7 +230,7 @@ export const de: Dict = {
         "Deine Stärken & Optimierungsfelder",
       ],
       excluded: [
-        "Produktempfehlungen & Rabattcode",
+        "Produktempfehlungen mit Direktlink",
         "Glow-Up-Plan & 4-Wochen-Plan",
         "Frisuren-Studio & Resultat-Bild",
       ],
@@ -241,7 +241,6 @@ export const de: Dict = {
       features: [
         "Die komplette Analyse — alle 15 Messwerte im Detail",
         "Persönliche Produktempfehlungen mit Direktlink zum Produkt",
-        "Unser iHerb-Rabattcode ist in jedem Link hinterlegt",
         "Scan-Verlauf in deinem Konto",
       ],
       excluded: [
@@ -257,7 +256,7 @@ export const de: Dict = {
         "Alles aus Basis & Pro",
         "Glow-Up-Plan — dein persönlicher Maßnahmenplan",
         "4-Wochen-Plan, Woche für Woche",
-        "Produktempfehlungen mit Links & Rabattcode",
+        "Produktempfehlungen mit Direktlink zum Produkt",
         "Frisuren-Studio für deine Gesichtsform",
         "Dein Resultat-Bild — so könntest du aussehen",
         "KI-Tiefenanalyse als Dokument + PDF-Export",
@@ -704,11 +703,8 @@ export const de: Dict = {
       smoking: "Bessere Durchblutung, frischerer Hautton und langsamere Hautalterung.",
       training: "Mehr Muskelanteil, weniger Körperfett — sichtbar auch im Gesicht.",
     },
-    discountLabel: "Rabattcode",
-    discountNote:
-      "Steckt schon in jedem Link — du kannst ihn bei iHerb auch von Hand ins Gutscheinfeld eintragen. Die Konditionen legt iHerb fest, nicht wir.",
     disclosure:
-      "Anzeige · Affiliate-Links. Kaufst du über einen dieser Links, erhalten wir eine Provision vom Händler. Die Auswahl richtet sich nach deinen Messwerten, nicht nach der Höhe der Provision.",
+      "Anzeige · Affiliate-Links. Kaufst du über einen dieser Links, erhalten wir vom Händler eine Vergütung — die zahlt der Händler, auf deinen Preis wird sie nicht aufgeschlagen. Die Auswahl richtet sich nach deinen Messwerten, nicht nach der Höhe der Vergütung.",
   },
   admin: {
     title: "Produkte",
