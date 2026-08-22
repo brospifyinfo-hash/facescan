@@ -106,60 +106,74 @@ export function PaymentForm({
   const consented = acceptedTerms && acceptedWithdrawal;
 
   /**
-   * The webhook is the authority on what was bought, so after Stripe reports
-   * success we wait for the entitlement to actually appear rather than
-   * unlocking on the client's say-so.
+   * Turn the payment into an unlock, as fast as the truth allows.
+   *
+   * ASK STRIPE FIRST. Both routes below end at the same authority — the
+   * webhook is Stripe PUSHING the fact, /api/stripe/confirm is the server
+   * PULLING the same fact from Stripe and checking it against this
+   * session. Waiting for the push was costing the customer ten to sixty
+   * seconds of spinner: the webhook has to arrive AND write to the
+   * spreadsheet (~2s per round trip) before a poll can see it, and each
+   * poll is another spreadsheet read. Pulling costs one Stripe call and
+   * one write.
+   *
+   * The poll stays as the fallback for the case the pull cannot answer —
+   * Stripe unreachable from our side, or an id we never got back — because
+   * a paid customer must never be left locked out.
    */
-  const waitForEntitlement = useCallback(async (pi?: string | null) => {
-    setPhase("confirming");
-    for (let i = 0; i < 20; i++) {
-      try {
-        const res = await fetch("/api/stripe/entitlement");
-        const data = await res.json();
-        if (data.plan) {
-          setPhase("done");
-          onPaid(data.plan as PlanId);
-          return;
-        }
-      } catch {
-        /* keep polling */
-      }
-      await new Promise((r) => setTimeout(r, 700));
-    }
-    // The webhook has not arrived. Before giving up, ask Stripe directly:
-    // the webhook is a PUSH and can be misconfigured, in the wrong mode or
-    // merely slow, and none of that should leave a paying customer locked out
-    // of what they bought. The server verifies the intent against Stripe, so
-    // this is the same authority pulled instead of pushed — see
-    // app/api/stripe/confirm/route.ts.
-    const id = pi ?? intentId;
-    if (id) {
-      try {
-        const res = await fetch("/api/stripe/confirm", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ paymentIntentId: id }),
-        });
-        const data = await res.json();
-        if (res.ok && data.plan) {
-          setPhase("done");
-          onPaid(data.plan as PlanId);
-          return;
-        }
-      } catch {
-        /* fall through to the honest message */
-      }
-    }
+  const waitForEntitlement = useCallback(
+    async (pi?: string | null) => {
+      setPhase("confirming");
+      const id = pi ?? intentId;
 
-    // Paid but not yet granted — say so honestly instead of failing silently.
-    //
-    // busy and phase deliberately STAY where they are. Resetting them was the
-    // double-charge bug: the pay button keys off both, so clearing them handed
-    // back a live pay button on a card that had already been charged. The way
-    // out of here is the "check again" control, which re-polls; there is no
-    // path that pays twice.
-    setError(t.pay.errors.timeout);
-  }, [onPaid, t, intentId]);
+      if (id) {
+        try {
+          const res = await fetch("/api/stripe/confirm", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ paymentIntentId: id }),
+          });
+          const data = await res.json();
+          if (res.ok && data.plan) {
+            setPhase("done");
+            onPaid(data.plan as PlanId);
+            return;
+          }
+        } catch {
+          /* fall through to the webhook path */
+        }
+      }
+
+      // Fallback: wait for the push. Fewer, wider-spaced attempts than
+      // before — this is now the unusual path, and every attempt is a
+      // spreadsheet read.
+      for (let i = 0; i < 8; i++) {
+        await new Promise((r) => setTimeout(r, 900));
+        try {
+          const res = await fetch("/api/stripe/entitlement");
+          const data = await res.json();
+          if (data.plan) {
+            setPhase("done");
+            onPaid(data.plan as PlanId);
+            return;
+          }
+        } catch {
+          /* keep polling */
+        }
+      }
+
+      // Paid but not yet granted — say so honestly instead of failing
+      // silently.
+      //
+      // busy and phase deliberately STAY where they are. Resetting them was
+      // the double-charge bug: the pay button keys off both, so clearing
+      // them handed back a live pay button on a card that had already been
+      // charged. The way out of here is the "check again" control, which
+      // re-runs this; there is no path that pays twice.
+      setError(t.pay.errors.timeout);
+    },
+    [onPaid, t, intentId],
+  );
 
   const confirm = async (viaExpress: boolean) => {
     if (!stripe || !elements) return;

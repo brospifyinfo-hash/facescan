@@ -71,18 +71,26 @@ export async function POST(req: Request) {
 
     // Both are idempotent — grant keeps the higher tier, recordPayment
     // deduplicates by intent id — so racing the webhook is harmless.
-    await entitlements.grant(session.email, {
-      plan,
-      paymentIntentId: intent.id,
-      grantedAt: Date.now(),
-    });
-    await entitlements.recordPayment(session.email, {
-      plan,
-      paymentIntentId: intent.id,
-      amount: typeof intent.amount === "number" ? intent.amount : null,
-      currency: intent.currency ?? null,
-      at: Date.now(),
-    });
+    // THE TWO WRITES GO TOGETHER. Each is a spreadsheet round trip of
+    // roughly two seconds and neither depends on the other, so running them
+    // in sequence simply made the customer wait for both. They stay
+    // separately idempotent — grant keeps the higher tier, recordPayment
+    // deduplicates by intent id — so racing the other grant path is still
+    // harmless.
+    await Promise.all([
+      entitlements.grant(session.email, {
+        plan,
+        paymentIntentId: intent.id,
+        grantedAt: Date.now(),
+      }),
+      entitlements.recordPayment(session.email, {
+        plan,
+        paymentIntentId: intent.id,
+        amount: typeof intent.amount === "number" ? intent.amount : null,
+        currency: intent.currency ?? null,
+        at: Date.now(),
+      }),
+    ]);
 
     console.info(`[stripe] confirm granted ${plan} to ${session.email} (${intent.id})`);
     return NextResponse.json({ plan });

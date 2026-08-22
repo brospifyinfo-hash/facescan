@@ -99,20 +99,26 @@ export async function POST(req: Request) {
           break;
         }
 
-        await entitlements.grant(email, {
-          plan,
-          paymentIntentId: intent.id,
-          grantedAt: Date.now(),
-        });
-        // The receipt line. Separate from the grant because an upgrade
-        // overwrites what you own but must never overwrite what you paid.
-        await entitlements.recordPayment(email, {
-          plan,
-          paymentIntentId: intent.id,
-          amount: typeof intent.amount === "number" ? intent.amount : null,
-          currency: intent.currency ?? null,
-          at: Date.now(),
-        });
+        // Together, not in sequence: two spreadsheet round trips that do
+        // not depend on each other. Stripe times its webhook deliveries out,
+        // so halving the work here is also what keeps a slow spreadsheet
+        // from turning into a retried delivery.
+        await Promise.all([
+          entitlements.grant(email, {
+            plan,
+            paymentIntentId: intent.id,
+            grantedAt: Date.now(),
+          }),
+          // The receipt line. Separate from the grant because an upgrade
+          // overwrites what you own but must never overwrite what you paid.
+          entitlements.recordPayment(email, {
+            plan,
+            paymentIntentId: intent.id,
+            amount: typeof intent.amount === "number" ? intent.amount : null,
+            currency: intent.currency ?? null,
+            at: Date.now(),
+          }),
+        ]);
         console.info(`[stripe] granted ${plan} to ${email} (${intent.id})`);
         break;
       }
