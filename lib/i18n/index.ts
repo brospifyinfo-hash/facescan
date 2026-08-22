@@ -31,7 +31,7 @@ function isLocale(v: string): v is Locale {
  * base tag wins ("de-AT" → "de").
  */
 export function detectLocale(): Locale {
-  if (typeof navigator === "undefined") return "en";
+  if (typeof navigator === "undefined") return "de";
   const candidates = navigator.languages?.length
     ? navigator.languages
     : [navigator.language];
@@ -39,7 +39,9 @@ export function detectLocale(): Locale {
     const base = tag.toLowerCase().split("-")[0];
     if (isLocale(base)) return base;
   }
-  return "en";
+  // German, not English: this domain serves the German market, and the
+  // fallback should match what the server rendered.
+  return "de";
 }
 
 interface Ctx {
@@ -49,18 +51,24 @@ interface Ctx {
 }
 
 const I18nContext = createContext<Ctx>({
-  locale: "en",
-  t: en,
+  locale: "de",
+  t: de,
   setLocale: () => {},
 });
 
 /**
- * Server render and first client paint both use "en" so hydration matches;
+ * Server render and first client paint both use "de" so hydration matches;
  * the detected locale is applied in an effect immediately after mount.
  * Detecting during render would produce a server/client mismatch.
+ *
+ * WHY GERMAN IS THE ONE THE SERVER RENDERS: it is the language a crawler
+ * sees, because the dictionary is only swapped in the browser. This domain
+ * serves the German market, so English in the indexed HTML was costing the
+ * site every German query it should have won. Everyone else still gets
+ * their own language a frame after mount.
  */
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("en");
+  const [locale, setLocaleState] = useState<Locale>("de");
 
   useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY);

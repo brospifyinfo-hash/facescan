@@ -5,24 +5,75 @@ import { META_DESCRIPTION, VISION_ACTIVE } from "@/lib/i18n/privacy";
 import { ParallaxField } from "@/components/ui/ParallaxField";
 import { ConsentBanner } from "@/components/ui/ConsentBanner";
 import { Tracker } from "@/components/ui/Tracker";
+import { BRAND, SITE_LOCALE, SITE_URL, absolute } from "@/lib/seo";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
+// WHAT A CRAWLER GETS, AND WHY IT LOOKS LIKE THIS
+// ----------------------------------------------
+// metadataBase is what turns every relative image and canonical below into
+// an absolute URL — without it Next emits relative og:image values, which
+// no social platform resolves, and the share card silently renders blank.
+//
+// The canonical is set HERE, once, to the site root, and per page where a
+// page differs. The same deployment answers on the apex, the www and the
+// vercel.app hostname; without a canonical those are three competing copies
+// of one site, and the ranking gets split between them.
+//
 // Title and description both track the engine. The old pair asserted the
 // analysis runs "on-device" and that photos "never leave your device" —
 // true of the geometry pipeline, false the moment the free scan uploads to
 // GPT-4.1. A share card and a search result are where that claim travels
 // furthest, so it is the last place it should be left stale.
+const TITLE = VISION_ACTIVE
+  ? `${BRAND} — KI-Gesichtsanalyse: 15 Messwerte, Score und Plan`
+  : `${BRAND} — Gesichtsanalyse auf deinem Gerät: 15 Messwerte, Score und Plan`;
+
 export const metadata: Metadata = {
-  title: VISION_ACTIVE
-    ? "FaceScan — AI facial aesthetics analysis"
-    : "FaceScan — On-device facial aesthetics analysis",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: TITLE,
+    // Every other page appends the brand rather than repeating the claim —
+    // a title that is 80% boilerplate is 80% wasted in a result list.
+    template: `%s · ${BRAND}`,
+  },
   description: META_DESCRIPTION,
+  applicationName: BRAND,
+  alternates: { canonical: absolute("/") },
+  openGraph: {
+    type: "website",
+    siteName: BRAND,
+    locale: SITE_LOCALE,
+    url: absolute("/"),
+    title: TITLE,
+    description: META_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: META_DESCRIPTION,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      // Let Google show a full text snippet, a large image and no video
+      // preview — the defaults are conservative and cost click-through.
+      "max-snippet": -1,
+      "max-image-preview": "large",
+      "max-video-preview": 0,
+    },
+  },
+  category: "health",
+  formatDetection: { telephone: false, address: false, email: false },
 };
 
 export const viewport: Viewport = {
   themeColor: "#05080d",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({
@@ -30,9 +81,13 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // `lang` is corrected on the client once the browser language is known.
+  // THE SERVER RENDERS GERMAN, and that is an SEO decision rather than a
+  // default nobody revisited. The dictionary is chosen in the browser, so
+  // exactly one language ends up in the HTML a crawler reads; this domain
+  // serves the German market, so that language is German. Everyone else
+  // still gets their own the moment the app mounts — see I18nProvider.
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="de" className={inter.variable}>
       {/* No background on the body — the canvas is html's alone, so the
           fixed light layers behind the content are not painted over. See
           the body note in globals.css. */}

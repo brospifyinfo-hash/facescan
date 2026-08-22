@@ -129,7 +129,16 @@ export function visionPrivacy(locale: Locale): PrivacyCopy | null {
   return VISION_ACTIVE ? VISION[locale] : null;
 }
 
-/** Meta description for app/layout.tsx, which has no locale context. */
+/**
+ * Meta description for app/layout.tsx, which has no locale context.
+ *
+ * GERMAN, deliberately. This string is not shown in the app — it is what a
+ * search result and a shared link display, and both of those are read by the
+ * market this domain serves. The rest of the site picks its language in the
+ * browser; a snippet has no browser to ask, so it takes the language the
+ * server renders. Keep it under ~155 characters or Google truncates it, and
+ * keep the free scan in it: "free" is what earns the click.
+ */
 export const META_DESCRIPTION = VISION_ACTIVE
-  ? "Facial geometry analysis rated by GPT-4.1 Vision. 25 measurements against published anthropometric norms — your photos are sent once for the analysis and never stored."
-  : "Clinical-grade facial geometry analysis that runs entirely in your browser. 478 landmarks, 16 real measurements — your photos never leave your device during the free scan.";
+  ? "Kostenlose KI-Gesichtsanalyse: 15 echte Messwerte, dein Score und ein konkreter Plan. Zwei Fotos, Ergebnis in Sekunden — ohne Anmeldung, ohne Speicherung."
+  : "Kostenlose Gesichtsanalyse direkt im Browser: 478 Landmarken, 15 echte Messwerte, dein Score und ein konkreter Plan. Deine Fotos verlassen dein Gerät nicht.";
