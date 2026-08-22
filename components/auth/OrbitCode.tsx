@@ -2,37 +2,43 @@
 
 import { useCallback, useEffect, useRef } from "react";
 
-// The six-digit field, built on the reference the owner supplied.
+// The six-digit field.
 //
-// THE MOTION, AND WHY IT IS BUILT THIS WAY
-// ----------------------------------------
-// On a correct code the digits ORBIT the hub once and collapse into it.
-// The reference states the mechanism and the reason in one line — "never
-// SAMPLE a turn: move the origin to the hub and a plain rotate() draws an
-// exact circle, 2 keyframes" — so that is exactly what happens here: each
-// slot gets a transform-origin at the hub expressed in its own coordinates,
-// then two keyframes take it from 0deg to 450deg. No path sampling, no
-// per-frame JavaScript, and the compositor owns the whole thing.
+// THE RING IS THE FIELD, NOT AN ORNAMENT. Six arcs, one per digit: dotted
+// while empty, solid accent once that digit is typed. So the circle fills
+// as the customer types, and the flourish at the end completes something
+// they have been watching happen rather than appearing out of nowhere.
+// (The first version floated a decorative ring above the boxes with no
+// relationship to them, which is exactly why it read as clip-art.)
 //
-// 450 rather than 360 so the turn ends a quarter past where it started: a
-// full circle lands the digit back where the eye last saw it and reads as a
-// twitch, while the extra quarter reads as travel that arrived somewhere.
+// THE MOTION comes from the reference the owner supplied, whose instruction
+// is quoted because it is the whole trick: "never SAMPLE a turn — move the
+// origin to the hub and a plain rotate() draws an exact circle, 2
+// keyframes". Each slot takes its transform-origin to the hub and rotates
+// 450 degrees; the compositor draws the circle, JavaScript touches nothing
+// per frame, and a separate opacity curve collapses the digit into the
+// point. 450 rather than 360 because a full circle lands a digit back
+// exactly where the eye last saw it and reads as a twitch.
 //
-// WIND_UP_BRAKE is the reference easing: a touch of counter-motion before
-// the turn (the wind-up), then a long settle (the brake).
-//
-// The keyboard behaviour is the part people actually notice and is kept
-// from the field this replaces: paste fills every box, digits advance,
-// Backspace on an empty box steps back, arrows move without editing, and
-// autoComplete="one-time-code" lets a phone offer the code from the
-// notification.
+// Keyboard behaviour is the part people actually notice and is unchanged:
+// paste fills every box, digits advance, Backspace on an empty box steps
+// back, arrows move without editing, and autoComplete="one-time-code" lets
+// a phone offer the code from the notification.
 
 const WIND_UP_BRAKE = "cubic-bezier(0.62, -0.34, 0.2, 1)";
-const TURN_MS = 800;
-const STAGGER_MS = 42;
+const TURN_MS = 760;
+const STAGGER_MS = 38;
 
 /** How long the whole flourish lasts, for the caller advancing the screen. */
-export const ORBIT_TOTAL_MS = TURN_MS + STAGGER_MS * 5 + 120;
+export const ORBIT_TOTAL_MS = TURN_MS + STAGGER_MS * 5 + 90;
+
+// Ring geometry. r is in the SVG's own units; the segments are laid out by
+// dash arithmetic rather than by six rotated paths, so the gaps stay exact
+// at any size.
+const R = 38;
+const CIRC = 2 * Math.PI * R;
+const SLOT_ARC = CIRC / 6;
+const GAP = 9;
 
 export function OrbitCode({
   value,
@@ -40,7 +46,6 @@ export function OrbitCode({
   onComplete,
   disabled,
   verdict,
-  busy,
 }: {
   value: string;
   onChange: (next: string) => void;
@@ -48,11 +53,9 @@ export function OrbitCode({
   disabled?: boolean;
   /** "ok" runs the orbit, "bad" shakes the row. Null is the resting state. */
   verdict?: "ok" | "bad" | null;
-  busy?: boolean;
 }) {
   const refs = useRef<Array<HTMLInputElement | null>>([]);
   const hub = useRef<HTMLSpanElement>(null);
-  const row = useRef<HTMLDivElement>(null);
   const boxes = Array.from({ length: 6 }, (_, i) => value[i] ?? "");
 
   useEffect(() => {
@@ -60,7 +63,6 @@ export function OrbitCode({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
-  // Focus the first empty box when the field appears — one less tap.
   useEffect(() => {
     if (disabled) return;
     const id = window.setTimeout(() => refs.current[0]?.focus(), 60);
@@ -86,16 +88,18 @@ export function OrbitCode({
         [{ transform: "rotate(0deg)" }, { transform: "rotate(450deg)" }],
         { duration: TURN_MS, delay: i * STAGGER_MS, easing: WIND_UP_BRAKE, fill: "both" },
       );
-      // The collapse rides alongside the turn rather than inside it: the
-      // rotation must stay at two keyframes, and opacity is a different
-      // property with a different curve anyway.
       slot.animate(
         [
-          { opacity: 1, filter: "brightness(1)", offset: 0 },
-          { opacity: 1, filter: "brightness(1.9)", offset: 0.55 },
-          { opacity: 0, filter: "brightness(1)", offset: 1 },
+          { opacity: 1, offset: 0 },
+          { opacity: 1, offset: 0.62 },
+          { opacity: 0, offset: 1 },
         ],
-        { duration: TURN_MS, delay: i * STAGGER_MS, easing: "cubic-bezier(0.4,0,0.2,1)", fill: "both" },
+        {
+          duration: TURN_MS,
+          delay: i * STAGGER_MS,
+          easing: "cubic-bezier(0.4,0,0.2,1)",
+          fill: "both",
+        },
       );
     });
   }, []);
@@ -119,8 +123,7 @@ export function OrbitCode({
 
     const chars = value.split("");
     chars[index] = typed;
-    const next = chars.slice(0, 6).join("").slice(0, 6);
-    onChange(next);
+    onChange(chars.slice(0, 6).join("").slice(0, 6));
     focus(index + 1);
   };
 
@@ -144,29 +147,30 @@ export function OrbitCode({
 
   return (
     <div>
-      {/* The track, and the point the digits collapse onto. */}
+      {/* The ring: six arcs, one per digit, and the point they collapse to. */}
       <div className="orbit" aria-hidden>
-        <svg className="orbit__ring" viewBox="0 0 116 116">
-          <circle
-            className="orbit__path"
-            cx="58"
-            cy="58"
-            r="50"
-            vectorEffect="non-scaling-stroke"
-          />
+        <svg className="orbit__ring" viewBox="0 0 92 92">
+          <g transform="rotate(-90 46 46)">
+            <circle className="orbit__track" cx="46" cy="46" r={R} />
+            {boxes.map((d, i) => (
+              <circle
+                key={i}
+                className="orbit__seg"
+                cx="46"
+                cy="46"
+                r={R}
+                data-on={verdict === "ok" || d ? "true" : "false"}
+                data-verdict={verdict === "bad" ? "bad" : undefined}
+                strokeDasharray={`${(SLOT_ARC - GAP).toFixed(2)} ${(CIRC - SLOT_ARC + GAP).toFixed(2)}`}
+                strokeDashoffset={(-i * SLOT_ARC).toFixed(2)}
+              />
+            ))}
+          </g>
         </svg>
-        <span
-          ref={hub}
-          className="orbit__hub"
-          data-verdict={verdict ?? undefined}
-          style={busy ? { transform: "scale(1.6)" } : undefined}
-        />
+        <span ref={hub} className="orbit__hub" data-verdict={verdict ?? undefined} />
       </div>
 
-      <div
-        ref={row}
-        className={`mt-7 flex justify-center gap-2 ${verdict === "bad" ? "slots-wrong" : ""}`}
-      >
+      <div className={`mt-7 flex justify-center gap-1.5 ${verdict === "bad" ? "slots-wrong" : ""}`}>
         {boxes.map((d, i) => (
           <input
             key={i}

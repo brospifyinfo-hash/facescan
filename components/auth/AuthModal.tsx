@@ -225,7 +225,7 @@ export function AuthModal({
             : t.auth.pwCreateSub;
 
   return (
-    <div className="auth-scope fixed inset-0 z-[80] flex items-center justify-center overflow-y-auto bg-[#03060b]/85 p-4 backdrop-blur-xl">
+    <div className="auth-scope auth-scrim fixed inset-0 z-[80] flex items-center justify-center overflow-y-auto p-4">
       <button
         type="button"
         aria-label="Close"
@@ -241,12 +241,12 @@ export function AuthModal({
         initial={{ opacity: 0, y: 22, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.42, ease: EASE }}
-        className="auth-sheet relative my-auto w-full max-w-sm rounded-[28px] p-6 sm:p-7"
+        className="auth-sheet relative my-auto w-full max-w-sm p-7 sm:p-8"
       >
         <button
           onClick={onClose}
           aria-label="Close"
-          className="auth-quiet absolute right-4 top-4 rounded-full p-1.5 transition-colors hover:text-[var(--auth-ice)]"
+          className="auth-quiet absolute right-4 top-4 rounded-full p-1.5 transition-colors hover:text-[var(--auth-ink)]"
         >
           <X className="h-4 w-4" />
         </button>
@@ -277,7 +277,7 @@ export function AuthModal({
               setCode("");
               setVerdict(null);
             }}
-            className="auth-quiet mb-5 mt-1 flex items-center gap-1.5 text-[12px] transition-colors hover:text-[var(--auth-ice)]"
+            className="auth-quiet mb-5 mt-1 flex items-center gap-1.5 text-[12px] transition-colors hover:text-[var(--auth-ink)]"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             {reset ? t.auth.backToLogin : t.auth.changeEmail}
@@ -292,10 +292,8 @@ export function AuthModal({
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.26, ease: EASE }}
           >
-            <h2 className="text-[22px] font-semibold tracking-[-0.02em] text-[var(--auth-ice)]">
-              {heading}
-            </h2>
-            <p className="auth-muted mt-2 text-[13px] leading-relaxed">{sub}</p>
+            <h2 className="auth-title">{heading}</h2>
+            <p className="auth-sub mt-2 text-[13.5px] leading-relaxed">{sub}</p>
 
             {/* ---------------- Sign in ---------------- */}
             {view === "login" ? (
@@ -341,7 +339,7 @@ export function AuthModal({
                     }
                     void sendCode(email, true);
                   }}
-                  className="auth-quiet mt-3 w-full text-center text-[12px] transition-colors hover:text-[var(--auth-ice)]"
+                  className="auth-quiet mt-3 w-full text-center text-[12px] transition-colors hover:text-[var(--auth-ink)]"
                 >
                   {t.auth.forgot}
                 </button>
@@ -397,7 +395,6 @@ export function AuthModal({
                   onComplete={verify}
                   disabled={busy || verdict === "ok"}
                   verdict={verdict}
-                  busy={busy}
                 />
 
                 {error ? (
@@ -414,7 +411,7 @@ export function AuthModal({
                   type="button"
                   onClick={() => void sendCode(email, reset)}
                   disabled={cooldown > 0 || busy || verdict === "ok"}
-                  className="auth-quiet mt-5 w-full text-center text-[12px] transition-colors hover:text-[var(--auth-ice)] disabled:opacity-50"
+                  className="auth-quiet mt-5 w-full text-center text-[12px] transition-colors hover:text-[var(--auth-ink)] disabled:opacity-50"
                 >
                   {cooldown > 0 ? fill(t.auth.resendIn, { s: cooldown }) : t.auth.resend}
                 </button>
