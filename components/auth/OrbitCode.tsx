@@ -1,44 +1,30 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-// The six-digit field.
+// The six-digit field, and the ring that circles the digit being typed.
 //
-// THE RING IS THE FIELD, NOT AN ORNAMENT. Six arcs, one per digit: dotted
-// while empty, solid accent once that digit is typed. So the circle fills
-// as the customer types, and the flourish at the end completes something
-// they have been watching happen rather than appearing out of nowhere.
-// (The first version floated a decorative ring above the boxes with no
-// relationship to them, which is exactly why it read as clip-art.)
+// THE MOVING PART IS ATTACHED TO WHAT THE CUSTOMER IS DOING. Earlier
+// versions parked a decorative ring above the boxes, which is why it read
+// as clip-art: nothing it did was about them. Here a dotted orbit with a
+// satellite riding it sits AROUND the active slot and travels to the next
+// one as the code fills. Only a transform changes, so the compositor owns
+// the move and the rotation both — the reference's "never SAMPLE a turn"
+// applies to travel as much as to spin.
 //
-// THE MOTION comes from the reference the owner supplied, whose instruction
-// is quoted because it is the whole trick: "never SAMPLE a turn — move the
-// origin to the hub and a plain rotate() draws an exact circle, 2
-// keyframes". Each slot takes its transform-origin to the hub and rotates
-// 450 degrees; the compositor draws the circle, JavaScript touches nothing
-// per frame, and a separate opacity curve collapses the digit into the
-// point. 450 rather than 360 because a full circle lands a digit back
-// exactly where the eye last saw it and reads as a twitch.
+// THE POSITION IS MEASURED, NOT CALCULATED. Slot width plus gap would work
+// until the day someone changes either in the stylesheet, and then the ring
+// would sit a few pixels off with nothing to explain why. getBoundingClientRect
+// on the live elements is correct by construction, and it is recomputed on
+// resize because the row is centred.
 //
-// Keyboard behaviour is the part people actually notice and is unchanged:
-// paste fills every box, digits advance, Backspace on an empty box steps
-// back, arrows move without editing, and autoComplete="one-time-code" lets
-// a phone offer the code from the notification.
+// CONFIRMATION is three beats, timed in CSS: the ring bursts outward, the
+// digits lift in a wave, and a check draws itself where they were. The
+// caller advances the screen when the last one has been read — hence the
+// exported total.
 
-const WIND_UP_BRAKE = "cubic-bezier(0.62, -0.34, 0.2, 1)";
-const TURN_MS = 760;
-const STAGGER_MS = 38;
-
-/** How long the whole flourish lasts, for the caller advancing the screen. */
-export const ORBIT_TOTAL_MS = TURN_MS + STAGGER_MS * 5 + 90;
-
-// Ring geometry. r is in the SVG's own units; the segments are laid out by
-// dash arithmetic rather than by six rotated paths, so the gaps stay exact
-// at any size.
-const R = 38;
-const CIRC = 2 * Math.PI * R;
-const SLOT_ARC = CIRC / 6;
-const GAP = 9;
+/** The whole confirmation, for the caller advancing the screen. */
+export const ORBIT_TOTAL_MS = 1180;
 
 export function OrbitCode({
   value,
@@ -51,12 +37,17 @@ export function OrbitCode({
   onChange: (next: string) => void;
   onComplete?: (code: string) => void;
   disabled?: boolean;
-  /** "ok" runs the orbit, "bad" shakes the row. Null is the resting state. */
+  /** "ok" runs the confirmation, "bad" shakes the row. Null is resting. */
   verdict?: "ok" | "bad" | null;
 }) {
   const refs = useRef<Array<HTMLInputElement | null>>([]);
-  const hub = useRef<HTMLSpanElement>(null);
+  const row = useRef<HTMLDivElement>(null);
+  const [ringX, setRingX] = useState(0);
   const boxes = Array.from({ length: 6 }, (_, i) => value[i] ?? "");
+
+  // The slot the ring belongs to: the first empty one, or the last while the
+  // code is complete.
+  const active = Math.min(5, value.length);
 
   useEffect(() => {
     if (value.length === 6) onComplete?.(value);
@@ -69,44 +60,20 @@ export function OrbitCode({
     return () => window.clearTimeout(id);
   }, [disabled]);
 
-  const orbit = useCallback(() => {
-    const hubEl = hub.current;
-    if (!hubEl) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    const h = hubEl.getBoundingClientRect();
-    const hubX = h.left + h.width / 2;
-    const hubY = h.top + h.height / 2;
-
-    refs.current.forEach((slot, i) => {
-      if (!slot) return;
-      const r = slot.getBoundingClientRect();
-      // The hub, in this slot's own coordinate space. With the origin moved
-      // there, rotation alone traces the circle — see the header.
-      slot.style.transformOrigin = `${hubX - r.left}px ${hubY - r.top}px`;
-      slot.animate(
-        [{ transform: "rotate(0deg)" }, { transform: "rotate(450deg)" }],
-        { duration: TURN_MS, delay: i * STAGGER_MS, easing: WIND_UP_BRAKE, fill: "both" },
-      );
-      slot.animate(
-        [
-          { opacity: 1, offset: 0 },
-          { opacity: 1, offset: 0.62 },
-          { opacity: 0, offset: 1 },
-        ],
-        {
-          duration: TURN_MS,
-          delay: i * STAGGER_MS,
-          easing: "cubic-bezier(0.4,0,0.2,1)",
-          fill: "both",
-        },
-      );
-    });
-  }, []);
+  const place = useCallback(() => {
+    const rowEl = row.current;
+    const slot = refs.current[active];
+    if (!rowEl || !slot) return;
+    const r = rowEl.getBoundingClientRect();
+    const s = slot.getBoundingClientRect();
+    setRingX(s.left - r.left + s.width / 2);
+  }, [active]);
 
   useEffect(() => {
-    if (verdict === "ok") orbit();
-  }, [verdict, orbit]);
+    place();
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [place]);
 
   const focus = (i: number) => refs.current[Math.max(0, Math.min(5, i))]?.focus();
 
@@ -146,53 +113,48 @@ export function OrbitCode({
   };
 
   return (
-    <div>
-      {/* The ring: six arcs, one per digit, and the point they collapse to. */}
-      <div className="orbit" aria-hidden>
-        <svg className="orbit__ring" viewBox="0 0 92 92">
-          <g transform="rotate(-90 46 46)">
-            <circle className="orbit__track" cx="46" cy="46" r={R} />
-            {boxes.map((d, i) => (
-              <circle
-                key={i}
-                className="orbit__seg"
-                cx="46"
-                cy="46"
-                r={R}
-                data-on={verdict === "ok" || d ? "true" : "false"}
-                data-verdict={verdict === "bad" ? "bad" : undefined}
-                strokeDasharray={`${(SLOT_ARC - GAP).toFixed(2)} ${(CIRC - SLOT_ARC + GAP).toFixed(2)}`}
-                strokeDashoffset={(-i * SLOT_ARC).toFixed(2)}
-              />
-            ))}
-          </g>
+    <div ref={row} className="code-row" data-verdict={verdict ?? undefined}>
+      {/* The orbit around the active digit. */}
+      <div
+        className="orbit-cursor"
+        aria-hidden
+        style={{ transform: `translateX(${ringX}px)` }}
+      >
+        <svg className="orbit-cursor__spin" viewBox="0 0 76 76">
+          <circle className="orbit-cursor__track" cx="38" cy="38" r="33" />
+          {/* The satellite sits ON the track, so the ring reads as an orbit
+              rather than as a border. */}
+          <circle className="orbit-cursor__sat" cx="38" cy="5" r="3.2" />
         </svg>
-        <span ref={hub} className="orbit__hub" data-verdict={verdict ?? undefined} />
       </div>
 
-      <div className={`mt-7 flex justify-center gap-1.5 ${verdict === "bad" ? "slots-wrong" : ""}`}>
-        {boxes.map((d, i) => (
-          <input
-            key={i}
-            ref={(el) => {
-              refs.current[i] = el;
-            }}
-            type="text"
-            inputMode="numeric"
-            autoComplete={i === 0 ? "one-time-code" : "off"}
-            maxLength={6}
-            disabled={disabled}
-            value={d}
-            data-filled={d ? "true" : "false"}
-            data-verdict={verdict === "bad" ? "bad" : undefined}
-            onChange={(e) => handleChange(i, e.target.value)}
-            onKeyDown={(e) => handleKey(i, e)}
-            onFocus={(e) => e.currentTarget.select()}
-            aria-label={`Ziffer ${i + 1}`}
-            className="slot"
-          />
-        ))}
-      </div>
+      {boxes.map((d, i) => (
+        <input
+          key={i}
+          ref={(el) => {
+            refs.current[i] = el;
+          }}
+          type="text"
+          inputMode="numeric"
+          autoComplete={i === 0 ? "one-time-code" : "off"}
+          maxLength={6}
+          disabled={disabled}
+          value={d}
+          data-filled={d ? "true" : "false"}
+          onChange={(e) => handleChange(i, e.target.value)}
+          onKeyDown={(e) => handleKey(i, e)}
+          onFocus={(e) => e.currentTarget.select()}
+          aria-label={`Ziffer ${i + 1}`}
+          className={`slot ${verdict === "ok" ? "slots-fade" : ""}`}
+          style={{ "--i": i } as React.CSSProperties}
+        />
+      ))}
+
+      {/* Drawn where the digits were, once they have taken their bow. */}
+      <svg className="code-check" viewBox="0 0 62 62" aria-hidden>
+        <circle className="code-check__ring" cx="31" cy="31" r="27" />
+        <path className="code-check__path" d="M20 32.5 L27.5 40 L43 23" />
+      </svg>
     </div>
   );
 }
