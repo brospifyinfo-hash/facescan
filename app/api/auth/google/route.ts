@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { setSessionCookie } from "@/lib/auth/session";
 import { normalizeEmail } from "@/lib/auth/store";
-import { googleConfigured, verifyGoogleIdToken } from "@/lib/auth/google";
+import {
+  googleConfigured,
+  verifyGoogleAccessToken,
+  verifyGoogleIdToken,
+} from "@/lib/auth/google";
 
 export const runtime = "nodejs";
 
@@ -19,17 +23,25 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "not_configured" }, { status: 501 });
   }
 
-  let body: { credential?: string };
+  let body: { credential?: string; accessToken?: string };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "invalid_body" }, { status: 400 });
   }
-  if (typeof body.credential !== "string" || body.credential.length === 0) {
+  // Two shapes, one answer. The button Google renders hands back an ID
+  // token; the custom button this product uses goes through
+  // initTokenClient and hands back an access token. Both are verified
+  // against OUR client id before anything downstream believes the address.
+  const credential = typeof body.credential === "string" ? body.credential : "";
+  const accessToken = typeof body.accessToken === "string" ? body.accessToken : "";
+  if (!credential && !accessToken) {
     return NextResponse.json({ error: "invalid_input" }, { status: 400 });
   }
 
-  const verified = await verifyGoogleIdToken(body.credential);
+  const verified = credential
+    ? await verifyGoogleIdToken(credential)
+    : await verifyGoogleAccessToken(accessToken);
   if (!verified) {
     return NextResponse.json({ error: "invalid_token" }, { status: 401 });
   }

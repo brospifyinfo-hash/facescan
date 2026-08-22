@@ -566,6 +566,7 @@ export const en: Dict = {
     passwordHint:
       "No password yet? Sign in once with the email code and set one in your account.",
     or: "or",
+    googleCta: "Continue with Google",
   },
   pay: {
     summaryTitle: "Order summary",

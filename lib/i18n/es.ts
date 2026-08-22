@@ -567,6 +567,7 @@ export const es: Dict = {
     passwordHint:
       "¿Aún sin contraseña? Inicia sesión una vez con el código y crea una en tu cuenta.",
     or: "o",
+    googleCta: "Continuar con Google",
   },
   pay: {
     summaryTitle: "Resumen del pedido",

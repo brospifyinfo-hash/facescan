@@ -545,6 +545,7 @@ export const de: Dict = {
     passwordHint:
       "Noch kein Passwort? Melde dich einmal mit dem E-Mail-Code an und lege es danach im Konto fest.",
     or: "oder",
+    googleCta: "Weiter mit Google",
     modeRegister: "Registrieren",
     modeLogin: "Anmelden",
     registerSub: "E-Mail eingeben, Code bestätigen, Passwort festlegen — fertig.",

@@ -567,6 +567,7 @@ export const fr: Dict = {
     passwordHint:
       "Pas encore de mot de passe ? Connecte-toi une fois avec le code et crée-le dans ton compte.",
     or: "ou",
+    googleCta: "Continuer avec Google",
   },
   pay: {
     summaryTitle: "Récapitulatif",

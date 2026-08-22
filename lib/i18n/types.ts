@@ -399,6 +399,8 @@ export interface Dict {
     passwordHint: string;
     /** Divider word above the Google button. */
     or: string;
+    /** Label on the Google control — one of Google's sanctioned strings. */
+    googleCta: string;
     errors: {
       invalidEmail: string;
       cooldown: string;

@@ -1,101 +1,165 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Loader2 } from "lucide-react";
 import { useT } from "@/lib/i18n";
 
-// The official Google Identity Services button.
+// "Continue with Google", as OUR control.
 //
-// RENDERS NOTHING WITHOUT A CLIENT ID. The id is a deploy-time decision
-// (NEXT_PUBLIC_GOOGLE_CLIENT_ID); until it exists there is no Google
-// sign-in to offer, and a button that errors on tap is worse than no
-// button. The GIS script is loaded once and shared — a second mount finds
-// `window.google` already there and skips the injection.
+// WHY NOT THE BUTTON GOOGLE RENDERS. google.accounts.id.renderButton()
+// injects its own markup into the page: a fixed pixel width that never
+// matches the sheet, its own type, its own height, and a white logo disc
+// that hangs out of the pill on a dark theme. It cannot be styled — the
+// library owns it — so on a designed surface it always reads as a widget
+// somebody pasted in, which is exactly what it looked like here.
 //
-// The credential that comes back is an ID TOKEN, not an identity: it goes
-// to /api/auth/google, which verifies the signature against Google's JWKS
-// before any session exists. Nothing in this component trusts the payload.
+// So the control is ours and the FLOW is the token client: a click opens
+// Google's own popup, and what comes back is an access token that the
+// server takes to Google's tokeninfo endpoint, where the audience is
+// checked against our client id (see lib/auth/google.ts — that check is
+// what stops a token minted for another app from opening a session here).
+//
+// The logo is Google's official four-colour G and the label is one of
+// their sanctioned strings, per the branding guidelines: a custom button
+// is allowed, an unofficial mark is not.
+//
+// The script is loaded once and shared: a second mount finds
+// window.google.accounts.oauth2 already there and skips the injection.
 
-interface GoogleId {
-  initialize(config: {
+interface TokenClient {
+  requestAccessToken(): void;
+}
+
+interface GoogleOAuth2 {
+  initTokenClient(config: {
     client_id: string;
-    callback: (response: { credential: string }) => void;
-  }): void;
-  renderButton(parent: HTMLElement, options: Record<string, unknown>): void;
+    scope: string;
+    callback: (res: { access_token?: string; error?: string }) => void;
+    error_callback?: (err: unknown) => void;
+  }): TokenClient;
 }
 
 declare global {
   interface Window {
-    google?: { accounts?: { id?: GoogleId } };
+    google?: { accounts?: { oauth2?: GoogleOAuth2 } };
   }
 }
 
 const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+const SRC = "https://accounts.google.com/gsi/client";
+
+function GoogleMark() {
+  return (
+    <svg viewBox="0 0 18 18" width="18" height="18" aria-hidden>
+      <path
+        fill="#4285F4"
+        d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.91c1.7-1.57 2.69-3.88 2.69-6.62Z"
+      />
+      <path
+        fill="#34A853"
+        d="M9 18c2.43 0 4.47-.81 5.96-2.18l-2.91-2.26c-.81.54-1.84.86-3.05.86-2.35 0-4.34-1.58-5.05-3.71H.96v2.33A9 9 0 0 0 9 18Z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M3.95 10.71a5.41 5.41 0 0 1 0-3.42V4.96H.96a9 9 0 0 0 0 8.08l2.99-2.33Z"
+      />
+      <path
+        fill="#EA4335"
+        d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.46.9 11.43 0 9 0A9 9 0 0 0 .96 4.96l2.99 2.33C4.66 5.16 6.65 3.58 9 3.58Z"
+      />
+    </svg>
+  );
+}
 
 export function GoogleButton({ onSignedIn }: { onSignedIn: (email: string) => void }) {
   const t = useT();
-  const slot = useRef<HTMLDivElement>(null);
+  const [ready, setReady] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
-  // The handler the GIS callback closes over, kept current via a ref so the
-  // one-time initialize() never captures a stale onSignedIn.
+  const client = useRef<TokenClient | null>(null);
+  // The handler the callback closes over, kept current via a ref so the
+  // one-time client never captures a stale onSignedIn.
   const handler = useRef(onSignedIn);
   handler.current = onSignedIn;
 
   useEffect(() => {
     if (!CLIENT_ID) return;
-    const el = slot.current;
-    if (!el) return;
 
     const init = () => {
-      const gsi = window.google?.accounts?.id;
-      if (!gsi || !el.isConnected) return;
-      gsi.initialize({
+      const oauth2 = window.google?.accounts?.oauth2;
+      if (!oauth2) return;
+      client.current = oauth2.initTokenClient({
         client_id: CLIENT_ID,
-        callback: async ({ credential }) => {
-          setError(false);
-          const res = await fetch("/api/auth/google", {
+        scope: "openid email profile",
+        callback: async (res) => {
+          if (!res.access_token) {
+            setBusy(false);
+            setError(true);
+            return;
+          }
+          const r = await fetch("/api/auth/google", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ credential }),
+            body: JSON.stringify({ accessToken: res.access_token }),
           }).catch(() => null);
-          const data = await res?.json().catch(() => null);
-          if (res?.ok && typeof data?.email === "string") handler.current(data.email);
+          const data = await r?.json().catch(() => null);
+          setBusy(false);
+          if (r?.ok && typeof data?.email === "string") handler.current(data.email);
           else setError(true);
         },
+        // A closed popup is a decision, not a fault — clear the spinner and
+        // say nothing.
+        error_callback: () => setBusy(false),
       });
-      gsi.renderButton(el, {
-        theme: "filled_black",
-        size: "large",
-        shape: "pill",
-        text: "continue_with",
-        width: 300,
-      });
+      setReady(true);
     };
 
-    if (window.google?.accounts?.id) {
+    if (window.google?.accounts?.oauth2) {
       init();
       return;
     }
+    const existing = document.querySelector<HTMLScriptElement>(`script[src="${SRC}"]`);
+    if (existing) {
+      existing.addEventListener("load", init);
+      return () => existing.removeEventListener("load", init);
+    }
     const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
+    script.src = SRC;
     script.async = true;
     script.onload = init;
     document.head.appendChild(script);
     // The script stays: it is a shared singleton, and removing it would
-    // break a second modal that mounted meanwhile.
+    // break a second sheet that mounted meanwhile.
   }, []);
 
   if (!CLIENT_ID) return null;
 
   return (
     <div>
-      <div className="my-4 flex items-center gap-3" aria-hidden>
-        <span className="h-px flex-1 bg-[var(--color-hairline)]" />
-        <span className="t-caption text-[var(--color-ink-tertiary)]">{t.auth.or}</span>
-        <span className="h-px flex-1 bg-[var(--color-hairline)]" />
+      <div className="my-5 flex items-center gap-3" aria-hidden>
+        <span className="h-px flex-1 bg-[rgba(255,255,255,0.12)]" />
+        <span className="auth-quiet text-[11px]">{t.auth.or}</span>
+        <span className="h-px flex-1 bg-[rgba(255,255,255,0.12)]" />
       </div>
-      <div ref={slot} className="flex justify-center" />
+
+      <button
+        type="button"
+        className="auth-google"
+        disabled={!ready || busy}
+        onClick={() => {
+          setError(false);
+          setBusy(true);
+          client.current?.requestAccessToken();
+        }}
+      >
+        {busy ? <Loader2 className="h-[18px] w-[18px] animate-spin" /> : <GoogleMark />}
+        <span>{t.auth.googleCta}</span>
+      </button>
+
       {error ? (
-        <p className="mt-2 text-center text-[12px] text-red-400">{t.auth.errors.failed}</p>
+        <p className="mt-2 text-center text-[12px] text-[var(--auth-bad)]">
+          {t.auth.errors.failed}
+        </p>
       ) : null}
     </div>
   );

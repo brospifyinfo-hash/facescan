@@ -98,3 +98,44 @@ export async function verifyGoogleIdToken(credential: string): Promise<string | 
 
   return payload.email;
 }
+
+/**
+ * The other half of the same trust question, for the ACCESS-token flow.
+ *
+ * The rendered Google button hands back an ID token; a custom button (which
+ * is what this product uses, so the control can look like the rest of the
+ * sheet) goes through initTokenClient and hands back an access token
+ * instead. An access token is not self-describing, so it is taken to
+ * Google's tokeninfo endpoint — which returns the audience it was minted
+ * for. CHECKING THAT AUDIENCE IS THE WHOLE POINT: without it, an access
+ * token issued to some other application for the same user would open a
+ * session here, which is the classic token-substitution hole.
+ */
+export async function verifyGoogleAccessToken(accessToken: string): Promise<string | null> {
+  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+  if (!clientId) return null;
+
+  try {
+    const res = await fetch(
+      `https://oauth2.googleapis.com/tokeninfo?access_token=${encodeURIComponent(accessToken)}`,
+      { cache: "no-store" },
+    );
+    if (!res.ok) return null;
+    const data = (await res.json()) as {
+      aud?: string;
+      email?: string;
+      email_verified?: string | boolean;
+      expires_in?: string | number;
+    };
+
+    if (data.aud !== clientId) return null;
+    if (typeof data.email !== "string" || data.email.length === 0) return null;
+    // tokeninfo answers with strings; both shapes are accepted, nothing else.
+    if (data.email_verified !== true && data.email_verified !== "true") return null;
+    if (Number(data.expires_in) <= 0) return null;
+
+    return data.email;
+  } catch {
+    return null;
+  }
+}
