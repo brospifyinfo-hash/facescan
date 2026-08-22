@@ -25,6 +25,31 @@ import { useEffect, useRef } from "react";
 /** The whole confirmation, for the caller advancing the screen. */
 export const ORBIT_TOTAL_MS = 1180;
 
+/**
+ * The outline every beam layer traces — the slot's own border, inset by
+ * half a stroke so the light sits ON it rather than straddling its outside.
+ * pathLength normalises it to 100 units, which is what lets the dash
+ * lengths below be percentages instead of pixel arithmetic that would go
+ * wrong the day the slot changes size.
+ */
+const OUTLINE = {
+  x: 1.3,
+  y: 1.3,
+  width: 39.4,
+  height: 51.4,
+  rx: 13.7,
+  pathLength: 100,
+} as const;
+
+/** Tail segments, longest and faintest last. Each has a matching keyframe
+ *  in the stylesheet, because CSS cannot compute a starting dashoffset. */
+const TAIL = [
+  { len: 8, opacity: 0.5 },
+  { len: 16, opacity: 0.28 },
+  { len: 26, opacity: 0.16 },
+  { len: 38, opacity: 0.09 },
+] as const;
+
 export function OrbitCode({
   value,
   onChange,
@@ -119,24 +144,23 @@ export function OrbitCode({
           {/* The outline the light runs on. Inset by half the stroke so the
               beam sits ON the border rather than straddling its outside. */}
           <svg className="slot-beam" viewBox="0 0 42 54" aria-hidden>
-            <rect
-              className="slot-beam__path slot-beam__tail"
-              x="1.3"
-              y="1.3"
-              width="39.4"
-              height="51.4"
-              rx="13.7"
-              pathLength="100"
-            />
-            <rect
-              className="slot-beam__path slot-beam__head"
-              x="1.3"
-              y="1.3"
-              width="39.4"
-              height="51.4"
-              rx="13.7"
-              pathLength="100"
-            />
+            {/* The lit rim, so the active box has an outline even where the
+                comet is not. */}
+            <rect {...OUTLINE} className="slot-beam__path slot-beam__rim" />
+            {/* The tail: five lengths, each fainter, all ending on the head —
+                stacked they sum to a smooth falloff. See the CSS. */}
+            {TAIL.map((t) => (
+              <rect
+                key={t.len}
+                {...OUTLINE}
+                className="slot-beam__path slot-beam__trail"
+                data-len={t.len}
+                strokeDasharray={`${t.len} ${100 - t.len}`}
+                opacity={t.opacity}
+              />
+            ))}
+            <rect {...OUTLINE} className="slot-beam__path slot-beam__bloom" />
+            <rect {...OUTLINE} className="slot-beam__path slot-beam__head" />
           </svg>
         </span>
       ))}

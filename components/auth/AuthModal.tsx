@@ -243,46 +243,46 @@ export function AuthModal({
         transition={{ duration: 0.42, ease: EASE }}
         className="auth-sheet relative my-auto w-full max-w-sm p-7 sm:p-8"
       >
-        <button
-          onClick={onClose}
-          aria-label="Close"
-          className="auth-quiet absolute right-4 top-4 rounded-full p-1.5 transition-colors hover:text-[var(--auth-ink)]"
-        >
-          <X className="h-4 w-4" />
-        </button>
+        {/* Header row: whatever navigation this view offers, and the close
+            control beside it. Both are laid out; neither is dropped into a
+            corner on top of the other. */}
+        <div className="mb-6 flex items-center gap-3">
+          {view === "login" || view === "register" ? (
+            <div className="auth-switch min-w-0 flex-1">
+              {(["register", "login"] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  aria-pressed={view === m}
+                  onClick={() => {
+                    setView(m);
+                    setError(null);
+                  }}
+                >
+                  {m === "register" ? t.auth.modeRegister : t.auth.modeLogin}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setView(reset ? "login" : "register");
+                setError(null);
+                setCode("");
+                setVerdict(null);
+              }}
+              className="auth-quiet flex min-w-0 flex-1 items-center gap-1.5 text-[12.5px] transition-colors hover:text-[var(--auth-ink)]"
+            >
+              <ArrowLeft className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{reset ? t.auth.backToLogin : t.auth.changeEmail}</span>
+            </button>
+          )}
 
-        {/* The switch — only where there is genuinely a choice to make. */}
-        {view === "login" || view === "register" ? (
-          <div className="auth-switch relative mb-6 mt-1">
-            {(["register", "login"] as const).map((m) => (
-              <button
-                key={m}
-                type="button"
-                aria-pressed={view === m}
-                onClick={() => {
-                  setView(m);
-                  setError(null);
-                }}
-              >
-                {m === "register" ? t.auth.modeRegister : t.auth.modeLogin}
-              </button>
-            ))}
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => {
-              setView(reset ? "login" : "register");
-              setError(null);
-              setCode("");
-              setVerdict(null);
-            }}
-            className="auth-quiet mb-5 mt-1 flex items-center gap-1.5 text-[12px] transition-colors hover:text-[var(--auth-ink)]"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            {reset ? t.auth.backToLogin : t.auth.changeEmail}
+          <button onClick={onClose} aria-label="Close" className="auth-close">
+            <X className="h-4 w-4" />
           </button>
-        )}
+        </div>
 
         <AnimatePresence mode="wait">
           <motion.div
