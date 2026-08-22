@@ -3,9 +3,11 @@ import { setSessionCookie } from "@/lib/auth/session";
 import { normalizeEmail } from "@/lib/auth/store";
 import {
   googleConfigured,
+  googleProfile,
   verifyGoogleAccessToken,
   verifyGoogleIdToken,
 } from "@/lib/auth/google";
+import { mergeProfile } from "@/lib/auth/profile";
 
 export const runtime = "nodejs";
 
@@ -47,6 +49,14 @@ export async function POST(req: Request) {
   }
 
   const email = normalizeEmail(verified);
+
+  // Decoration, and only after the address is proven. A failure here costs
+  // an avatar, never a sign-in.
+  if (accessToken) {
+    const profile = await googleProfile(accessToken);
+    if (profile) await mergeProfile(email, { name: profile.name, picture: profile.picture });
+  }
+
   await setSessionCookie(email);
   return NextResponse.json({ ok: true, email });
 }

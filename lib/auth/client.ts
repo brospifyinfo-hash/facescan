@@ -90,6 +90,28 @@ export async function createPassword(password: string): Promise<CreatePasswordRe
   }
 }
 
+export interface SessionUser {
+  email: string;
+  name: string;
+  picture: string | null;
+}
+
+/** The signed-in customer, or null — everything a header needs, in one call. */
+export async function fetchUser(): Promise<SessionUser | null> {
+  try {
+    const res = await fetch("/api/auth/session");
+    const data = await res.json();
+    if (!data?.email) return null;
+    return {
+      email: data.email,
+      name: typeof data.name === "string" && data.name ? data.name : data.email,
+      picture: typeof data.picture === "string" ? data.picture : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchSession(): Promise<string | null> {
   try {
     const res = await fetch("/api/auth/session");

@@ -54,6 +54,8 @@ export interface Dict {
   /** The app home screen at `/`. */
   home: {
     confidential: string;
+    /** The header control when nobody is signed in. */
+    login: string;
     badge: string;
     /** Split so the last word can carry the accent colour. */
     headline: string;
@@ -495,6 +497,8 @@ export interface Dict {
     paymentsTitle: string;
     noPayments: string;
     newScan: string;
+    /** The way out of the profile, back to the app. */
+    backHome: string;
     /** Security section: managing the optional password. */
     securityTitle: string;
     passwordActive: string;

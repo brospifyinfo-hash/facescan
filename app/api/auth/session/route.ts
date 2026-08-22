@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { clearSessionCookie, currentSession, setSessionCookie } from "@/lib/auth/session";
+import { displayName, getProfile } from "@/lib/auth/profile";
 
 export const runtime = "nodejs";
 
@@ -10,8 +11,15 @@ export const runtime = "nodejs";
  */
 export async function GET() {
   const session = await currentSession();
-  if (session) await setSessionCookie(session.email);
-  return NextResponse.json({ email: session?.email ?? null });
+  if (!session) return NextResponse.json({ email: null });
+
+  await setSessionCookie(session.email);
+  const profile = await getProfile(session.email);
+  return NextResponse.json({
+    email: session.email,
+    name: displayName(session.email, profile),
+    picture: profile.picture ?? null,
+  });
 }
 
 /** Sign out. */

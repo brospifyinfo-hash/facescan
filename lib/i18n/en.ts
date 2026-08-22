@@ -84,6 +84,7 @@ export const en: Dict = {
   },
   home: {
     confidential: "Confidential",
+    login: "Login",
     badge: "AI-powered facial analysis",
     headline: "Discover your full",
     headlineAccent: "potential.",
@@ -643,6 +644,7 @@ export const en: Dict = {
     paymentsTitle: "Payments",
     noPayments: "No payments yet.",
     newScan: "Start a new scan",
+    backHome: "Home",
     securityTitle: "Security & sign-in",
     passwordActive: "Password is set. That is how you sign in; forgot it? We send a code.",
     passwordNone: "No password set — you sign in with Google. Add one to sign in without it.",

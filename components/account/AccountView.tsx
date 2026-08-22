@@ -2,10 +2,12 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronDown, KeyRound, LogOut, Receipt, ScanFace } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, ChevronDown, KeyRound, LogOut, Receipt, ScanFace } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { AuthModal } from "@/components/auth/AuthModal";
-import { fetchSession } from "@/lib/auth/client";
+import { fetchUser, type SessionUser } from "@/lib/auth/client";
+import { Avatar } from "@/components/home/AccountChip";
 import { fmtDelta, fmtScore, summarise, type ScanRecord } from "@/lib/home/summary";
 import { useI18n, useT } from "@/lib/i18n";
 import type { HistoryEntry } from "@/lib/history/store";
@@ -27,7 +29,9 @@ import { cn } from "@/lib/cn";
 
 export function AccountView() {
   const t = useT();
+  const router = useRouter();
   const { locale } = useI18n();
+  const [user, setUser] = useState<SessionUser | null>(null);
   const [email, setEmail] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
@@ -52,11 +56,15 @@ export function AccountView() {
   }, []);
 
   useEffect(() => {
-    fetchSession().then(load);
+    void fetchUser().then((u) => {
+      setUser(u);
+      void load(u?.email ?? null);
+    });
   }, [load]);
 
   const signOut = async () => {
     await fetch("/api/auth/session", { method: "DELETE" });
+    setUser(null);
     setEmail(null);
     setScans([]);
     setPayments([]);
@@ -103,9 +111,11 @@ export function AccountView() {
           start="login"
           open={authOpen}
           onClose={() => setAuthOpen(false)}
-          onSignedIn={(mail) => {
+          onSignedIn={() => {
             setAuthOpen(false);
-            void load(mail);
+            // The home screen is where a signed-in customer belongs — this
+            // page was the door they came through, not the destination.
+            router.push("/");
           }}
         />
       </main>
@@ -124,16 +134,22 @@ export function AccountView() {
 
   return (
     <main className="mx-auto w-full max-w-md px-4 py-8 pb-24 lg:max-w-2xl">
+      {/* The way back. The profile is reached from the home screen and has
+          no tab bar of its own, so without this the only exit is the
+          browser's back button — which is not a control the page offers. */}
+      <Link
+        href="/"
+        className="interactive mb-6 inline-flex items-center gap-1.5 rounded-full border border-white/10 px-3.5 py-2 text-[12px] font-medium text-[var(--color-ink-secondary)] hover:border-white/25"
+      >
+        <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
+        {t.account.backHome}
+      </Link>
+
       {/* ---- Profile head ---- */}
       <header className="flex items-center gap-4">
-        <span
-          aria-hidden
-          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-[var(--color-accent)]/40 bg-[var(--color-accent-deep)] text-[22px] font-bold uppercase text-[var(--color-accent)]"
-        >
-          {email[0]}
-        </span>
+        <Avatar user={user ?? { email, name: email, picture: null }} size={56} />
         <div className="min-w-0 flex-1">
-          <h1 className="t-title2">{t.account.title}</h1>
+          <h1 className="t-title2 truncate">{user?.name ?? t.account.title}</h1>
           <p className="t-caption mt-0.5 truncate text-[var(--color-ink-tertiary)]">{email}</p>
           {plan ? (
             <span className="mt-1.5 inline-block rounded-full border border-[var(--color-accent)]/40 bg-[var(--color-accent)]/[0.08] px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--color-accent)]">

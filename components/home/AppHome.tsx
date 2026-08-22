@@ -9,7 +9,6 @@ import {
   Cpu,
   History,
   Lightbulb,
-  Lock,
   Scan,
   ShieldCheck,
   Sparkles,
@@ -25,6 +24,7 @@ import type { Product } from "@/lib/products/types";
 import { DEMO_SUMMARY, fmtDelta, fmtScore, summarise, type ScanRecord } from "@/lib/home/summary";
 import { SLOT_SPECS } from "@/lib/site-images";
 import { DevUnlock } from "@/components/ui/DevUnlock";
+import { AccountChip } from "@/components/home/AccountChip";
 import { Logo } from "@/components/ui/Logo";
 import { bandFor } from "@/lib/tiers";
 import { useI18n, useT } from "@/lib/i18n";
@@ -164,10 +164,7 @@ export function AppHome() {
             <Logo height={34} className="sm:!h-[42px]" />
           </span>
         </DevUnlock>
-        <span className="flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--color-hairline)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.09em] text-[var(--color-ink-secondary)] sm:text-[12.5px]">
-          <Lock className="h-3.5 w-3.5 text-[var(--color-ink-secondary)]" aria-hidden />
-          {t.home.confidential}
-        </span>
+        <AccountChip />
       </header>
 
       {/* ---- Hero ------------------------------------------------------ */}

@@ -111,6 +111,34 @@ export async function verifyGoogleIdToken(credential: string): Promise<string | 
  * token issued to some other application for the same user would open a
  * session here, which is the classic token-substitution hole.
  */
+export interface GoogleIdentity {
+  email: string;
+  name?: string;
+  picture?: string;
+}
+
+/**
+ * The profile Google will hand over for an access token it already
+ * accepted. Separate from the verification on purpose: the address is a
+ * SECURITY answer and must come from tokeninfo, where the audience is
+ * checked, while the name and picture are decoration and may come from
+ * userinfo. Mixing the two would mean trusting userinfo for identity.
+ */
+export async function googleProfile(accessToken: string): Promise<GoogleIdentity | null> {
+  try {
+    const res = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { email?: string; name?: string; picture?: string };
+    if (typeof data.email !== "string") return null;
+    return { email: data.email, name: data.name, picture: data.picture };
+  } catch {
+    return null;
+  }
+}
+
 export async function verifyGoogleAccessToken(accessToken: string): Promise<string | null> {
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
   if (!clientId) return null;
