@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { setSessionCookie } from "@/lib/auth/session";
+import { setTicketCookie } from "@/lib/auth/ticket";
+import { hasPassword } from "@/lib/auth/password";
 import {
   codeMatches,
   isEmail,
@@ -10,7 +11,18 @@ import {
 
 export const runtime = "nodejs";
 
-/** Exchange a valid code for a session cookie. */
+/**
+ * Exchange a valid code for a PASSWORD-SET TICKET — not for a session.
+ *
+ * The code proves the inbox; signing in is the password's job. So this
+ * hands out the short-lived permit described in lib/auth/ticket.ts, and
+ * the session is minted only once a password exists. That is what makes
+ * "the email code is no longer a way in" true rather than merely intended.
+ *
+ * `existing` tells the client whether this address already had a password,
+ * so the next screen can say "choose a new one" instead of "welcome". It
+ * leaks nothing: the caller has just proved they own the inbox.
+ */
 export async function POST(req: Request) {
   let body: { email?: string; code?: string };
   try {
@@ -40,9 +52,9 @@ export async function POST(req: Request) {
     );
   }
 
-  // Single use — burn it before handing out the session.
+  // Single use — burn it before handing out the ticket.
   await otpStore.delete(email);
-  await setSessionCookie(email);
+  await setTicketCookie(email);
 
-  return NextResponse.json({ ok: true, email });
+  return NextResponse.json({ ok: true, email, existing: await hasPassword(email) });
 }

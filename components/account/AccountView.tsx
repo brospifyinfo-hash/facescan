@@ -100,6 +100,7 @@ export function AccountView() {
         </Button>
 
         <AuthModal
+          start="login"
           open={authOpen}
           onClose={() => setAuthOpen(false)}
           onSignedIn={(mail) => {

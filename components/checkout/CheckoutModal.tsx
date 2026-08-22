@@ -67,7 +67,7 @@ export function CheckoutModal({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-4 backdrop-blur-lg sm:items-center">
+    <div className="fixed inset-0 z-[80] flex items-start justify-center overflow-y-auto bg-black/70 p-4 backdrop-blur-lg sm:items-center">
       <button
         type="button"
         aria-label={t.checkout.close}

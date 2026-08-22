@@ -375,6 +375,21 @@ export interface Dict {
     changeEmail: string;
     devHint: string;
     privacy: string;
+    /** Register vs sign in — the first choice the screen offers. */
+    modeRegister: string;
+    modeLogin: string;
+    registerSub: string;
+    loginSub: string;
+    /** Setting the password: mandatory after the code, and after a reset. */
+    pwCreateTitle: string;
+    pwCreateSub: string;
+    pwResetTitle: string;
+    pwResetSub: string;
+    pwNew: string;
+    pwRepeat: string;
+    pwCreateCta: string;
+    forgot: string;
+    backToLogin: string;
     /** The two ways in, as tab labels. */
     tabCode: string;
     tabPassword: string;
@@ -393,6 +408,9 @@ export interface Dict {
       wrongCode: string; // contains {n}
       expired: string;
       locked: string;
+      pwMismatch: string;
+      pwShort: string;
+      ticketExpired: string;
       wrongPassword: string;
       pwdLocked: string;
       unavailable: string;

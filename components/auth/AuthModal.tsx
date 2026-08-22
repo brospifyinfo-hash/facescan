@@ -1,39 +1,66 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
-import { ArrowLeft, KeyRound, Loader2, Mail, ShieldCheck, X } from "lucide-react";
-import { Button } from "@/components/ui/Button";
-import { CodeInput } from "./CodeInput";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowLeft, Loader2, ShieldCheck, X } from "lucide-react";
+import { OrbitCode, ORBIT_TOTAL_MS } from "./OrbitCode";
 import { GoogleButton } from "./GoogleButton";
-import { passwordLogin, requestCode, verifyCode } from "@/lib/auth/client";
+import { createPassword, passwordLogin, requestCode, verifyCode } from "@/lib/auth/client";
 import { fill, useT } from "@/lib/i18n";
-import { cn } from "@/lib/cn";
 
-type Stage = "email" | "code";
-type Mode = "code" | "password";
+// THE WAY IN.
+//
+// One rule decides the shape of this screen: THE EMAIL CODE IS NOT A LOGIN.
+// It proves an inbox — once at registration, and again when a password was
+// forgotten — and both times it ends at the same place, choosing a password.
+// Signing in afterwards is the password, or Google. That is why:
+//
+//   * registering and signing in are a SWITCH, not a hidden second path.
+//     They ask for different things (one address, or an address and a
+//     password), so pretending they are one form costs a field that is
+//     either wrong or empty.
+//   * the password step cannot be skipped. An account without one could
+//     only ever be re-entered by email code, which is the thing being
+//     retired — so the flow does not offer a "later".
+//   * "forgot password" is not a separate machine. It is the same code, the
+//     same ticket, the same password screen, with copy that says so.
+//
+// The visual language is the reference the owner supplied — see the AUTH
+// SURFACE block in globals.css for what its rules are and why colour only
+// ever appears as a verdict.
 
-/**
- * Sign-in: three ways to the same session. The email code is the root (it
- * proves the inbox and doubles as the password reset), the password is the
- * convenience for return visits, and Google appears whenever a client id is
- * configured — all of them end in the identical cookie.
- */
+type View = "login" | "register" | "code" | "password";
+
+const EASE = [0.22, 1, 0.36, 1] as const;
+
 export function AuthModal({
   open,
   onClose,
   onSignedIn,
+  start = "register",
 }: {
   open: boolean;
   onClose: () => void;
   onSignedIn: (email: string) => void;
+  /**
+   * Which half of the switch is lit when the sheet opens. A returning
+   * customer tapping "Anmelden" in their account means sign in; somebody
+   * about to buy has no account yet and means register. Guessing wrong
+   * costs a tap and, worse, reads as the app not knowing who is standing
+   * in front of it.
+   */
+  start?: "login" | "register";
 }) {
   const t = useT();
-  const [stage, setStage] = useState<Stage>("email");
-  const [mode, setMode] = useState<Mode>("code");
+  const [view, setView] = useState<View>(start);
+  /** Came here through "forgot password", or the address already existed. */
+  const [reset, setReset] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [pw1, setPw1] = useState("");
+  const [pw2, setPw2] = useState("");
   const [code, setCode] = useState("");
+  const [verdict, setVerdict] = useState<"ok" | "bad" | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [devFallback, setDevFallback] = useState(false);
@@ -42,14 +69,19 @@ export function AuthModal({
 
   useEffect(() => {
     if (open) return;
-    // Reset so a reopened modal never shows a stale code or error.
-    setStage("email");
+    // Reset on close, so a reopened modal never shows a stale code, a stale
+    // error, or — worst of the three — a stale password in a field.
+    setView(start);
+    setReset(false);
     setCode("");
     setPassword("");
+    setPw1("");
+    setPw2("");
+    setVerdict(null);
     setBusy(false);
     setError(null);
     verifying.current = false;
-  }, [open]);
+  }, [open, start]);
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -66,33 +98,37 @@ export function AuthModal({
 
   const errorText = (key: string, n?: number) => {
     const e = t.auth.errors as Record<string, string>;
-    // The server speaks snake_case ("wrong_code"), the dictionary camelCase
-    // ("wrongCode") — without this normalisation every specific error fell
-    // through to the generic "failed" text.
+    // The server speaks snake_case, the dictionary camelCase — without this
+    // every specific error falls through to the generic text.
     const camel = key.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase());
     const raw = e[camel] ?? e[key] ?? e.failed;
     return n === undefined ? raw : fill(raw, { n });
   };
 
-  const send = async (e?: React.FormEvent) => {
-    e?.preventDefault();
-    setError(null);
-    setBusy(true);
-    const res = await requestCode(email);
-    setBusy(false);
-
-    if (!res.ok) {
-      setError(errorText(res.error));
-      if (res.error === "cooldown" && res.retryAfterMs) {
-        setCooldown(Math.ceil(res.retryAfterMs / 1000));
+  const sendCode = useCallback(
+    async (address: string, asReset: boolean) => {
+      setError(null);
+      setBusy(true);
+      const res = await requestCode(address);
+      setBusy(false);
+      if (!res.ok) {
+        setError(errorText(res.error));
+        if (res.error === "cooldown" && res.retryAfterMs) {
+          setCooldown(Math.ceil(res.retryAfterMs / 1000));
+        }
+        return;
       }
-      return;
-    }
-    setDevFallback(res.devFallback);
-    setCode("");
-    setStage("code");
-    setCooldown(60);
-  };
+      setDevFallback(res.devFallback);
+      setReset(asReset);
+      setCode("");
+      setVerdict(null);
+      setView("code");
+      setCooldown(60);
+    },
+    // errorText reads only from the dictionary, which is stable per render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
 
   const verify = async (submitted: string) => {
     if (verifying.current) return;
@@ -104,22 +140,32 @@ export function AuthModal({
     verifying.current = false;
 
     if (!res.ok) {
+      setVerdict("bad");
       setError(errorText(res.error, res.attemptsLeft));
-      setCode("");
+      // Let the shake finish before the row is usable again.
+      window.setTimeout(() => {
+        setCode("");
+        setVerdict(null);
+      }, 450);
       return;
     }
-    onSignedIn(res.email);
+
+    // An address that already had a password is a reset, whatever the
+    // customer thought they were doing when they typed it.
+    if (res.existing) setReset(true);
+    setVerdict("ok");
+    // The orbit is the transition: the digits travel, then the next screen
+    // is already the one they were travelling toward.
+    window.setTimeout(() => setView("password"), ORBIT_TOTAL_MS - 120);
   };
 
-  const loginWithPassword = async (e: React.FormEvent) => {
+  const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setBusy(true);
     const res = await passwordLogin(email, password);
     setBusy(false);
     if (!res.ok) {
-      // "locked" means something different here than on the code path, so
-      // it maps to its own text rather than through errorText().
       setError(
         res.error === "locked"
           ? t.auth.errors.pwdLocked
@@ -132,10 +178,54 @@ export function AuthModal({
     onSignedIn(res.email);
   };
 
+  const savePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    if (pw1.length < 8) {
+      setError(t.auth.errors.pwShort);
+      return;
+    }
+    if (pw1 !== pw2) {
+      setError(t.auth.errors.pwMismatch);
+      return;
+    }
+    setBusy(true);
+    const res = await createPassword(pw1);
+    setBusy(false);
+    if (!res.ok) {
+      setError(res.error === "no_ticket" ? t.auth.errors.ticketExpired : errorText(res.error));
+      if (res.error === "no_ticket") setView(start);
+      return;
+    }
+    onSignedIn(res.email || email);
+  };
+
   if (!open) return null;
 
+  const heading =
+    view === "login"
+      ? t.auth.modeLogin
+      : view === "register"
+        ? t.auth.modeRegister
+        : view === "code"
+          ? t.auth.codeTitle
+          : reset
+            ? t.auth.pwResetTitle
+            : t.auth.pwCreateTitle;
+
+  const sub =
+    view === "login"
+      ? t.auth.loginSub
+      : view === "register"
+        ? t.auth.registerSub
+        : view === "code"
+          ? fill(t.auth.codeSub, { email })
+          : reset
+            ? t.auth.pwResetSub
+            : t.auth.pwCreateSub;
+
   return (
-    <div className="fixed inset-0 z-[55] flex items-center justify-center overflow-y-auto bg-[var(--color-canvas)]/80 p-4 backdrop-blur-md">
+    <div className="auth-scope fixed inset-0 z-[80] flex items-center justify-center overflow-y-auto bg-[#03060b]/85 p-4 backdrop-blur-xl">
       <button
         type="button"
         aria-label="Close"
@@ -143,75 +233,83 @@ export function AuthModal({
         className="absolute inset-0 h-full w-full cursor-default"
         onClick={onClose}
       />
+
       <motion.div
         role="dialog"
         aria-modal="true"
-        aria-label={t.auth.title}
-        initial={{ opacity: 0, y: 20, scale: 0.98 }}
+        aria-label={heading}
+        initial={{ opacity: 0, y: 22, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-        className="material-sheet relative my-auto w-full max-w-sm rounded-[var(--r-window)] p-6 sm:p-7"
+        transition={{ duration: 0.42, ease: EASE }}
+        className="auth-sheet relative my-auto w-full max-w-sm rounded-[28px] p-6 sm:p-7"
       >
         <button
           onClick={onClose}
           aria-label="Close"
-          className="absolute right-4 top-4 rounded-full p-1.5 text-[var(--color-ink-tertiary)] transition-colors hover:bg-white/5 hover:text-[var(--color-ink)]"
+          className="auth-quiet absolute right-4 top-4 rounded-full p-1.5 transition-colors hover:text-[var(--auth-ice)]"
         >
           <X className="h-4 w-4" />
         </button>
 
-        {stage === "email" ? (
-          <div>
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/[0.1] bg-white/[0.04]">
-              {mode === "code" ? (
-                <Mail className="h-4 w-4 text-accent" />
-              ) : (
-                <KeyRound className="h-4 w-4 text-accent" />
-              )}
-            </span>
-            <h2 className="mt-5 text-xl font-semibold tracking-tight">
-              {t.auth.title}
+        {/* The switch — only where there is genuinely a choice to make. */}
+        {view === "login" || view === "register" ? (
+          <div className="auth-switch relative mb-6 mt-1">
+            {(["register", "login"] as const).map((m) => (
+              <button
+                key={m}
+                type="button"
+                aria-pressed={view === m}
+                onClick={() => {
+                  setView(m);
+                  setError(null);
+                }}
+              >
+                {m === "register" ? t.auth.modeRegister : t.auth.modeLogin}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              setView(reset ? "login" : "register");
+              setError(null);
+              setCode("");
+              setVerdict(null);
+            }}
+            className="auth-quiet mb-5 mt-1 flex items-center gap-1.5 text-[12px] transition-colors hover:text-[var(--auth-ice)]"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            {reset ? t.auth.backToLogin : t.auth.changeEmail}
+          </button>
+        )}
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={view}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.26, ease: EASE }}
+          >
+            <h2 className="text-[22px] font-semibold tracking-[-0.02em] text-[var(--auth-ice)]">
+              {heading}
             </h2>
-            <p className="mt-2 text-[13px] leading-relaxed text-[var(--color-ink-secondary)]">
-              {t.auth.sub}
-            </p>
+            <p className="auth-muted mt-2 text-[13px] leading-relaxed">{sub}</p>
 
-            {/* The two ways in, as a segmented control. */}
-            <div className="fill mt-5 grid grid-cols-2 gap-1 rounded-full p-1">
-              {(["code", "password"] as const).map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => {
-                    setMode(m);
-                    setError(null);
-                  }}
-                  aria-pressed={mode === m}
-                  className={cn(
-                    "rounded-full py-2 text-[12.5px] font-semibold transition-colors",
-                    mode === m
-                      ? "bg-white/[0.1] text-[var(--color-ink)]"
-                      : "text-[var(--color-ink-tertiary)]",
-                  )}
-                >
-                  {m === "code" ? t.auth.tabCode : t.auth.tabPassword}
-                </button>
-              ))}
-            </div>
-
-            <form onSubmit={mode === "code" ? send : loginWithPassword}>
-              <input
-                autoFocus
-                type="email"
-                required
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t.auth.emailPlaceholder}
-                className="mt-4 w-full rounded-2xl border border-white/[0.1] bg-white/[0.03] px-4 py-3 text-sm outline-none transition-colors placeholder:text-[var(--color-ink-tertiary)] focus:border-accent/60"
-              />
-
-              {mode === "password" ? (
+            {/* ---------------- Sign in ---------------- */}
+            {view === "login" ? (
+              <form onSubmit={signIn} className="mt-6">
+                <input
+                  autoFocus
+                  type="email"
+                  required
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t.auth.emailPlaceholder}
+                  className="auth-field"
+                />
                 <input
                   type="password"
                   required
@@ -219,106 +317,148 @@ export function AuthModal({
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={t.auth.passwordPlaceholder}
-                  className="mt-2.5 w-full rounded-2xl border border-white/[0.1] bg-white/[0.03] px-4 py-3 text-sm outline-none transition-colors placeholder:text-[var(--color-ink-tertiary)] focus:border-accent/60"
+                  className="auth-field mt-2.5"
                 />
-              ) : null}
-
-              {error ? (
-                <p className="mt-2.5 text-[12px] text-red-400">{error}</p>
-              ) : null}
-
-              <Button type="submit" size="lg" className="mt-4 w-full" disabled={busy}>
-                {busy ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" /> {t.auth.sending}
-                  </>
-                ) : mode === "code" ? (
-                  t.auth.sendCode
-                ) : (
-                  t.auth.passwordSubmit
-                )}
-              </Button>
-            </form>
-
-            {mode === "password" ? (
-              <p className="mt-3 text-[11px] leading-relaxed text-[var(--color-ink-tertiary)]">
-                {t.auth.passwordHint}
-              </p>
+                {error ? (
+                  <p className="mt-2.5 text-[12px] text-[var(--auth-bad)]">{error}</p>
+                ) : null}
+                <button type="submit" className="auth-cta mt-4" disabled={busy}>
+                  {busy ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" /> {t.auth.verifying}
+                    </span>
+                  ) : (
+                    t.auth.passwordSubmit
+                  )}
+                </button>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => {
+                    if (!email) {
+                      setError(t.auth.errors.invalidEmail);
+                      return;
+                    }
+                    void sendCode(email, true);
+                  }}
+                  className="auth-quiet mt-3 w-full text-center text-[12px] transition-colors hover:text-[var(--auth-ice)]"
+                >
+                  {t.auth.forgot}
+                </button>
+                <GoogleButton onSignedIn={onSignedIn} />
+              </form>
             ) : null}
 
-            <GoogleButton
-              onSignedIn={(mail) => {
-                onSignedIn(mail);
-              }}
-            />
-
-            <p className="mt-3.5 flex items-start gap-2 text-[11px] leading-relaxed text-[var(--color-ink-tertiary)]">
-              <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" />
-              {t.auth.privacy}
-            </p>
-          </div>
-        ) : (
-          <div>
-            <button
-              onClick={() => setStage("email")}
-              className="flex items-center gap-1.5 text-[12px] text-[var(--color-ink-tertiary)] transition-colors hover:text-[var(--color-ink-secondary)]"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" /> {t.auth.changeEmail}
-            </button>
-
-            <h2 className="mt-4 text-xl font-semibold tracking-tight">
-              {t.auth.codeTitle}
-            </h2>
-            <p className="mt-2 text-[13px] leading-relaxed text-[var(--color-ink-secondary)]">
-              {fill(t.auth.codeSub, { email })}
-            </p>
-
-            <div className="mt-6">
-              <CodeInput
-                value={code}
-                onChange={setCode}
-                onComplete={verify}
-                disabled={busy}
-                invalid={Boolean(error)}
-              />
-            </div>
-
-            {error ? (
-              <p className="mt-3 text-center text-[12px] text-red-400">{error}</p>
+            {/* ---------------- Register ---------------- */}
+            {view === "register" ? (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void sendCode(email, false);
+                }}
+                className="mt-6"
+              >
+                <input
+                  autoFocus
+                  type="email"
+                  required
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t.auth.emailPlaceholder}
+                  className="auth-field"
+                />
+                {error ? (
+                  <p className="mt-2.5 text-[12px] text-[var(--auth-bad)]">{error}</p>
+                ) : null}
+                <button type="submit" className="auth-cta mt-4" disabled={busy}>
+                  {busy ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" /> {t.auth.sending}
+                    </span>
+                  ) : (
+                    t.auth.sendCode
+                  )}
+                </button>
+                <GoogleButton onSignedIn={onSignedIn} />
+                <p className="auth-quiet mt-4 flex items-start gap-2 text-[11px] leading-relaxed">
+                  <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  {t.auth.privacy}
+                </p>
+              </form>
             ) : null}
 
-            {devFallback ? (
-              <p className="mt-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-2.5 t-caption leading-relaxed text-amber-300/90">
-                {t.auth.devHint}
-              </p>
+            {/* ---------------- The code ---------------- */}
+            {view === "code" ? (
+              <div className="mt-7">
+                <OrbitCode
+                  value={code}
+                  onChange={setCode}
+                  onComplete={verify}
+                  disabled={busy || verdict === "ok"}
+                  verdict={verdict}
+                  busy={busy}
+                />
+
+                {error ? (
+                  <p className="mt-4 text-center text-[12px] text-[var(--auth-bad)]">{error}</p>
+                ) : null}
+
+                {devFallback ? (
+                  <p className="mt-4 rounded-xl border border-amber-500/20 bg-amber-500/5 p-2.5 text-[11px] leading-relaxed text-amber-300/90">
+                    {t.auth.devHint}
+                  </p>
+                ) : null}
+
+                <button
+                  type="button"
+                  onClick={() => void sendCode(email, reset)}
+                  disabled={cooldown > 0 || busy || verdict === "ok"}
+                  className="auth-quiet mt-5 w-full text-center text-[12px] transition-colors hover:text-[var(--auth-ice)] disabled:opacity-50"
+                >
+                  {cooldown > 0 ? fill(t.auth.resendIn, { s: cooldown }) : t.auth.resend}
+                </button>
+              </div>
             ) : null}
 
-            <Button
-              size="lg"
-              className="mt-5 w-full"
-              disabled={busy || code.length !== 6}
-              onClick={() => verify(code)}
-            >
-              {busy ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> {t.auth.verifying}
-                </>
-              ) : (
-                t.auth.verify
-              )}
-            </Button>
-
-            <button
-              onClick={() => send()}
-              disabled={cooldown > 0 || busy}
-              className="mt-3 w-full text-center text-[12px] text-[var(--color-ink-tertiary)] transition-colors hover:text-[var(--color-ink-secondary)] disabled:opacity-50"
-            >
-              {cooldown > 0
-                ? fill(t.auth.resendIn, { s: cooldown })
-                : t.auth.resend}
-            </button>
-          </div>
-        )}
+            {/* ---------------- The password ---------------- */}
+            {view === "password" ? (
+              <form onSubmit={savePassword} className="mt-6">
+                <input
+                  autoFocus
+                  type="password"
+                  required
+                  autoComplete="new-password"
+                  value={pw1}
+                  onChange={(e) => setPw1(e.target.value)}
+                  placeholder={t.auth.pwNew}
+                  className="auth-field"
+                />
+                <input
+                  type="password"
+                  required
+                  autoComplete="new-password"
+                  value={pw2}
+                  onChange={(e) => setPw2(e.target.value)}
+                  placeholder={t.auth.pwRepeat}
+                  className="auth-field mt-2.5"
+                />
+                {error ? (
+                  <p className="mt-2.5 text-[12px] text-[var(--auth-bad)]">{error}</p>
+                ) : null}
+                <button type="submit" className="auth-cta mt-4" disabled={busy}>
+                  {busy ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" /> {t.auth.verifying}
+                    </span>
+                  ) : (
+                    t.auth.pwCreateCta
+                  )}
+                </button>
+              </form>
+            ) : null}
+          </motion.div>
+        </AnimatePresence>
       </motion.div>
     </div>
   );

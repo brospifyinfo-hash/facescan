@@ -1032,3 +1032,284 @@ textarea,
 select {
   font-size: 16px;
 }
+
+/* ===========================================================================
+   THE AUTH SURFACE — ice glass, and one moving part.
+   ===========================================================================
+
+   Built from the reference the owner supplied, whose rules are written into
+   its own comments and are worth keeping verbatim:
+
+     "colour is reserved for verdicts — attention here is not a hue, it is
+      light"        → a focused field brightens toward --auth-ice. Green and
+                      red appear ONLY to say "accepted" and "wrong". That is
+                      why the scanner accent does not run this screen.
+     "dotted on purpose: a solid ring at this size reads as a loading
+      spinner"      → the orbit is a dashed track, not a progress ring. It
+                      says "a place where things travel", not "wait".
+     "never SAMPLE a turn"
+                    → the digits orbit by moving their transform-origin onto
+                      the hub and rotating. Two keyframes draw an exact
+                      circle; sampling points along a path draws a polygon
+                      and pays a frame budget for the privilege.
+
+   Tokens are namespaced and used nowhere else, so this look cannot leak
+   into the surfaces the product owns.
+--------------------------------------------------------------------------- */
+
+.auth-scope {
+  --auth-ice: #dceaff;
+  --auth-ok: #2ee6a8;
+  --auth-bad: #ff4d6a;
+}
+
+/* The pane. Denser than the app glass: a modal has real content scrolling
+   behind it, and the whole feeling of the reference is DEPTH — a thick
+   sheet of ice with light caught in its edges, not a translucent card. */
+.auth-sheet {
+  position: relative;
+  background:
+    radial-gradient(120% 80% at 50% -20%, rgba(220, 234, 255, 0.09) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(24, 32, 44, 0.88) 0%, rgba(11, 16, 24, 0.94) 100%);
+  backdrop-filter: blur(52px) saturate(150%);
+  border: 1px solid rgba(220, 234, 255, 0.16);
+  box-shadow:
+    inset 0 1px 0 0 rgba(220, 234, 255, 0.26),
+    inset 0 -1px 0 0 rgba(220, 234, 255, 0.05),
+    0 2px 10px -6px rgba(0, 0, 0, 0.8),
+    0 40px 90px -30px rgba(0, 0, 0, 0.95);
+}
+
+/* The hairline of light along the top edge — its own layer, so no
+   background set by a child can bury it. */
+.auth-sheet::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(220, 234, 255, 0.1) 0%,
+    rgba(220, 234, 255, 0) 38%
+  );
+}
+
+/* ---- The orbit ---------------------------------------------------------
+   A dashed track with a hub at its centre. At rest the track turns slowly:
+   enough to read as alive, not enough to read as loading. */
+
+.orbit {
+  position: relative;
+  width: 116px;
+  height: 116px;
+  margin-inline: auto;
+}
+
+.orbit__ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.orbit__path {
+  fill: none;
+  stroke: rgba(220, 234, 255, 0.45);
+  /* Dotted on purpose — see the header. */
+  stroke-dasharray: 2 8;
+  stroke-width: 1.5;
+  transform-origin: 50% 50%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .orbit__path {
+    animation: orbit-drift 22s linear infinite;
+  }
+}
+
+@keyframes orbit-drift {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* The point the digits collapse onto. */
+.orbit__hub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 999px;
+  background: var(--auth-ice);
+  box-shadow: 0 0 0 4px rgba(220, 234, 255, 0.08), 0 0 16px rgba(220, 234, 255, 0.55);
+  transition:
+    background var(--dur-base) var(--ease-smooth),
+    box-shadow var(--dur-base) var(--ease-smooth);
+}
+
+/* Verdicts — the only two places colour is allowed on this screen. */
+.orbit__hub[data-verdict="ok"] {
+  background: var(--auth-ok);
+  box-shadow: 0 0 0 6px rgba(46, 230, 168, 0.12), 0 0 26px rgba(46, 230, 168, 0.8);
+}
+.orbit__hub[data-verdict="bad"] {
+  background: var(--auth-bad);
+  box-shadow: 0 0 0 6px rgba(255, 77, 106, 0.12), 0 0 26px rgba(255, 77, 106, 0.7);
+}
+
+/* ---- The digit slots ---------------------------------------------------
+   Attention is light: an empty slot is a dim well, a filled one is lit from
+   within, a focused one brighter still. No hue until there is a verdict. */
+
+.slot {
+  width: 44px;
+  height: 54px;
+  border-radius: 14px;
+  background: rgba(220, 234, 255, 0.035);
+  border: 1px solid rgba(220, 234, 255, 0.12);
+  color: var(--auth-ice);
+  text-align: center;
+  font-size: 20px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+  transition:
+    border-color var(--dur-fast) var(--ease-smooth),
+    background var(--dur-fast) var(--ease-smooth),
+    box-shadow var(--dur-fast) var(--ease-smooth);
+}
+.slot[data-filled="true"] {
+  background: rgba(220, 234, 255, 0.07);
+  border-color: rgba(220, 234, 255, 0.3);
+  box-shadow: inset 0 0 18px rgba(220, 234, 255, 0.08);
+}
+.slot:focus {
+  border-color: rgba(220, 234, 255, 0.55);
+  box-shadow: 0 0 0 3px rgba(220, 234, 255, 0.1), inset 0 0 20px rgba(220, 234, 255, 0.1);
+}
+.slot[data-verdict="bad"] {
+  border-color: rgba(255, 77, 106, 0.55);
+  color: var(--auth-bad);
+}
+
+/* A wrong code shakes the ROW, not the pane: the field is what was wrong,
+   and moving the whole sheet reads as an error in the app itself. */
+@media (prefers-reduced-motion: no-preference) {
+  .slots-wrong {
+    animation: slots-shake 0.4s var(--ease-smooth);
+  }
+}
+@keyframes slots-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-7px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+/* Fields on this surface: the same ice, at input scale. */
+.auth-field {
+  width: 100%;
+  border-radius: 16px;
+  background: rgba(220, 234, 255, 0.04);
+  border: 1px solid rgba(220, 234, 255, 0.13);
+  color: var(--auth-ice);
+  padding: 13px 16px;
+  outline: none;
+  transition:
+    border-color var(--dur-fast) var(--ease-smooth),
+    box-shadow var(--dur-fast) var(--ease-smooth);
+}
+.auth-field::placeholder {
+  color: rgba(220, 234, 255, 0.32);
+}
+.auth-field:focus {
+  border-color: rgba(220, 234, 255, 0.42);
+  box-shadow: 0 0 0 3px rgba(220, 234, 255, 0.08);
+}
+
+/* The primary action. Ice, not accent — on this screen the accent would be
+   the only hue present, and a hue here reads as a verdict. */
+.auth-cta {
+  width: 100%;
+  border-radius: 999px;
+  padding: 13px 20px;
+  font-size: 14px;
+  font-weight: 650;
+  color: #08111c;
+  background: linear-gradient(180deg, #eaf3ff 0%, #c9dcf7 100%);
+  box-shadow: 0 8px 24px -10px rgba(220, 234, 255, 0.5);
+  transition:
+    transform var(--dur-fast) var(--ease-snappy),
+    filter var(--dur-fast) var(--ease-smooth),
+    opacity var(--dur-fast) var(--ease-smooth);
+}
+.auth-cta:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+.auth-cta:active:not(:disabled) {
+  transform: scale(0.975);
+}
+.auth-cta:disabled {
+  opacity: 0.45;
+}
+
+/* The register/sign-in switch — one lit half, one dark. */
+.auth-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(220, 234, 255, 0.05);
+  border: 1px solid rgba(220, 234, 255, 0.1);
+}
+.auth-switch button {
+  border-radius: 999px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(220, 234, 255, 0.5);
+  transition:
+    background var(--dur-base) var(--ease-smooth),
+    color var(--dur-base) var(--ease-smooth),
+    box-shadow var(--dur-base) var(--ease-smooth);
+}
+.auth-switch button[aria-pressed="true"] {
+  background: rgba(220, 234, 255, 0.12);
+  color: var(--auth-ice);
+  box-shadow: inset 0 1px 0 0 rgba(220, 234, 255, 0.2);
+}
+
+/* Muted type on this surface, in the reference palette rather than the
+   product ink ramp. */
+.auth-muted {
+  color: rgba(220, 234, 255, 0.55);
+}
+.auth-quiet {
+  color: rgba(220, 234, 255, 0.38);
+}
+
+/* Accessibility: the same two switches the rest of the material honours. */
+@media (prefers-contrast: more), (prefers-reduced-transparency: reduce) {
+  .auth-sheet {
+    background: #05080d;
+    backdrop-filter: none;
+    border-color: rgba(220, 234, 255, 0.5);
+  }
+}
