@@ -324,6 +324,20 @@ export interface Dict {
     choosePlan: string;
     continueToPayment: string;
     popular: string;
+    /**
+     * Conversion copy on the plan step.
+     *
+     * unlocksCount / moreScans carry {n}, upgradeTitle carries {price} —
+     * the numbers come from lib/pricing.ts so a dictionary can never state
+     * a price the checkout does not charge.
+     */
+    unlockNow: string;
+    notIncluded: string;
+    unlocksCount: string;
+    moreScans: string;
+    oneMoreScan: string;
+    upgradeTitle: string;
+    upgradeSub: string;
     /** The two-step rail at the top of the sheet. */
     stepPlan: string;
     stepPay: string;

@@ -1766,3 +1766,37 @@ select {
     transform: translateY(10px);
   }
 }
+
+/* ---------------------------------------------------------------------------
+   SLIM SCROLLBAR
+   ---------------------------------------------------------------------------
+   For panels that scroll inside themselves — the checkout sheet is the first.
+   The platform scrollbar is a light grey slab: on a dark glass panel with a
+   28px radius it reads as a seam down the edge of the card rather than as
+   part of it. This keeps the affordance (you can still see there is more) and
+   drops the slab.
+
+   Scoped to an opt-in class, NOT applied globally: the page's own scrollbar is
+   the browser's business, and overriding it site-wide is the kind of change
+   people notice as "this site feels wrong" without being able to say why. */
+.scroll-slim {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
+}
+
+.scroll-slim::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scroll-slim::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-slim::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.scroll-slim::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.28);
+}

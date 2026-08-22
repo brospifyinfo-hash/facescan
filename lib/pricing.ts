@@ -129,3 +129,51 @@ export function formatPrice(locale: Locale, plan: PlanId = "pro"): string {
 export function currencyFor(locale: Locale): string {
   return CURRENCY[locale];
 }
+
+/**
+ * A bare amount in the viewer's currency.
+ *
+ * Exists so the checkout can price a DIFFERENCE ("13,00 € more than Pro")
+ * with the same separator and symbol as the plan prices next to it. Doing
+ * that inline with Intl at the call site is how two formats end up in one
+ * sheet.
+ */
+export function formatAmount(locale: Locale, amount: number): string {
+  return new Intl.NumberFormat(INTL_LOCALE[locale], {
+    style: "currency",
+    currency: CURRENCY[locale],
+  }).format(amount);
+}
+
+/**
+ * What upgrading from `plan` to the top tier costs, formatted.
+ *
+ * ROUNDED BEFORE FORMATTING, deliberately: 18.95 − 5.95 is 13.000000000000002
+ * in binary floating point, and Intl would happily render that as 13,00 € —
+ * right by luck. Rounding says it on purpose.
+ *
+ * Returns null when there is nothing to upgrade to, so the caller can drop
+ * the row rather than render "0,00 €".
+ */
+export function upgradeCost(locale: Locale, plan: PlanId): string | null {
+  const top = PLAN_ORDER[PLAN_ORDER.length - 1];
+  if (plan === top) return null;
+  const delta = Math.round((AMOUNTS[top] - AMOUNTS[plan]) * 100) / 100;
+  return formatAmount(locale, delta);
+}
+
+/**
+ * How many capabilities a plan actually unlocks.
+ *
+ * Counted from CAPABILITIES rather than from the number of bullet points in
+ * a dictionary, for two reasons. The bullets are marketing copy and their
+ * count is an accident of how the sentences were split — raw and pro both
+ * happened to have three, which made the middle tier look like it added
+ * nothing. And CAPABILITIES is the table the gate actually enforces, so a
+ * number derived from it cannot advertise a door that stays locked.
+ *
+ * Gives 1 / 4 / 10, which is the shape of the offer.
+ */
+export function unlockCount(plan: PlanId): number {
+  return Object.values(CAPABILITIES[plan]).filter(Boolean).length;
+}

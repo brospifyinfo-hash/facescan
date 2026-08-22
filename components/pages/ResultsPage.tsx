@@ -486,7 +486,6 @@ export function ResultsPage() {
       <CheckoutModal
         open={checkoutOpen}
         onClose={() => setCheckoutOpen(false)}
-        initialPlan="pro"
         onSuccess={(granted) => {
           // `granted` comes from /api/stripe/entitlement, i.e. from what the
           // verified webhook actually wrote — not from the client.
