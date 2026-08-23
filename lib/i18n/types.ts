@@ -49,6 +49,8 @@ export interface Dict {
     ctaFinal: string;
     disclaimer: string;
     imprint: string;
+    /** Footer link to the support form. */
+    supportLink: string;
     privacyLink: string;
   };
   /** The app home screen at `/`. */
@@ -418,6 +420,39 @@ export interface Dict {
       wrongPassword: string;
       pwdLocked: string;
       unavailable: string;
+    };
+  };
+  /**
+   * The support form at `/support`. Every string the customer can read
+   * lives here, including the failure text: an error the form cannot
+   * translate is an error that reaches a German customer in English.
+   */
+  support: {
+    title: string;
+    intro: string;
+    /** Shown instead of the email field when a session already proves one. */
+    signedInAs: string;
+    name: string;
+    namePlaceholder: string;
+    email: string;
+    emailPlaceholder: string;
+    subject: string;
+    subjectPlaceholder: string;
+    message: string;
+    messagePlaceholder: string;
+    send: string;
+    sending: string;
+    sentTitle: string;
+    sentBody: string;
+    again: string;
+    back: string;
+    errors: {
+      incomplete: string;
+      invalidEmail: string;
+      tooLong: string;
+      rateLimited: string;
+      unconfigured: string;
+      failed: string;
     };
   };
   pay: {

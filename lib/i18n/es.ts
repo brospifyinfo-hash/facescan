@@ -81,6 +81,7 @@ export const es: Dict = {
     disclaimer:
       "FaceScan ofrece estimaciones geométricas como orientación para la mejora personal. No es un producto sanitario y ningún resultado constituye una valoración médica, dermatológica ni psicológica.",
     imprint: "Aviso legal",
+    supportLink: "Soporte",
     privacyLink: "Privacidad",
   },
   home: {
@@ -569,6 +570,37 @@ export const es: Dict = {
       "¿Aún sin contraseña? Inicia sesión una vez con el código y crea una en tu cuenta.",
     or: "o",
     googleCta: "Continuar con Google",
+  },
+  support: {
+    title: "Ayuda y contacto",
+    intro:
+      "¿Algo no funciona, un pago sin resolver o una duda sobre tu análisis? Escríbenos: respondemos por correo, normalmente en menos de 24 horas.",
+    signedInAs: "Sesión iniciada como {email}",
+    name: "Nombre",
+    namePlaceholder: "¿Cómo te llamamos?",
+    email: "Correo electrónico",
+    emailPlaceholder: "tu@ejemplo.com",
+    subject: "Asunto",
+    subjectPlaceholder: "¿De qué se trata?",
+    message: "Mensaje",
+    messagePlaceholder:
+      "Cuéntanos qué necesitas. Si es un fallo, ayuda saber qué hiciste y qué pasó después.",
+    send: "Enviar mensaje",
+    sending: "Enviando …",
+    sentTitle: "Mensaje enviado",
+    sentBody:
+      "Hemos recibido tu consulta y te responderemos por correo. Revisa también la carpeta de spam.",
+    again: "Escribir otro mensaje",
+    back: "Volver",
+    errors: {
+      incomplete: "Rellena todos los campos.",
+      invalidEmail: "Esa dirección de correo no parece correcta.",
+      tooLong: "Tu mensaje es demasiado largo. Acórtalo un poco.",
+      rateLimited: "Acabas de enviar varios mensajes. Espera un momento.",
+      unconfigured:
+        "El soporte no está disponible ahora mismo. Inténtalo más tarde.",
+      failed: "No se pudo enviar el mensaje. Inténtalo más tarde.",
+    },
   },
   pay: {
     summaryTitle: "Resumen del pedido",

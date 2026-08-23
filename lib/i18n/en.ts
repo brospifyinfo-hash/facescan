@@ -80,6 +80,7 @@ export const en: Dict = {
     disclaimer:
       "FaceScan provides geometric estimates for self-improvement guidance. It is not a medical device, and no result constitutes a medical, dermatological or psychological assessment.",
     imprint: "Imprint",
+    supportLink: "Support",
     privacyLink: "Privacy",
   },
   home: {
@@ -568,6 +569,36 @@ export const en: Dict = {
       "No password yet? Sign in once with the email code and set one in your account.",
     or: "or",
     googleCta: "Continue with Google",
+  },
+  support: {
+    title: "Help & contact",
+    intro:
+      "Something not working, a payment unresolved, or a question about your analysis? Write to us — we reply by email, usually within 24 hours.",
+    signedInAs: "Signed in as {email}",
+    name: "Name",
+    namePlaceholder: "What should we call you?",
+    email: "Email",
+    emailPlaceholder: "you@example.com",
+    subject: "Subject",
+    subjectPlaceholder: "What is this about?",
+    message: "Message",
+    messagePlaceholder:
+      "Describe what you need. For a bug, it helps to know what you did and what happened next.",
+    send: "Send message",
+    sending: "Sending …",
+    sentTitle: "Message sent",
+    sentBody:
+      "We have your request and will reply by email. Do check your spam folder as well.",
+    again: "Write another message",
+    back: "Back",
+    errors: {
+      incomplete: "Please fill in every field.",
+      invalidEmail: "That email address does not look right.",
+      tooLong: "Your message is too long. Please shorten it a little.",
+      rateLimited: "You just sent several messages. Please wait a moment.",
+      unconfigured: "Support is unavailable right now. Please try again later.",
+      failed: "The message could not be sent. Please try again later.",
+    },
   },
   pay: {
     summaryTitle: "Order summary",
