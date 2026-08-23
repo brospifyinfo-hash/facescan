@@ -404,11 +404,14 @@ export function AffiliateOverview() {
         <p className="mb-3 flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/[0.07] p-3 text-[12px] leading-relaxed text-red-300">
           <KeyRound className="mt-px h-4 w-4 shrink-0" aria-hidden />
           <span>
-            <strong className="font-semibold">AFFILIATE_PII_KEY fehlt.</strong> Ohne diesen
-            Schlüssel wird keine IBAN verschlüsselt gespeichert — und weil Klartext nicht in
-            Frage kommt, kann sich gerade niemand als Partner bewerben. Schlüssel erzeugen:{" "}
+            <strong className="font-semibold">Kein Schlüssel für die Bankdaten.</strong>{" "}
+            Normalerweise wird er aus <span className="font-mono-terminal">AUTH_SECRET</span>{" "}
+            abgeleitet — die fehlt hier oder ist kürzer als 16 Zeichen. Solange das so ist, kann
+            sich niemand als Partner bewerben: eine IBAN im Klartext kommt nicht in Frage.
+            Entweder <span className="font-mono-terminal">AUTH_SECRET</span> setzen (die braucht
+            auch der Login) oder einen eigenen Schlüssel hinterlegen:{" "}
             <span className="font-mono-terminal break-all">
-              {"node -e \"console.log(require('crypto').randomBytes(32).toString('base64'))\""}
+              {"AFFILIATE_PII_KEY=$(node -e \"console.log(require('crypto').randomBytes(32).toString('base64'))\")"}
             </span>
           </span>
         </p>

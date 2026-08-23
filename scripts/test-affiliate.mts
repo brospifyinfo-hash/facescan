@@ -289,18 +289,43 @@ try {
 ok("ein unsinniges Token wirft", threw);
 
 const savedKey = process.env.AFFILIATE_PII_KEY;
+const savedSecretForPii = process.env.AUTH_SECRET;
+
+// Ohne eigene Variable, aber mit AUTH_SECRET: der Schlüssel wird abgeleitet.
+// Das ist der Normalfall im Betrieb — niemand muss etwas zusätzlich setzen.
 delete process.env.AFFILIATE_PII_KEY;
-ok("ohne Schlüssel meldet sich das Modul als nicht konfiguriert", !piiKeyConfigured());
+ok("ohne eigene Variable wird der Schlüssel aus AUTH_SECRET abgeleitet", piiKeyConfigured());
+const derivedToken = encryptSecret(IBAN);
+ok("und verschlüsselt wie gewohnt", decryptSecret(derivedToken) === IBAN);
+
+// Wird die eigene Variable später ergänzt, müssen alte Werte weiter aufgehen —
+// sonst wäre die Admin-Auszahlungsliste nach einer Env-Änderung leer.
+process.env.AFFILIATE_PII_KEY = savedKey;
+ok(
+  "ein vorher abgelegter Wert öffnet auch nach dem Hinzufügen einer eigenen Variable",
+  decryptSecret(derivedToken) === IBAN,
+);
+ok("neue Werte laufen dann über den eigenen Schlüssel", decryptSecret(encryptSecret(IBAN)) === IBAN);
+
+// Ein zu kurzer eigener Schlüssel darf nicht als Schlüssel durchgehen; da
+// AUTH_SECRET weiterhin steht, bleibt die Ableitung als Boden.
+process.env.AFFILIATE_PII_KEY = "zu-kurz";
+ok("ein zu kurzer eigener Schlüssel wird ignoriert, nicht aufgefüllt", piiKeyConfigured());
+
+// Gar nichts gesetzt: fail-closed, keine Klartext-IBAN.
+delete process.env.AFFILIATE_PII_KEY;
+delete process.env.AUTH_SECRET;
+ok("ohne jeden Schlüssel meldet sich das Modul als nicht konfiguriert", !piiKeyConfigured());
 threw = false;
 try {
   encryptSecret(IBAN);
 } catch {
   threw = true;
 }
-ok("ohne Schlüssel wird NICHT im Klartext gespeichert, sondern geworfen", threw);
-process.env.AFFILIATE_PII_KEY = "zu-kurz";
-ok("ein zu kurzer Schlüssel zählt als nicht konfiguriert", !piiKeyConfigured());
+ok("und speichert NICHT im Klartext, sondern wirft", threw);
+
 process.env.AFFILIATE_PII_KEY = savedKey;
+process.env.AUTH_SECRET = savedSecretForPii;
 
 // ---------------------------------------------------------------------------
 console.log("\nCodes, Maskierung, Links");

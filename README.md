@@ -108,36 +108,43 @@ OPENAI_API_KEY=sk-...
 
 ## Affiliate
 
-The partner programme adds three environment variables. Everything else it
-needs (`AUTH_SECRET`, `ADMIN_CODE`, `RESEND_API_KEY`, `AUTH_FROM_EMAIL`,
-`SHEETS_URL`, `SHEETS_TOKEN`, `STRIPE_*`) is already in use elsewhere.
+**The partner programme needs no new environment variables.** Everything it
+uses (`AUTH_SECRET`, `ADMIN_CODE`, `RESEND_API_KEY`, `AUTH_FROM_EMAIL`,
+`SHEETS_URL`, `SHEETS_TOKEN`, `STRIPE_*`) is already in use elsewhere. Three
+optional ones exist for deployments that want them:
 
 ```
-AFFILIATE_PII_KEY=<32 random bytes, base64>
-ADMIN_ALERT_EMAIL=<inbox for payout requests and applications>
-NEXT_PUBLIC_SITE_URL=https://…
+AFFILIATE_PII_KEY=<32 random bytes, base64>   # default: derived from AUTH_SECRET
+ADMIN_ALERT_EMAIL=<inbox for payout requests> # default: AUTH_FROM_EMAIL
+NEXT_PUBLIC_SITE_URL=https://…                # default: SITE_URL in production
 ```
 
-Generate the key once, then keep it — rotating it makes every stored IBAN
-unreadable:
+- **IBANs are always encrypted at rest** (AES-256-GCM). The key is derived
+  from `AUTH_SECRET` with HKDF, so there is nothing to set; a plaintext IBAN
+  is never written, in development either, and an application is refused
+  outright if no key can be formed. The store is a spreadsheet in a Google
+  account, and a plaintext IBAN there is a data breach one login away.
+  `AFFILIATE_PII_KEY` overrides the derived key for deployments that want the
+  bank details on a secret of their own — one that can be rotated without
+  invalidating every session. Values written under the derived key stay
+  readable after adding it; both keys are tried on read.
 
-```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
-```
+  ```bash
+  node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+  ```
 
-- `AFFILIATE_PII_KEY` encrypts the partner's IBAN at rest (AES-256-GCM).
-  **Without it no application is stored at all** — the form refuses with a
-  clear message instead of falling back to plaintext, in development too. The
-  store is a spreadsheet in a Google account, and a plaintext IBAN there is a
-  data breach one login away.
 - `ADMIN_ALERT_EMAIL` receives payout requests and, where approval is
-  required, new applications. Falls back to `AUTH_FROM_EMAIL` when unset.
-  Those mails carry the masked IBAN only; the full number lives in the admin
-  area, behind a deliberate click.
-- `NEXT_PUBLIC_SITE_URL` is the base of every partner link and QR code. It
-  falls back to `VERCEL_URL` and then `http://localhost:3000`, so on a
-  preview deployment the links point at the preview — set it explicitly in
-  production or partners will hand out URLs that expire.
+  required, new applications. Unset, they go to `AUTH_FROM_EMAIL` — the same
+  mailbox the login codes are sent from, which is already configured. Those
+  mails carry the masked IBAN only; the full number lives in the admin area,
+  behind a deliberate click.
+- `NEXT_PUBLIC_SITE_URL` is the base of every partner link and QR code.
+  Unset, production uses the canonical `SITE_URL` from `lib/seo.ts` and a
+  preview deployment uses its own Vercel URL. The canonical domain matters
+  more than it looks: `/r/<code>` sets the referral cookie on whatever host
+  served it, so a link on the deployment domain would set the cookie there,
+  the visitor would buy on the real domain, and the partner would lose the
+  sale they made.
 
 ## Deliberate deviations from the brief
 

@@ -20,13 +20,31 @@
 // form refuses with a clear message. Storing an IBAN in the clear "just for
 // now" is exactly how it ends up in a spreadsheet forever.
 
-import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
+import { createCipheriv, createDecipheriv, hkdfSync, randomBytes } from "crypto";
 
 const VERSION = "v1";
 const IV_BYTES = 12;
 const KEY_BYTES = 32;
 
-function readKey(): Buffer | null {
+/**
+ * NO NEW ENVIRONMENT VARIABLE IS REQUIRED.
+ *
+ * The key is derived from AUTH_SECRET, which this deployment already has (it
+ * signs the session and admin cookies). One secret fewer to set is one secret
+ * fewer to forget, and a partner programme that refuses every application
+ * because nobody set a variable is a worse outcome than the one this file is
+ * defending against.
+ *
+ * HKDF, not "use AUTH_SECRET as the key": a key derivation function separates
+ * the cipher key from the signing secret, so the IBAN key cannot be recovered
+ * from a leaked HMAC and vice versa. The info label is what makes them
+ * different keys from the same root.
+ *
+ * AFFILIATE_PII_KEY still wins when it is set, for the deployment that wants
+ * bank details on a key of their own — one that can be rotated without
+ * invalidating every session, or held somewhere AUTH_SECRET is not.
+ */
+function explicitKey(): Buffer | null {
   const raw = process.env.AFFILIATE_PII_KEY;
   if (!raw) return null;
   let key: Buffer;
@@ -40,9 +58,29 @@ function readKey(): Buffer | null {
   return key.length === KEY_BYTES ? key : null;
 }
 
+function derivedKey(): Buffer | null {
+  const secret = process.env.AUTH_SECRET;
+  if (!secret || secret.length < 16) return null;
+  return Buffer.from(
+    hkdfSync("sha256", secret, "facescan-affiliate-pii", "iban-v1", KEY_BYTES),
+  );
+}
+
+/**
+ * Every key a stored value might have been written under, best first.
+ *
+ * Two entries rather than one so that ADDING AFFILIATE_PII_KEY later does not
+ * brick the IBANs that were stored under the derived key: new writes use the
+ * explicit key, old values still decrypt. Removing it again works the same way
+ * in reverse.
+ */
+function keys(): Buffer[] {
+  return [explicitKey(), derivedKey()].filter((k): k is Buffer => k !== null);
+}
+
 /** True when an IBAN can be stored safely. Checked before any form is accepted. */
 export function piiKeyConfigured(): boolean {
-  return readKey() !== null;
+  return keys().length > 0;
 }
 
 export class PiiKeyError extends Error {
@@ -54,9 +92,9 @@ export class PiiKeyError extends Error {
 
 /** "v1.<iv>.<tag>.<ciphertext>", all base64url. */
 export function encryptSecret(plain: string): string {
-  const key = readKey();
+  const key = keys()[0];
   if (!key) {
-    throw new PiiKeyError("AFFILIATE_PII_KEY is missing or not 32 bytes of base64.");
+    throw new PiiKeyError("No PII key: AUTH_SECRET is missing or too short, and AFFILIATE_PII_KEY is unset.");
   }
   const iv = randomBytes(IV_BYTES);
   const cipher = createCipheriv("aes-256-gcm", key, iv);
@@ -78,9 +116,9 @@ export function encryptSecret(plain: string): string {
  * is safe to pay out against.
  */
 export function decryptSecret(token: string): string {
-  const key = readKey();
-  if (!key) {
-    throw new PiiKeyError("AFFILIATE_PII_KEY is missing or not 32 bytes of base64.");
+  const candidates = keys();
+  if (candidates.length === 0) {
+    throw new PiiKeyError("No PII key: AUTH_SECRET is missing or too short, and AFFILIATE_PII_KEY is unset.");
   }
   const parts = (token ?? "").split(".");
   if (parts.length !== 4 || parts[0] !== VERSION) {
@@ -94,8 +132,20 @@ export function decryptSecret(token: string): string {
     throw new PiiKeyError("Encrypted value has an unexpected format.");
   }
 
-  const decipher = createDecipheriv("aes-256-gcm", key, iv);
-  decipher.setAuthTag(tag);
-  // final() is where a tampered ciphertext throws — that is the whole point of GCM.
-  return Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString("utf8");
+  // Every configured key is tried, so a value written before AFFILIATE_PII_KEY
+  // existed still opens after it is added. GCM makes this safe to attempt:
+  // a wrong key fails the authentication tag, it does not return plausible
+  // garbage the caller might pay out against.
+  for (const key of candidates) {
+    try {
+      const decipher = createDecipheriv("aes-256-gcm", key, iv);
+      decipher.setAuthTag(tag);
+      // final() is where a wrong key or a tampered ciphertext throws — that is
+      // the whole point of GCM.
+      return Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString("utf8");
+    } catch {
+      /* try the next key */
+    }
+  }
+  throw new PiiKeyError("Encrypted value could not be decrypted with any configured key.");
 }

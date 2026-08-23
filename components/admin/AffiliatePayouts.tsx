@@ -400,9 +400,9 @@ async function fetchIban(
       ok: false,
       error:
         why === "pii_unconfigured"
-          ? "AFFILIATE_PII_KEY fehlt — ohne den Schlüssel lässt sich keine IBAN entschlüsseln."
+          ? "Kein Schlüssel für die Bankdaten: AUTH_SECRET fehlt oder ist zu kurz, und AFFILIATE_PII_KEY ist nicht gesetzt."
           : why === "decrypt_failed"
-            ? `Die IBAN von ${email} lässt sich nicht entschlüsseln. Das passiert, wenn AFFILIATE_PII_KEY seit dem Speichern gewechselt wurde.`
+            ? `Die IBAN von ${email} lässt sich nicht entschlüsseln. Das passiert, wenn AUTH_SECRET oder AFFILIATE_PII_KEY seit dem Speichern gewechselt wurde.`
             : why,
     };
   }
