@@ -342,6 +342,12 @@ export function LandingPage() {
           <div className={cn("flex gap-5 text-[11px] text-[var(--color-ink-tertiary)]")}>
             <span>{t.landing.imprint}</span>
             <span>{t.landing.privacyLink}</span>
+            <Link
+              href="/support"
+              className="transition-colors hover:text-[var(--color-ink-secondary)]"
+            >
+              {t.landing.supportLink}
+            </Link>
             <a
               href="/admin/products"
               className="ml-auto text-[var(--color-ink-quaternary)] transition-colors hover:text-[var(--color-ink-secondary)]"
