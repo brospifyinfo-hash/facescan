@@ -8,6 +8,7 @@ import {
   verifyGoogleIdToken,
 } from "@/lib/auth/google";
 import { mergeProfile } from "@/lib/auth/profile";
+import { bindReferralIfAny } from "@/lib/affiliate/track";
 
 export const runtime = "nodejs";
 
@@ -58,5 +59,12 @@ export async function POST(req: Request) {
   }
 
   await setSessionCookie(email);
+  // A referral cookie only becomes a binding once the visitor has a name,
+  // and this line is that moment. It sits at every setSessionCookie call and
+  // NOT in /api/auth/verify-code, because that route hands out a ticket, not
+  // a session — the address is proven there but the account may not exist
+  // yet, and binding a customer who then abandons the flow would burn the
+  // partner's one permanent attribution on nobody.
+  await bindReferralIfAny(email);
   return NextResponse.json({ ok: true, email });
 }

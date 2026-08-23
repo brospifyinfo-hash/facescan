@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
+import { bookCommission, reverseCommission } from "@/lib/affiliate/commission";
 import { entitlements } from "@/lib/stripe/entitlements";
 import { isPlanId, stripe } from "@/lib/stripe/server";
 
@@ -120,6 +121,20 @@ export async function POST(req: Request) {
           }),
         ]);
         console.info(`[stripe] granted ${plan} to ${email} (${intent.id})`);
+
+        // AFTER the grant, and deliberately not inside the Promise.all above.
+        // The customer is waiting on their product, not on a partner's
+        // commission line, so the two round trips that actually deliver it
+        // must not be slowed down by a third that only moves money between
+        // our own books. bookCommission swallows every error itself — it may
+        // never throw here, because a throw would be answered with a 500,
+        // Stripe would redeliver, and the entitlement would be reprocessed.
+        await bookCommission({
+          id: intent.id,
+          amount: intent.amount ?? null,
+          currency: intent.currency ?? null,
+          metadata: intent.metadata ?? {},
+        });
         break;
       }
 
@@ -136,6 +151,19 @@ export async function POST(req: Request) {
         // Refunds are handled manually for now — surfaced so they are not
         // silently ignored while entitlements stay granted.
         console.warn("[stripe] refund received, entitlement NOT revoked automatically:", event.id);
+
+        // The commission, however, is reversed automatically: unlike an
+        // entitlement it is a claim on our bank account, and paying it out
+        // on money we have handed back is a loss no manual review catches
+        // reliably.
+        //
+        // `payment_intent` arrives either as an id or, when the charge was
+        // fetched with an expansion, as the whole object — both shapes are
+        // normal, so both are unwrapped rather than assumed.
+        const charge = event.data.object;
+        const pi = charge.payment_intent;
+        const piId = typeof pi === "string" ? pi : (pi?.id ?? "");
+        if (piId) await reverseCommission(piId, "refund");
         break;
       }
 

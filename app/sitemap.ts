@@ -24,5 +24,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.8,
     },
+    {
+      // The partner programme's explainer. It renders for a stranger — the
+      // signed-out state is the pitch, not a login wall — so it passes the
+      // same test the quiz does.
+      //
+      // Lower priority than the home page on purpose: it recruits partners
+      // rather than customers, so it should never outrank the page the
+      // product is actually sold on. The signed-in dashboard behind the same
+      // path sets its own robots meta; that is a rendering decision the page
+      // makes, and nothing this file can express.
+      url: absolute("/partner"),
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
   ];
 }

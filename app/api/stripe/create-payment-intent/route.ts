@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { currentSession } from "@/lib/auth/session";
+import { referralMetadataFor } from "@/lib/affiliate/commission";
 import { isPlanId, isStripeConfigured, priceFor, stripe } from "@/lib/stripe/server";
 
 export const runtime = "nodejs";
@@ -37,6 +38,17 @@ export async function POST(req: Request) {
   const currency = body.currency === "usd" ? "usd" : "eur";
   const price = priceFor(body.plan, currency);
 
+  // Who gets credited for this sale is decided HERE and frozen into the
+  // intent, because the webhook that books the commission arrives without a
+  // browser: the referral cookie is long gone by the time Stripe calls back,
+  // and after a redirect-based method (Klarna, PayPal) it may be a different
+  // device entirely. The metadata is the only carrier that survives.
+  //
+  // `.catch` on top of a function that already swallows everything is
+  // deliberate belt-and-braces: this line sits in the checkout path, and no
+  // shape of failure in the partner programme may cost a sale.
+  const refMeta = await referralMetadataFor(session.email).catch(() => ({}));
+
   try {
     const intent = await stripe().paymentIntents.create({
       amount: price.amountMinor,
@@ -47,6 +59,10 @@ export async function POST(req: Request) {
       receipt_email: session.email,
       // The webhook reads these back — it must never trust client input.
       metadata: {
+        // Spread first so the four fields below always win. They are what
+        // the entitlement is granted from; nothing derived from a partner
+        // record may shadow them, however the affiliate code changes later.
+        ...refMeta,
         email: session.email,
         plan: body.plan,
         grossMinor: String(price.grossMinor),

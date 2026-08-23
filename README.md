@@ -106,6 +106,39 @@ OPENAI_API_KEY=sk-...
 `/scan?demo=1` (development only) runs the flow with seeded demo metrics so
 `/results` can be tested without a face photo.
 
+## Affiliate
+
+The partner programme adds three environment variables. Everything else it
+needs (`AUTH_SECRET`, `ADMIN_CODE`, `RESEND_API_KEY`, `AUTH_FROM_EMAIL`,
+`SHEETS_URL`, `SHEETS_TOKEN`, `STRIPE_*`) is already in use elsewhere.
+
+```
+AFFILIATE_PII_KEY=<32 random bytes, base64>
+ADMIN_ALERT_EMAIL=<inbox for payout requests and applications>
+NEXT_PUBLIC_SITE_URL=https://…
+```
+
+Generate the key once, then keep it — rotating it makes every stored IBAN
+unreadable:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+
+- `AFFILIATE_PII_KEY` encrypts the partner's IBAN at rest (AES-256-GCM).
+  **Without it no application is stored at all** — the form refuses with a
+  clear message instead of falling back to plaintext, in development too. The
+  store is a spreadsheet in a Google account, and a plaintext IBAN there is a
+  data breach one login away.
+- `ADMIN_ALERT_EMAIL` receives payout requests and, where approval is
+  required, new applications. Falls back to `AUTH_FROM_EMAIL` when unset.
+  Those mails carry the masked IBAN only; the full number lives in the admin
+  area, behind a deliberate click.
+- `NEXT_PUBLIC_SITE_URL` is the base of every partner link and QR code. It
+  falls back to `VERCEL_URL` and then `http://localhost:3000`, so on a
+  preview deployment the links point at the preview — set it explicitly in
+  production or partners will hand out URLs that expire.
+
 ## Deliberate deviations from the brief
 
 - **No filename-hash scores.** Real measurement is already deterministic;

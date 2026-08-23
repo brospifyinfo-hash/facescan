@@ -536,6 +536,207 @@ export interface Dict {
     detailMetrics: string;
     bestScore: string;
   };
+  /**
+   * The partner area at /partner.
+   *
+   * One route serves two audiences: a visitor who has never signed in reads
+   * the explainer, an active partner reads their own dashboard. Every string
+   * here therefore has to stand on its own — the page cannot assume the
+   * reader already knows what a referral link is.
+   *
+   * NO FIGURES IN THE PUBLIC HALF. Percentages, thresholds, hold time and
+   * minimum payout all live in the admin configuration and can be changed at
+   * any moment; the only place they may be stated is where the server has
+   * just supplied them. A dictionary that promises "20 %" would keep
+   * promising it after the owner drops the rate to 10.
+   */
+  partner: {
+    title: string;
+    back: string;
+    loading: string;
+    errorTitle: string;
+    errorBody: string;
+    retry: string;
+    /** Shown when the affiliate store has no persistent backing. */
+    volatileTitle: string;
+    volatileBody: string;
+    /** The programme is switched off in the admin: no form, no promises. */
+    disabledTitle: string;
+    disabledBody: string;
+    /** Application filed, waiting for approval. */
+    pendingTitle: string;
+    pendingBody: string;
+    /** A blocked partner. Factual, with a way to reach a human. */
+    blockedTitle: string;
+    blockedBody: string;
+    /** The explainer everybody sees, signed in or not. */
+    intro: {
+      eyebrow: string;
+      headline: string;
+      headlineAccent: string;
+      sub: string;
+      /** Exactly three, index-aligned with the icons in PartnerIntro. */
+      steps: [
+        { title: string; text: string },
+        { title: string; text: string },
+        { title: string; text: string },
+      ];
+      cta: string;
+      ctaNote: string;
+      levelsTitle: string;
+      levelsBody: string;
+      payoutTitle: string;
+      payoutBody: string;
+    };
+    /** Becoming a partner, and later editing the payout details. */
+    apply: {
+      title: string;
+      sub: string;
+      firstName: string;
+      lastName: string;
+      street: string;
+      postalCode: string;
+      city: string;
+      country: string;
+      countryPlaceholder: string;
+      accountHolder: string;
+      accountHolderHint: string;
+      iban: string;
+      ibanHint: string;
+      /** Only rendered when joinMode is "code". */
+      inviteCode: string;
+      inviteHint: string;
+      terms: string;
+      termsShow: string;
+      termsHide: string;
+      submit: string;
+      submitting: string;
+      /** The same form, reopened by an existing partner. */
+      editTitle: string;
+      editSub: string;
+      editIbanPlaceholder: string;
+      editSubmit: string;
+      saved: string;
+      cancel: string;
+      /**
+       * Keyed by the error code the server returns, and shown at the field
+       * the server named — a form that answers "something was wrong" makes
+       * the customer hunt for the field themselves.
+       */
+      errors: {
+        invalid_input: string;
+        invalid_iban: string;
+        terms_required: string;
+        invite_required: string;
+        invite_invalid: string;
+        already_affiliate: string;
+        pii_unconfigured: string;
+        disabled: string;
+        store_unavailable: string;
+        not_found: string;
+        /** Too many attempts from this account in one hour. */
+        rate_limited: string;
+        network: string;
+      };
+    };
+    /** The dashboard of an active partner. */
+    dash: {
+      levelWord: string;
+      /** Contains {percent}. */
+      levelPercent: string;
+      /**
+       * The most important sentence on the page: it names the reward in
+       * full. Contains {count}, {level}, {next} and {current}.
+       */
+      progress: string;
+      /** Same sentence, one customer left. Contains {level}, {next}, {current}. */
+      progressOne: string;
+      /** Top rung reached. Contains {percent}. */
+      progressMax: string;
+      progressCaption: string;
+      ladderTitle: string;
+      /** Contains {count}. */
+      ladderFrom: string;
+      ladderFromZero: string;
+      ladderReached: string;
+      ladderNext: string;
+      linkTitle: string;
+      linkSub: string;
+      codeLabel: string;
+      copy: string;
+      copied: string;
+      qrTitle: string;
+      qrHint: string;
+      shareTitle: string;
+      shareWhatsapp: string;
+      shareMail: string;
+      shareX: string;
+      shareCopyText: string;
+      /** The message that actually gets shared. Contains {link}. */
+      shareMessage: string;
+      shareSubject: string;
+      statsTitle: string;
+      statClicks: string;
+      statCustomers: string;
+      statEarned: string;
+      statAvailable: string;
+      historyTitle: string;
+      historySub: string;
+      /** Status pill on a commission. `pending` contains {date}. */
+      status: {
+        pending: string;
+        available: string;
+        requested: string;
+        paid: string;
+        reversed: string;
+      };
+      /** Nothing has happened yet: three real steps, no example figures. */
+      emptyTitle: string;
+      emptyBody: string;
+      emptySteps: [string, string, string];
+      payoutTitle: string;
+      payoutAvailable: string;
+      payoutPending: string;
+      payoutPaid: string;
+      /** Contains {amount}. */
+      payoutMin: string;
+      payoutNoMin: string;
+      payoutCta: string;
+      payoutSubmitting: string;
+      /** Contains {amount} — what is still missing. */
+      payoutBelow: string;
+      payoutOpen: string;
+      /** Contains {days}. */
+      payoutNote: string;
+      payoutHistory: string;
+      payoutNone: string;
+      payoutReference: string;
+      payoutReason: string;
+      /** Contains {count}. */
+      payoutCount: string;
+      payoutStatus: {
+        requested: string;
+        approved: string;
+        paid: string;
+        rejected: string;
+      };
+      payoutErrors: {
+        below_minimum: string;
+        open_payout: string;
+        no_commissions: string;
+        invalid_payout_info: string;
+        not_active: string;
+        store_unavailable: string;
+        generic: string;
+      };
+      payoutInfoTitle: string;
+      payoutInfoEdit: string;
+      payoutInfoIban: string;
+      payoutInfoHolder: string;
+      payoutInfoAddress: string;
+      termsTitle: string;
+    };
+  };
   /** The affiliate block on the paid report. */
   products: {
     title: string;

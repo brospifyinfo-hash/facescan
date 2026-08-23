@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { currentSession, setSessionCookie } from "@/lib/auth/session";
 import { clearTicketCookie, currentTicket } from "@/lib/auth/ticket";
 import { clearPassword, hasPassword, passwordValid, setPassword } from "@/lib/auth/password";
+import { bindReferralIfAny } from "@/lib/affiliate/track";
 
 export const runtime = "nodejs";
 
@@ -51,6 +52,13 @@ export async function POST(req: Request) {
   if (!session) {
     await setSessionCookie(email);
     await clearTicketCookie();
+    // This branch, not the whole handler: the referral is bound the moment a
+    // session comes into existence, and only registration mints one here —
+    // an already signed-in customer changing their password was bound (or
+    // deliberately not bound) long ago. It is also why /api/auth/verify-code
+    // carries no such call: it hands out a ticket, and a ticket is not yet
+    // an account.
+    await bindReferralIfAny(email);
   }
 
   return NextResponse.json({ ok: true, email });

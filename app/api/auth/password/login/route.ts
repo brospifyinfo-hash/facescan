@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { setSessionCookie } from "@/lib/auth/session";
 import { isEmail, normalizeEmail } from "@/lib/auth/store";
 import { checkPassword } from "@/lib/auth/password";
+import { bindReferralIfAny } from "@/lib/affiliate/track";
 
 export const runtime = "nodejs";
 
@@ -43,5 +44,10 @@ export async function POST(req: Request) {
   }
 
   await setSessionCookie(email);
+  // Bound here rather than in /api/auth/verify-code: that route only mints a
+  // ticket, and a ticket is not yet an account. The binding rules themselves
+  // (no self-referral, no existing customer, never overwrite) live inside
+  // bindReferralIfAny so all three sign-in paths cannot drift apart.
+  await bindReferralIfAny(email);
   return NextResponse.json({ ok: true, email });
 }
