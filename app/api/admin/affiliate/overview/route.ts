@@ -120,7 +120,23 @@ export async function GET() {
       else byPartner.set(key, [c]);
     }
 
-    const overall = moneyFor(commissions, now);
+    // THE THREE PAYOUT FIGURES ARE SUMMED PER PARTNER, not over the pooled
+    // lines. payableCents floors a partner's balance at zero — nobody can owe
+    // us money — and pooling first would let one partner's refund cancel out
+    // another partner's earnings: a −200 beside a +500 would report 300, and
+    // the operator would set aside less than they actually owe. Revenue,
+    // earnings and paid are plain sums and unaffected.
+    const pooled = moneyFor(commissions, now);
+    const perPartner = [...byPartner.values()].map((lines) => moneyFor(lines, now));
+    const sumOf = (pick: (m: ReturnType<typeof moneyFor>) => number) =>
+      perPartner.reduce((sum, m) => sum + pick(m), 0);
+
+    const overall = {
+      ...pooled,
+      availableCents: sumOf((m) => m.availableCents),
+      pendingCents: sumOf((m) => m.pendingCents),
+      requestedCents: sumOf((m) => m.requestedCents),
+    };
 
     const open = payouts.filter((p) => p.status === "requested" || p.status === "approved");
 

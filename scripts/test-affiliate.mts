@@ -753,6 +753,120 @@ ok("Neu berechnen stellt die Wahrheit aus den Zeilen wieder her", rebuilt.paying
 ok("inklusive Umsatz", rebuilt.revenueCents === 5685, `${rebuilt.revenueCents}`);
 
 // ---------------------------------------------------------------------------
+console.log("\nTeilerstattung: nur der erstattete Anteil geht zurück");
+
+const p6 = await makePartner("partner6@example.com", "PARTNF");
+await bindCustomer("kunde7@example.com", p6);
+await bookCommission(intentFor("pi_p6_a", "kunde7@example.com", p6.code, { refPercent: "20", refLevel: "3" }));
+const p6Full = (await affiliateStore.listCommissions(p6.email))[0];
+ok("die volle Provision beträgt 379 Cent", p6Full?.amountCents === 379, `${p6Full?.amountCents}`);
+
+// 500 von 1895 Cent erstattet — knapp über ein Viertel.
+await reverseCommission("pi_p6_a", "refund", { refundedCents: 500, chargedCents: 1895 });
+const p6Lines = await affiliateStore.listCommissions(p6.email);
+const p6Rev = p6Lines.find((c) => c.id === "rev_pi_p6_a");
+ok("die Originalzeile bleibt unangetastet", p6Lines.find((c) => c.id === "pi_p6_a")?.status === "pending");
+ok("es entsteht eine Ausgleichszeile", Boolean(p6Rev));
+ok(
+  "sie trägt nur den erstatteten Anteil",
+  p6Rev?.amountCents === -100,
+  `${p6Rev?.amountCents} statt -379 (500/1895 von 379 = 100)`,
+);
+ok("und wirkt sofort", (p6Rev?.maturesAt ?? 0) <= Date.now());
+ok(
+  "die Zähler wurden nur um diesen Anteil gemindert",
+  (await affiliateStore.getSummary(p6.email)).earnedCents === 279,
+  `${(await affiliateStore.getSummary(p6.email)).earnedCents}`,
+);
+
+// Zweite Teilerstattung: Stripe meldet kumulativ, also darf sich der Betrag
+// nicht aufaddieren, sondern muss auf den neuen Gesamtstand nachziehen.
+await reverseCommission("pi_p6_a", "refund", { refundedCents: 1000, chargedCents: 1895 });
+const p6Rev2 = (await affiliateStore.listCommissions(p6.email)).find((c) => c.id === "rev_pi_p6_a");
+ok(
+  "eine zweite Teilerstattung zieht nach statt sich zu addieren",
+  p6Rev2?.amountCents === -200,
+  `${p6Rev2?.amountCents} (1000/1895 von 379 = 200, nicht -300)`,
+);
+ok(
+  "die Zähler stimmen weiterhin",
+  (await affiliateStore.getSummary(p6.email)).earnedCents === 179,
+  `${(await affiliateStore.getSummary(p6.email)).earnedCents}`,
+);
+ok(
+  "eine erneute Zustellung desselben Stands ändert nichts",
+  (await (async () => {
+    await reverseCommission("pi_p6_a", "refund", { refundedCents: 1000, chargedCents: 1895 });
+    return (await affiliateStore.getSummary(p6.email)).earnedCents === 179;
+  })()),
+);
+ok(
+  "der Kunde zählt weiter als geworben — er hat ja gekauft",
+  (await affiliateStore.getSummary(p6.email)).payingCustomers === 1,
+);
+
+// Eine Erstattung über den vollen Betrag ist weiterhin ein ganzes Storno.
+await reverseCommission("pi_p6_a", "refund", { refundedCents: 1895, chargedCents: 1895 });
+ok(
+  "die volle Erstattung storniert die Zeile",
+  (await affiliateStore.getCommission(p6.email, "pi_p6_a"))?.status === "reversed",
+);
+
+// ---------------------------------------------------------------------------
+console.log("\nNach einem Storno darf derselbe Kunde wieder zählen");
+
+const p7 = await makePartner("partner7@example.com", "PARTNG");
+await bindCustomer("kunde8@example.com", p7);
+await bookCommission(intentFor("pi_p7_a", "kunde8@example.com", p7.code));
+ok(
+  "nach dem Kauf ist der Erstkauf vermerkt",
+  (await affiliateStore.getBinding("kunde8@example.com"))?.firstPurchaseAt !== null,
+);
+await reverseCommission("pi_p7_a", "refund", { refundedCents: 1895, chargedCents: 1895 });
+ok(
+  "das Storno setzt den Erstkauf zurück",
+  (await affiliateStore.getBinding("kunde8@example.com"))?.firstPurchaseAt === null,
+  "sonst zählt der Kunde nie wieder und bekommt unter „nur Erstkauf“ nie wieder eine Provision",
+);
+await bookCommission(intentFor("pi_p7_b", "kunde8@example.com", p7.code));
+ok(
+  "ein neuer Kauf desselben Kunden zählt wieder",
+  (await affiliateStore.getSummary(p7.email)).payingCustomers === 1,
+  `${(await affiliateStore.getSummary(p7.email)).payingCustomers}`,
+);
+
+// ---------------------------------------------------------------------------
+console.log("\nVerkauf in Fremdwährung");
+
+const p8 = await makePartner("partner8@example.com", "PARTNH");
+await bindCustomer("kunde9@example.com", p8);
+await bookCommission({
+  ...intentFor("pi_p8_usd", "kunde9@example.com", p8.code),
+  currency: "usd",
+});
+ok(
+  "ein USD-Verkauf zum selben Preis wird gebucht",
+  (await affiliateStore.listCommissions(p8.email)).length === 1,
+  "die englische Storefront verkauft 18,95 USD zum selben Zahlenwert wie 18,95 EUR",
+);
+ok(
+  "und zwar mit demselben Betrag",
+  (await affiliateStore.listCommissions(p8.email))[0]?.amountCents === 190,
+);
+
+// Sobald der Preis wirklich umgerechnet würde, greift die Bremse wieder.
+await bookCommission({
+  ...intentFor("pi_p8_fx", "kunde9@example.com", p8.code),
+  currency: "usd",
+  amount: 2295,
+});
+ok(
+  "ein umgerechneter Fremdwährungspreis wird NICHT gebucht",
+  (await affiliateStore.getCommission(p8.email, "pi_p8_fx")) === null,
+  "sonst zahlte man 20 % auf einen Betrag, den man nie in Euro eingenommen hat",
+);
+
+// ---------------------------------------------------------------------------
 console.log("\nGleichzeitige Auszahlungsanträge");
 
 const p5 = await makePartner("partner5@example.com", "PARTNE", { payoutMinOverrideCents: 0 });

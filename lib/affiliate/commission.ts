@@ -27,7 +27,7 @@
 // swallows its failures and logs them with an "[affiliate]" prefix.
 
 import { normalizeEmail } from "@/lib/auth/store";
-import { PLAN_ORDER, type PlanId } from "@/lib/pricing";
+import { AMOUNTS, PLAN_ORDER, type PlanId } from "@/lib/pricing";
 import { affiliateStore } from "@/lib/affiliate/store";
 import { normalizeCode } from "@/lib/affiliate/codes";
 import { sendLevelUp, sendReferralEarned, siteOrigin } from "@/lib/affiliate/email";
@@ -211,17 +211,38 @@ export async function bookCommission(intent: BookableIntent): Promise<void> {
       return;
     }
 
-    // The payout ledger has exactly one currency (cfg.currency), and a payout
-    // is a single SEPA transfer in euro. Booking 1995 US cents as 1995 euro
-    // cents would silently pay the partner the wrong amount, so a sale in
-    // another currency is logged and left unbooked rather than mispriced.
+    // A SALE IN ANOTHER CURRENCY STILL EARNS — as long as the shop prices it
+    // one for one.
+    //
+    // This used to skip every non-euro sale, on the reasoning that booking
+    // 1895 US cents as 1895 euro cents would pay the wrong amount. That
+    // reasoning was wrong for this shop: the English storefront charges USD
+    // (components/checkout/StripeCheckout.tsx), and lib/stripe/server.ts
+    // prices it with `Math.round(AMOUNTS[plan] * 100)` — the very same minor
+    // amount, no conversion. The shop itself already treats $18.95 and €18.95
+    // as one price, so the ledger inherits that and nothing is mispriced. The
+    // old guard quietly paid partners nothing at all for the entire
+    // English-speaking market, and neither the dashboard nor the admin showed
+    // a trace of it.
+    //
+    // The assumption is checked rather than assumed: if a future price table
+    // ever converts properly, the charged amount stops matching the euro
+    // price, and this falls back to refusing the booking instead of
+    // overpaying by the exchange rate.
     const currency = (intent.currency ?? "").toLowerCase();
     if (currency && currency !== cfg.currency) {
-      console.warn(
-        `[affiliate] ${currency} sale cannot be paid out in ${cfg.currency}, not booking`,
+      const euroPrice = Math.round((AMOUNTS[plan] ?? 0) * 100);
+      if (euroPrice !== grossCents) {
+        console.warn(
+          `[affiliate] ${currency} sale of ${grossCents} does not match the ${cfg.currency} price ` +
+            `of ${euroPrice} — the price table converts, so this needs a rate. Not booking ${intent.id}.`,
+        );
+        return;
+      }
+      console.info(
+        `[affiliate] ${currency} sale booked at parity with ${cfg.currency} (${grossCents}):`,
         intent.id,
       );
-      return;
     }
 
     // Stripe was told the VAT share when the intent was created, so the net
@@ -269,12 +290,19 @@ export async function bookCommission(intent: BookableIntent): Promise<void> {
     // often they buy afterwards — the level ladder is measured in people.
     const firstPurchase = !binding || binding.firstPurchaseAt === null;
 
-    await affiliateStore.bumpSummary(aff.email, {
-      revenueCents: grossCents,
-      earnedCents: amountCents,
-      payingCustomers: firstPurchase ? 1 : 0,
-    });
-
+    // THE BINDING IS WRITTEN BEFORE THE COUNTERS, and the order is not
+    // cosmetic. `firstPurchaseAt` is the only record of two rules — "pay for
+    // the first purchase only" and "this person is already counted" — and
+    // nothing can rebuild it afterwards. The counters, by contrast, are a
+    // cache that `recomputeSummary` can restore from the commission lines at
+    // any time.
+    //
+    // With the reverse order, a store that fails between the two leaves a
+    // booked commission whose customer still looks brand new: under scope
+    // "first" the next purchase pays a second time, and the same person is
+    // counted twice towards the level ladder — which raises the percentage on
+    // every future sale. So the irreparable write goes first and the
+    // repairable one second.
     if (binding) {
       if (firstPurchase) {
         await affiliateStore.putBinding({ ...binding, firstPurchaseAt: now });
@@ -292,6 +320,21 @@ export async function bookCommission(intent: BookableIntent): Promise<void> {
         firstPurchaseAt: now,
         customerEmail: customer,
       });
+    }
+
+    await affiliateStore.bumpSummary(aff.email, {
+      revenueCents: grossCents,
+      earnedCents: amountCents,
+      payingCustomers: firstPurchase ? 1 : 0,
+    });
+
+    // The pointer a refund uses to find this line again without scanning
+    // every commission in the store. Last, and its failure is swallowed: it
+    // is a shortcut, and reverseCommission still has the scan to fall back on.
+    try {
+      await affiliateStore.rememberCommissionOwner(intent.id, aff.email);
+    } catch (err) {
+      console.error("[affiliate] could not index the commission owner:", err);
     }
 
     const payingAfter = before.payingCustomers + (firstPurchase ? 1 : 0);
@@ -422,14 +465,52 @@ async function notify(
 export async function reverseCommission(
   paymentIntentId: string,
   reason: string,
+  refund?: { refundedCents: number; chargedCents: number },
 ): Promise<void> {
   try {
     const id = (paymentIntentId ?? "").trim();
     if (!id) return;
 
-    const all = await affiliateStore.listAllCommissions();
-    const target = all.find((c) => c.id === id);
+    // THE OWNER IS LOOKED UP, NOT SEARCHED FOR.
+    //
+    // A refund only knows the PaymentIntent, and the commission lives under
+    // its partner's key. Scanning every line to find it worked — until the
+    // spreadsheet backend, whose scan returns AT MOST 500 rows and says
+    // nothing about the ones it dropped (scripts/sheets-backend.gs, kvScan_).
+    // Past that many commissions, refunds would silently stop finding older
+    // lines and the money would never come back. The booking writes a small
+    // pointer instead; the scan stays as the fallback for lines booked before
+    // this existed.
+    const owner = await affiliateStore.commissionOwner(id).catch(() => null);
+    let all: Commission[] = [];
+    let target: Commission | null = owner
+      ? await affiliateStore.getCommission(owner, id)
+      : null;
+
+    if (!target) {
+      all = await affiliateStore.listAllCommissions();
+      target = all.find((c) => c.id === id) ?? null;
+    }
     if (!target) return;
+
+    // HOW MUCH OF THE SALE CAME BACK.
+    //
+    // `charge.refunded` fires for a partial refund too — a goodwill five euros
+    // on a nineteen euro sale is the same event as a full return. Without the
+    // amounts this used to cancel the whole commission either way, which took
+    // the partner's entire share for a fifth of the money. Stripe reports
+    // `amount_refunded` cumulatively, so the share below is the total that
+    // should be gone, not the increment of this one event — which is what
+    // makes a second partial refund converge instead of double-counting.
+    const share = refundShare(refund);
+    if (share <= 0) {
+      console.info("[affiliate] refund without a usable amount, nothing reversed:", id);
+      return;
+    }
+    if (share < 1) {
+      await reversePartially(target, share, (reason ?? "").trim().slice(0, 200) || "refund");
+      return;
+    }
 
     if (target.status === "reversed") {
       console.info("[affiliate] commission already reversed:", id);
@@ -448,7 +529,15 @@ export async function reverseCommission(
       // The customer stops counting towards the level only if this was their
       // only purchase — somebody who bought three times and returned one is
       // still a customer the partner brought.
-      const others = all.filter(
+      //
+      // Read from THIS PARTNER's lines, not from whatever the lookup above
+      // happened to load: taking the indexed path leaves `all` empty, and an
+      // empty list would read as "no other purchases" and wrongly decrement
+      // the count for every refund.
+      const partnerLines = all.length
+        ? all
+        : await affiliateStore.listCommissions(target.affiliateEmail);
+      const others = partnerLines.filter(
         (c) =>
           c.id !== target.id &&
           !isReversal(c) &&
@@ -462,6 +551,23 @@ export async function reverseCommission(
         earnedCents: -target.amountCents,
         payingCustomers: others.length === 0 ? -1 : 0,
       });
+
+      // The customer stops counting, so their binding has to forget that they
+      // ever bought — otherwise the two halves of the same fact disagree
+      // forever: the counter says nobody, `firstPurchaseAt` says somebody. The
+      // visible damage is that their next purchase would never restore the
+      // count, and under scope "first" would never pay at all, because both
+      // rules read this one field.
+      if (others.length === 0) {
+        try {
+          const binding = await affiliateStore.getBinding(target.customerEmail);
+          if (binding?.firstPurchaseAt) {
+            await affiliateStore.putBinding({ ...binding, firstPurchaseAt: null });
+          }
+        } catch (err) {
+          console.error("[affiliate] could not clear firstPurchaseAt after a reversal:", err);
+        }
+      }
 
       console.info("[affiliate] reversed commission", id, "-", why);
       return;
@@ -504,6 +610,88 @@ export async function reverseCommission(
   } catch (err) {
     console.error("[affiliate] reversing a commission failed:", err);
   }
+}
+
+/**
+ * How much of the sale came back, as a fraction of 1.
+ *
+ * No amounts at all means a full refund: that is how this function was called
+ * before partial refunds were handled, and treating an unknown refund as total
+ * errs towards not paying out money we no longer hold. Anything within a cent
+ * of the whole charge counts as whole — Stripe's fee handling can leave a
+ * rounding cent behind, and a commission line that survives with three cents
+ * on it is noise nobody can act on.
+ */
+function refundShare(refund?: { refundedCents: number; chargedCents: number }): number {
+  if (!refund) return 1;
+  const { refundedCents, chargedCents } = refund;
+  if (!Number.isFinite(refundedCents) || !Number.isFinite(chargedCents)) return 1;
+  if (chargedCents <= 0) return 1;
+  if (refundedCents <= 0) return 0;
+  if (refundedCents >= chargedCents - 1) return 1;
+  return refundedCents / chargedCents;
+}
+
+/**
+ * Take back part of a commission, leaving the original line intact.
+ *
+ * The correction is a second line rather than an edit, for the same reason the
+ * full reversal of an already-paid commission is: the original says what was
+ * earned on a sale that really happened, and the partner may already have been
+ * paid for it. The compensating line carries the negative share and matures
+ * immediately, so it simply reduces the next payout.
+ *
+ * IT IS REWRITTEN, NOT ADDED TO, when a second partial refund arrives.
+ * Stripe's `amount_refunded` is cumulative, so the line always represents the
+ * total that should be gone. Two refunds of five euros on the same charge
+ * therefore end at ten, never at fifteen — and a redelivered webhook lands on
+ * the same value it already wrote.
+ */
+async function reversePartially(
+  target: Commission,
+  share: number,
+  why: string,
+): Promise<void> {
+  const revId = `${REVERSAL_PREFIX}${target.id}`;
+  const owed = -Math.round(target.amountCents * share);
+  const revenueBack = -Math.round(target.grossCents * share);
+
+  const existing = await affiliateStore.getCommission(target.affiliateEmail, revId);
+  if (existing && existing.amountCents === owed) {
+    console.info("[affiliate] partial reversal already recorded:", revId);
+    return;
+  }
+
+  const now = Date.now();
+  const line: Commission = {
+    ...target,
+    id: revId,
+    grossCents: revenueBack,
+    baseCents: -Math.round(target.baseCents * share),
+    amountCents: owed,
+    createdAt: existing?.createdAt ?? now,
+    // No hold: the money is already gone, and delaying the correction would
+    // let a payout go out that the refund has emptied.
+    maturesAt: now,
+    status: "pending",
+    payoutId: null,
+    reversedReason: `${why} (${Math.round(share * 100)} %)`,
+  };
+
+  if (existing) await affiliateStore.putCommission(line);
+  else await affiliateStore.putCommissionIfAbsent(line);
+
+  // Only the difference, so a corrected line does not book its own history a
+  // second time. The customer keeps counting: they did buy, and they kept part
+  // of what they bought.
+  await affiliateStore.bumpSummary(target.affiliateEmail, {
+    revenueCents: revenueBack - (existing?.grossCents ?? 0),
+    earnedCents: owed - (existing?.amountCents ?? 0),
+  });
+
+  console.info(
+    `[affiliate] partial refund on ${target.id}: ${Math.round(share * 100)} % taken back (${owed} cents)`,
+  );
 }
 
 /* -------------------------------------------------------------------------- */

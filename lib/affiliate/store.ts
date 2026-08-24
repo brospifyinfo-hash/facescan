@@ -26,12 +26,18 @@
 // that one prefix swallows another would quietly turn the partner list into a
 // list of everything.
 //
-// READS ARE FORGIVING, WRITES ARE NOT. A read that fails falls through to the
-// memory floor so a dashboard renders empty instead of throwing a page away.
-// A write that fails THROWS, because a silently dropped commission is
-// indistinguishable from a customer who never bought — and the partner would
-// never know there was anything to miss. The one exception is the click
-// counter, which is pure statistics; see bumpClick.
+// NOTHING HERE ANSWERS "EMPTY" WHEN IT MEANS "I DON'T KNOW". Both a failed
+// read and a failed write throw, because in this store every empty answer is
+// also a plausible true answer: no commissions, no partner record, no open
+// payout, no binding. A dashboard that renders zero because the spreadsheet
+// timed out tells a partner they earned nothing, and `recomputeSummary` would
+// then write that zero back as the truth. An error is worse than a fast answer
+// and far better than a confident wrong one.
+//
+// Two reads are exempt because an approximation there is genuinely better than
+// a failure: the configuration (the defaults are a documented, sane programme)
+// and the click counter (a chart). Neither decides what anybody is owed. See
+// `read` versus `readSoft` in SheetsAffiliateStore.
 
 import { kv, kvConfigured } from "@/lib/kv";
 import {
@@ -78,6 +84,9 @@ export interface AffiliateStore {
   putCommission(c: Commission): Promise<void>;
   listCommissions(affEmail: string): Promise<Commission[]>;
   listAllCommissions(): Promise<Commission[]>;
+  /** Which partner a PaymentIntent belongs to — so a refund never has to scan. */
+  rememberCommissionOwner(paymentIntentId: string, affEmail: string): Promise<void>;
+  commissionOwner(paymentIntentId: string): Promise<string | null>;
   getInvite(code: string): Promise<InviteCode | null>;
   putInvite(c: InviteCode): Promise<void>;
   listInvites(): Promise<InviteCode[]>;
@@ -111,6 +120,8 @@ const comPrefix = (email: string) => `affcom:${normalizeEmail(email)}:`;
 const comKey = (email: string, id: string) => `${comPrefix(email)}${id}`;
 const sumKey = (email: string) => `affsum:${normalizeEmail(email)}`;
 const payKey = (id: string) => `affpay:${id}`;
+/** PaymentIntent -> partner. Lets a refund find its line without a scan. */
+const ownerKey = (paymentIntentId: string) => `affcomidx:${paymentIntentId}`;
 const clickPrefix = (code: string) => `affclick:${normalizeCode(code)}:`;
 
 /** Clicks are a chart, not an accounting record; four months is plenty of chart. */
@@ -195,6 +206,7 @@ class MemoryAffiliateStore implements InternalStore {
   private invites = new Map<string, InviteCode>();
   private bindings = new Map<string, Binding>();
   private commissions = new Map<string, Commission>();
+  private owners = new Map<string, string>();
   private summaries = new Map<string, AffiliateSummary>();
   private payouts = new Map<string, Payout>();
   private clicks = new Map<string, number>();
@@ -270,6 +282,12 @@ class MemoryAffiliateStore implements InternalStore {
   }
   async listAllCommissions() {
     return [...this.commissions.values()];
+  }
+  async rememberCommissionOwner(paymentIntentId: string, affEmail: string) {
+    this.owners.set(paymentIntentId, normalizeEmail(affEmail));
+  }
+  async commissionOwner(paymentIntentId: string) {
+    return this.owners.get(paymentIntentId) ?? null;
   }
 
   async getInvite(code: string) {
@@ -474,6 +492,13 @@ class RedisAffiliateStore implements InternalStore {
   async listAllCommissions() {
     return this.manyJson<Commission>(await this.keys("affcom:*"));
   }
+  async rememberCommissionOwner(paymentIntentId: string, affEmail: string) {
+    await kv("SET", ownerKey(paymentIntentId), normalizeEmail(affEmail));
+  }
+  async commissionOwner(paymentIntentId: string) {
+    const raw = await kv("GET", ownerKey(paymentIntentId));
+    return typeof raw === "string" && raw ? raw : null;
+  }
 
   async getInvite(code: string) {
     return this.json<InviteCode>(inviteKey(code));
@@ -545,7 +570,41 @@ class RedisAffiliateStore implements InternalStore {
 class SheetsAffiliateStore implements InternalStore {
   private floor = new MemoryAffiliateStore();
 
-  private async read<T>(remote: () => Promise<T>, local: () => Promise<T>): Promise<T> {
+  /**
+   * A READ THAT FAILS THROWS. It does not answer "nothing".
+   *
+   * This was the opposite once, on the pattern lib/stripe/entitlements.ts uses:
+   * fall back to an in-process floor so a spreadsheet hiccup cannot take the
+   * site down. For affiliate data that trade is wrong, and in four different
+   * ways that all look the same from outside:
+   *
+   *   - a partner's commissions read as an empty list  → "you earned nothing",
+   *     and `recomputeSummary` would WRITE that emptiness back as the truth
+   *   - their record reads as absent                   → the dashboard offers
+   *     them the application form they already filled in
+   *   - the open-payout list reads as empty            → a second payout for
+   *     a balance that is already claimed
+   *   - a binding reads as absent                      → the same customer
+   *     counted twice towards the level ladder
+   *
+   * Every one of those is indistinguishable from the truth by anybody looking
+   * at the screen, and two of them cost real money. An error is worse than a
+   * fast answer and better than a confident wrong one, so the caller is told.
+   */
+  private async read<T>(remote: () => Promise<T>): Promise<T> {
+    if (!sheetsKvHealthy()) {
+      throw new Error("[affiliate] the spreadsheet backend is unavailable — cannot read.");
+    }
+    return await remote();
+  }
+
+  /**
+   * For the two reads where an approximate answer is genuinely better than an
+   * error: the configuration (the defaults are a documented, sane programme)
+   * and the click counter (a decoration on a dashboard). Nothing that decides
+   * what somebody is owed may use this.
+   */
+  private async readSoft<T>(remote: () => Promise<T>, local: () => Promise<T>): Promise<T> {
     if (!sheetsKvHealthy()) return local();
     try {
       return await remote();
@@ -566,10 +625,9 @@ class SheetsAffiliateStore implements InternalStore {
   async getConfig() {
     const cached = cachedConfig();
     if (cached) return cached;
-    return this.read(
+    return this.readSoft(
       async () => rememberConfig(normalizeConfig(await skGetJson<unknown>(CFG_KEY))),
       // Not cached: the floor's answer is a guess about a value the backend
-      // owns, and caching it would keep serving that guess after recovery.
       () => this.floor.getConfig(),
     );
   }
@@ -582,7 +640,6 @@ class SheetsAffiliateStore implements InternalStore {
   async getAffiliate(email: string) {
     return this.read(
       () => skGetJson<Affiliate>(affKey(email)),
-      () => this.floor.getAffiliate(email),
     );
   }
   async putAffiliate(aff: Affiliate) {
@@ -595,7 +652,6 @@ class SheetsAffiliateStore implements InternalStore {
   async listAffiliates() {
     return this.read(
       async () => parseRows<Affiliate>(await skScan("aff:")),
-      () => this.floor.listAffiliates(),
     );
   }
   async codeTaken(code: string) {
@@ -610,14 +666,12 @@ class SheetsAffiliateStore implements InternalStore {
         const email = await skGetJson<string>(codeKey(code));
         return typeof email === "string" ? skGetJson<Affiliate>(affKey(email)) : null;
       },
-      () => this.floor.affiliateByCode(code),
     );
   }
 
   async getBinding(customerEmail: string) {
     return this.read(
       () => skGetJson<Binding>(bindKey(customerEmail)),
-      () => this.floor.getBinding(customerEmail),
     );
   }
   async putBinding(b: Binding) {
@@ -631,14 +685,12 @@ class SheetsAffiliateStore implements InternalStore {
   async listBindings() {
     return this.read(
       async () => parseRows<Binding>(await skScan("affbind:")),
-      () => this.floor.listBindings(),
     );
   }
 
   async getSummary(email: string) {
     return this.read(
       async () => coerceSummary(await skGetJson<unknown>(sumKey(email))),
-      () => this.floor.getSummary(email),
     );
   }
   async putSummary(email: string, s: AffiliateSummary) {
@@ -672,7 +724,6 @@ class SheetsAffiliateStore implements InternalStore {
   async getCommission(affEmail: string, id: string) {
     return this.read(
       () => skGetJson<Commission>(comKey(affEmail, id)),
-      () => this.floor.getCommission(affEmail, id),
     );
   }
   async putCommissionIfAbsent(c: Commission) {
@@ -693,20 +744,24 @@ class SheetsAffiliateStore implements InternalStore {
   async listCommissions(affEmail: string) {
     return this.read(
       async () => parseRows<Commission>(await skScan(comPrefix(affEmail))),
-      () => this.floor.listCommissions(affEmail),
     );
   }
   async listAllCommissions() {
     return this.read(
       async () => parseRows<Commission>(await skScan("affcom:")),
-      () => this.floor.listAllCommissions(),
     );
+  }
+  async rememberCommissionOwner(paymentIntentId: string, affEmail: string) {
+    await this.write(() => skSetJson(ownerKey(paymentIntentId), normalizeEmail(affEmail)));
+    await this.floor.rememberCommissionOwner(paymentIntentId, affEmail);
+  }
+  async commissionOwner(paymentIntentId: string) {
+    return this.read(async () => (await skGetJson<string>(ownerKey(paymentIntentId))) ?? null);
   }
 
   async getInvite(code: string) {
     return this.read(
       () => skGetJson<InviteCode>(inviteKey(code)),
-      () => this.floor.getInvite(code),
     );
   }
   async putInvite(c: InviteCode) {
@@ -716,7 +771,6 @@ class SheetsAffiliateStore implements InternalStore {
   async listInvites() {
     return this.read(
       async () => parseRows<InviteCode>(await skScan("affinv:")),
-      () => this.floor.listInvites(),
     );
   }
   async deleteInvite(code: string) {
@@ -727,7 +781,6 @@ class SheetsAffiliateStore implements InternalStore {
   async getPayout(id: string) {
     return this.read(
       () => skGetJson<Payout>(payKey(id)),
-      () => this.floor.getPayout(id),
     );
   }
   async putPayout(p: Payout) {
@@ -737,7 +790,6 @@ class SheetsAffiliateStore implements InternalStore {
   async listPayouts() {
     return this.read(
       async () => parseRows<Payout>(await skScan("affpay:")),
-      () => this.floor.listPayouts(),
     );
   }
   async listPayoutsFor(email: string) {
@@ -767,7 +819,7 @@ class SheetsAffiliateStore implements InternalStore {
     await this.floor.bumpClick(code);
   }
   async clicksFor(code: string) {
-    return this.read(
+    return this.readSoft(
       async () => {
         const rows = await skScan(clickPrefix(code));
         let sum = 0;

@@ -163,7 +163,18 @@ export async function POST(req: Request) {
         const charge = event.data.object;
         const pi = charge.payment_intent;
         const piId = typeof pi === "string" ? pi : (pi?.id ?? "");
-        if (piId) await reverseCommission(piId, "refund");
+        if (piId) {
+          // WITH THE AMOUNTS, because this event fires for a partial refund
+          // too — five euros of goodwill on a nineteen euro sale arrives here
+          // as the same `charge.refunded`. Without them every refund cancelled
+          // the whole commission, which took the partner's entire share for a
+          // fraction of the money. `amount_refunded` is cumulative, so a second
+          // partial refund corrects the same line rather than stacking onto it.
+          await reverseCommission(piId, "refund", {
+            refundedCents: charge.amount_refunded ?? charge.amount ?? 0,
+            chargedCents: charge.amount ?? 0,
+          });
+        }
         break;
       }
 

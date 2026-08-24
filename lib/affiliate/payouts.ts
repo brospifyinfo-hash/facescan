@@ -233,8 +233,46 @@ export async function requestPayout(email: string): Promise<PayoutResult> {
       return { ok: false, error: "open_payout", status: 409 };
     }
 
-    for (const c of available) {
-      await affiliateStore.putCommission({ ...c, status: "requested", payoutId: payout.id });
+    // CLAIM EVERY LINE OR NONE.
+    //
+    // The request already names an amount and the lines it covers. If the
+    // store dies halfway through claiming them, the ones still unclaimed look
+    // available to the very next request — so the same money would sit in two
+    // payouts, and paying both is a loss no reconciliation catches, because
+    // each request looks internally consistent.
+    //
+    // There is no transaction to lean on here, so the failure is undone by
+    // hand: release what was claimed, withdraw the request, and tell the
+    // partner it did not work. Everything is reversible at this point precisely
+    // because no money has moved yet.
+    const claimed: typeof available = [];
+    try {
+      for (const c of available) {
+        await affiliateStore.putCommission({ ...c, status: "requested", payoutId: payout.id });
+        claimed.push(c);
+      }
+    } catch (err) {
+      console.error(`[affiliate] payout ${payout.id} could not claim all lines, rolling back:`, err);
+      for (const c of claimed) {
+        try {
+          await affiliateStore.putCommission({ ...c, status: "pending", payoutId: null });
+        } catch (releaseErr) {
+          // Logged loudly: this is the one state a human has to look at, and
+          // "Neu berechnen" in the admin will not fix a claimed line.
+          console.error(`[affiliate] could not release ${c.id} from ${payout.id}:`, releaseErr);
+        }
+      }
+      try {
+        await affiliateStore.putPayout({
+          ...payout,
+          status: "rejected",
+          decidedAt: Date.now(),
+          rejectionReason: "Technisch abgebrochen — bitte erneut beantragen.",
+        });
+      } catch (withdrawErr) {
+        console.error(`[affiliate] could not withdraw ${payout.id}:`, withdrawErr);
+      }
+      return { ok: false, error: "store_unavailable", status: 503 };
     }
 
     await notifyRequested(aff, cfg, payout, available.length);

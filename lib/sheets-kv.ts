@@ -178,6 +178,9 @@ export async function skGetJson<T>(key: string): Promise<T | null> {
  * answers with the catalogue default, which must read as "unsupported",
  * never as "empty".
  */
+/** Mirrors the cap inside kvScan_ in scripts/sheets-backend.gs. */
+const SCAN_LIMIT = 500;
+
 export async function skScan(
   prefix: string,
 ): Promise<Array<{ key: string; value: string; expiresAt: number }>> {
@@ -190,7 +193,19 @@ export async function skScan(
     markDegraded(new Error("kv-scan answered without a records field — the script is out of date"));
     throw new Error("Sheets backend: kv-scan unsupported");
   }
-  return res.records ?? [];
+  const records = res.records ?? [];
+  // The Apps Script stops collecting at 500 rows (kvScan_ in
+  // scripts/sheets-backend.gs) and says nothing about what it dropped, so a
+  // truncated answer is indistinguishable from a complete one — a partner list
+  // that quietly ends, or a refund that cannot find its commission. Exactly 500
+  // is the only signal there is; say so loudly rather than let it pass.
+  if (records.length >= SCAN_LIMIT) {
+    console.warn(
+      `[sheets] scan of "${prefix}" hit the ${SCAN_LIMIT}-row limit — the result is probably incomplete. ` +
+        "Raise the cap in kvScan_ (scripts/sheets-backend.gs) and redeploy the script.",
+    );
+  }
+  return records;
 }
 
 /** `ttlMs` of 0 or undefined means no expiry — used for purchases. */
