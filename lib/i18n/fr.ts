@@ -81,6 +81,7 @@ export const fr: Dict = {
     disclaimer:
       "FaceScan fournit des estimations géométriques à titre d'orientation personnelle. Ce n'est pas un dispositif médical et aucun résultat ne constitue une évaluation médicale, dermatologique ou psychologique.",
     imprint: "Mentions légales",
+    supportLink: "Support",
     privacyLink: "Confidentialité",
   },
   home: {
@@ -577,6 +578,37 @@ export const fr: Dict = {
       "Pas encore de mot de passe ? Connecte-toi une fois avec le code et crée-le dans ton compte.",
     or: "ou",
     googleCta: "Continuer avec Google",
+  },
+  support: {
+    title: "Aide et contact",
+    intro:
+      "Quelque chose ne fonctionne pas, un paiement en suspens ou une question sur votre analyse ? Écrivez-nous — nous répondons par e-mail, en général sous 24 heures.",
+    signedInAs: "Connecté en tant que {email}",
+    name: "Nom",
+    namePlaceholder: "Comment vous appeler ?",
+    email: "E-mail",
+    emailPlaceholder: "vous@exemple.com",
+    subject: "Objet",
+    subjectPlaceholder: "De quoi s'agit-il ?",
+    message: "Message",
+    messagePlaceholder:
+      "Décrivez votre demande. Pour un bug, précisez ce que vous avez fait et ce qui s'est passé ensuite.",
+    send: "Envoyer le message",
+    sending: "Envoi …",
+    sentTitle: "Message envoyé",
+    sentBody:
+      "Nous avons bien reçu votre demande et vous répondrons par e-mail. Pensez à vérifier vos spams.",
+    again: "Écrire un autre message",
+    back: "Retour",
+    errors: {
+      incomplete: "Merci de remplir tous les champs.",
+      invalidEmail: "Cette adresse e-mail semble incorrecte.",
+      tooLong: "Votre message est trop long. Merci de le raccourcir.",
+      rateLimited: "Vous venez d'envoyer plusieurs messages. Patientez un instant.",
+      unconfigured:
+        "Le support est indisponible pour le moment. Réessayez plus tard.",
+      failed: "Le message n'a pas pu être envoyé. Réessayez plus tard.",
+    },
   },
   pay: {
     summaryTitle: "Récapitulatif",

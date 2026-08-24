@@ -81,6 +81,7 @@ export const de: Dict = {
     disclaimer:
       "FaceScan liefert geometrische Schätzwerte zur Orientierung bei der Selbstoptimierung. Es ist kein Medizinprodukt, und kein Ergebnis stellt eine medizinische, dermatologische oder psychologische Beurteilung dar.",
     imprint: "Impressum",
+    supportLink: "Support",
     privacyLink: "Datenschutz",
   },
   home: {
@@ -583,6 +584,39 @@ export const de: Dict = {
       wrongPassword: "E-Mail oder Passwort stimmt nicht.",
       pwdLocked: "Zu viele Versuche. Warte 15 Minuten — oder nimm den E-Mail-Code.",
       unavailable: "Anmeldung gerade nicht möglich. Bitte gleich nochmal versuchen.",
+    },
+  },
+  support: {
+    title: "Hilfe & Kontakt",
+    intro:
+      "Etwas funktioniert nicht, eine Zahlung ist offen oder du hast eine Frage zu deiner Analyse? Schreib uns — wir antworten per E-Mail, in der Regel innerhalb von 24 Stunden.",
+    signedInAs: "Angemeldet als {email}",
+    name: "Name",
+    namePlaceholder: "Wie sollen wir dich ansprechen?",
+    email: "E-Mail",
+    emailPlaceholder: "du@beispiel.de",
+    subject: "Betreff",
+    subjectPlaceholder: "Worum geht es?",
+    message: "Nachricht",
+    messagePlaceholder:
+      "Beschreibe dein Anliegen. Bei einem Fehler hilft uns, was du getan hast und was danach passiert ist.",
+    send: "Nachricht senden",
+    sending: "Wird gesendet …",
+    sentTitle: "Nachricht ist raus",
+    sentBody:
+      "Wir haben deine Anfrage erhalten und melden uns per E-Mail. Sieh zur Sicherheit auch im Spam-Ordner nach.",
+    again: "Weitere Nachricht schreiben",
+    back: "Zurück",
+    errors: {
+      incomplete: "Bitte fülle alle Felder aus.",
+      invalidEmail: "Diese E-Mail-Adresse sieht nicht richtig aus.",
+      tooLong: "Deine Nachricht ist zu lang. Bitte kürze sie etwas.",
+      rateLimited:
+        "Du hast gerade mehrere Nachrichten geschickt. Bitte warte einen Moment.",
+      unconfigured:
+        "Der Support ist gerade nicht erreichbar. Bitte versuche es später erneut.",
+      failed:
+        "Die Nachricht konnte nicht gesendet werden. Bitte versuche es später erneut.",
     },
   },
   pay: {

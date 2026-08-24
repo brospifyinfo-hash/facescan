@@ -39,5 +39,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.5,
     },
+    {
+      // Contact. It renders for a stranger and needs nothing in memory, so
+      // it passes the same test the quiz does — and "how do I reach them"
+      // is a question people put to a search engine before they put it to
+      // the company. Lowest priority of the four: it is the page somebody
+      // looks for by name, never the one that should win a product query.
+      url: absolute("/support"),
+      lastModified: now,
+      changeFrequency: "yearly",
+      priority: 0.3,
+    },
   ];
 }
