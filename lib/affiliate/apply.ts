@@ -21,8 +21,15 @@ import { affiliateStore, newAffiliateCode } from "@/lib/affiliate/store";
 import { normalizeCode } from "@/lib/affiliate/codes";
 import { encryptSecret, piiKeyConfigured } from "@/lib/affiliate/crypto";
 import { ibanCountry, ibanLast4, isValidIban, normalizeIban } from "@/lib/affiliate/iban";
-import { sendApplicationReceivedAdmin, siteOrigin } from "@/lib/affiliate/email";
+import {
+  sendApplicationApproved,
+  sendApplicationReceivedAdmin,
+  siteOrigin,
+} from "@/lib/affiliate/email";
 import type { Affiliate, AffiliateAddress } from "@/lib/affiliate/model";
+
+/** Profile and session carry no locale yet; the partner area is German first. */
+const PARTNER_LOCALE = "de" as const;
 
 export interface ApplyInput {
   firstName: string;
@@ -252,17 +259,39 @@ export async function applyForAffiliate(email: string, input: unknown): Promise<
       });
     }
 
-    if (affiliate.status === "pending") {
+    // EVERY new partner is announced, not only the ones waiting for approval.
+    //
+    // This used to fire only for `pending`, which meant that under the default
+    // configuration — approval switched off — a signup produced NO mail at
+    // all: the partner heard nothing, the operator heard nothing, and the only
+    // trace was a new row in the admin list that nobody had a reason to open.
+    // "The e-mails do not work" is what that looks like from outside, and it
+    // was true in the one case that happens most.
+    try {
+      await sendApplicationReceivedAdmin({
+        affiliateEmail: partner,
+        name: `${affiliate.firstName} ${affiliate.lastName}`.trim(),
+        link: `${siteOrigin()}/admin/affiliate/partner`,
+      });
+    } catch (err) {
+      // The partner is registered either way; the operator can still see
+      // the application in the admin list.
+      console.error("[affiliate] application alert mail failed:", err);
+    }
+
+    // Activated on the spot: the partner gets their code and their link now.
+    // Without this the only way to learn one's own referral link would be to
+    // come back to the page — and somebody who just filled in their bank
+    // details expects an answer, not silence.
+    if (affiliate.status === "active") {
       try {
-        await sendApplicationReceivedAdmin({
-          affiliateEmail: partner,
-          name: `${affiliate.firstName} ${affiliate.lastName}`.trim(),
-          link: `${siteOrigin()}/admin/affiliate/partner`,
+        await sendApplicationApproved(partner, {
+          locale: PARTNER_LOCALE,
+          code: affiliate.code,
+          link: `${siteOrigin()}/partner`,
         });
       } catch (err) {
-        // The partner is registered either way; the operator can still see
-        // the application in the admin list.
-        console.error("[affiliate] application alert mail failed:", err);
+        console.error("[affiliate] welcome mail failed:", err);
       }
     }
 
