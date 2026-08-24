@@ -348,6 +348,14 @@ export function LandingPage() {
             >
               {t.landing.supportLink}
             </Link>
+            {/* The programme's only door for somebody who is not signed in.
+                Without it the page exists and nobody can reach it. */}
+            <Link
+              href="/partner"
+              className="transition-colors hover:text-[var(--color-ink-secondary)]"
+            >
+              {t.partner.title}
+            </Link>
             <a
               href="/admin/products"
               className="ml-auto text-[var(--color-ink-quaternary)] transition-colors hover:text-[var(--color-ink-secondary)]"

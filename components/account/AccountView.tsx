@@ -3,7 +3,16 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ChevronDown, KeyRound, LogOut, Receipt, ScanFace } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronDown,
+  ChevronRight,
+  Handshake,
+  KeyRound,
+  LogOut,
+  Receipt,
+  ScanFace,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { fetchUser, type SessionUser } from "@/lib/auth/client";
@@ -359,6 +368,35 @@ export function AccountView() {
             ))}
           </div>
         )}
+      </section>
+
+      {/* ---- Partner programme ----
+          The signed-in entry point, and until now the page had none: /partner
+          was reachable only by typing the URL. A programme nobody can find
+          recruits nobody. Built from the strings the partner page already
+          carries, so it speaks all four languages without a new key. */}
+      <section className="mt-7 border-t border-[var(--color-hairline)] pt-6">
+        <h2 className="flex items-center gap-2 text-[12.5px] font-semibold uppercase tracking-[0.11em] text-[var(--color-ink)]">
+          <Handshake className="h-4 w-4 text-[var(--color-accent)]" aria-hidden />
+          {t.partner.title}
+        </h2>
+        <Link
+          href="/partner"
+          className="mt-3 flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-3.5 transition-colors hover:border-white/20"
+        >
+          <span className="min-w-0 flex-1">
+            <span className="block text-[12.5px] font-medium text-[var(--color-ink)]">
+              {t.partner.intro.headline} {t.partner.intro.headlineAccent}
+            </span>
+            <span className="mt-0.5 block text-[11px] leading-relaxed text-[var(--color-ink-tertiary)]">
+              {t.partner.intro.sub}
+            </span>
+          </span>
+          <ChevronRight
+            className="h-4 w-4 shrink-0 text-[var(--color-ink-quaternary)]"
+            aria-hidden
+          />
+        </Link>
       </section>
 
       <div className="mt-9 text-center">
