@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { Resend } from "resend";
 import { isAdmin } from "@/lib/admin";
 
 export const runtime = "nodejs";
@@ -132,4 +133,79 @@ export async function GET() {
               .map((d) => d.name)
               .join(", ")}. AUTH_FROM_EMAIL auf eine dieser Domains umstellen.`,
   });
+}
+
+/**
+ * Send one real mail and report exactly what Resend answered.
+ *
+ * The GET above proves the account is in order; only a send proves DELIVERY.
+ * Between the two sits everything that actually goes wrong in practice: a
+ * recipient the provider refuses, a suppression list, a bounce, a message that
+ * leaves and lands in spam.
+ *
+ * Admin-only, and the recipient defaults to the operator mailbox — this is a
+ * diagnostic, not a way to mail strangers from someone else's server.
+ */
+export async function POST(req: Request) {
+  if (!(await isAdmin())) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  const key = process.env.RESEND_API_KEY?.trim() ?? "";
+  const from = process.env.AUTH_FROM_EMAIL?.trim() ?? "";
+  if (!key || !from) {
+    return NextResponse.json({ ok: false, problem: "no_key_or_sender" }, { status: 501 });
+  }
+
+  const body = (await req.json().catch(() => null)) as { to?: unknown } | null;
+  const requested = typeof body?.to === "string" ? body.to.trim() : "";
+  const fallback = process.env.ADMIN_ALERT_EMAIL?.trim() || from;
+  const to = (requested || fallback).match(/<([^>]+)>/)?.[1] ?? (requested || fallback);
+
+  if (!/^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(to)) {
+    return NextResponse.json({ ok: false, problem: "bad_recipient", to }, { status: 400 });
+  }
+
+  const stamp = new Date().toISOString();
+  try {
+    const res = await new Resend(key).emails.send({
+      from,
+      to,
+      subject: `Malook Mail-Test ${stamp.slice(11, 19)} UTC`,
+      text: [
+        "Diese Nachricht kommt aus dem Adminbereich von Malook.",
+        "",
+        `Absender : ${from}`,
+        `Empfänger: ${to}`,
+        `Zeit     : ${stamp}`,
+        "",
+        "Wenn sie angekommen ist, funktioniert der Mailversand der Seite —",
+        "inklusive Login-Codes, Support-Nachrichten und den Mails des",
+        "Partnerprogramms. Landet sie im Spam, fehlen der Domain vermutlich",
+        "noch DMARC-Einträge.",
+      ].join("\n"),
+    });
+
+    if (res.error) {
+      // The whole point: the provider's own words, not our summary of them.
+      console.error("[mail-health] Resend refused the test message:", res.error);
+      return NextResponse.json({
+        ok: false,
+        problem: "rejected",
+        to,
+        from,
+        error: { name: res.error.name, message: res.error.message },
+      });
+    }
+    console.info(`[mail-health] test message accepted for ${to}, id ${res.data?.id}`);
+    return NextResponse.json({ ok: true, to, from, id: res.data?.id ?? null, at: stamp });
+  } catch (err) {
+    console.error("[mail-health] test send threw:", err);
+    return NextResponse.json({
+      ok: false,
+      problem: "threw",
+      to,
+      detail: err instanceof Error ? err.message : String(err),
+    });
+  }
 }
