@@ -627,6 +627,9 @@ export const en: Dict = {
     processing: "Processing payment…",
     confirming: "Confirming payment…",
     succeeded: "Payment successful — unlocking your analysis.",
+    payPendingTitle: "Payment on its way",
+    payPendingBody:
+      "Your payment was accepted and your bank is confirming it — with direct debit that takes a working day or two. We unlock automatically the moment it lands and send you an email. There is nothing else to do, and you must not pay again.",
     paidTitle: "Payment confirmed",
     paidUnlocking: "Unlocking …",
     expressOr: "or pay by card",

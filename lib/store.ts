@@ -156,6 +156,17 @@ interface FunnelState {
   metrics?: ScanMetrics;
   expiresAt?: number;
   unlocked: boolean;
+  /**
+   * True from the moment a payment is confirmed until it resolves.
+   *
+   * It exists to stop the privacy countdown from firing mid-transaction. The
+   * timer purges the photos and the scan and sends the visitor back to the
+   * home page — correct behaviour for somebody who wandered off, catastrophic
+   * for somebody whose card is being charged right now. `unlocked` cannot
+   * cover this: it only becomes true once the entitlement is granted, which is
+   * seconds AFTER the money moves and can be minutes for a delayed method.
+   */
+  paying: boolean;
   /** Which plan was bought — gates the monthly programme and AI report. */
   plan?: PlanId;
   email?: string;
@@ -163,6 +174,7 @@ interface FunnelState {
   setAnswer: (key: keyof QuizAnswers, value: string | number) => void;
   setPhoto: (slot: "front" | "side", photo: PhotoData) => void;
   completeScan: (metrics: ScanMetrics) => void;
+  setPaying: (paying: boolean) => void;
   unlock: (email: string, plan?: PlanId) => void;
   purge: () => void;
   clearExpiredNotice: () => void;
@@ -173,6 +185,7 @@ export const useFunnel = create<FunnelState>((set) => ({
   quiz: {},
   photos: {},
   unlocked: false,
+  paying: false,
   expiredNotice: false,
 
   setAnswer: (key, value) =>
@@ -189,14 +202,24 @@ export const useFunnel = create<FunnelState>((set) => ({
   unlock: (email, plan = "pro") =>
     set({ unlocked: true, plan, email, expiresAt: undefined }),
 
-  // The session timer really does what the UI claims.
+  setPaying: (paying) => set({ paying }),
+
+  // The session timer really does what the UI claims — but never while a
+  // payment is in flight. A purge there would delete the scan the customer is
+  // paying FOR, and the timer runs on a clock that knows nothing about the
+  // card being charged. Guarded here as well as in SessionTimer, because this
+  // is the function that does the damage.
   purge: () =>
-    set({
-      photos: {},
-      metrics: undefined,
-      expiresAt: undefined,
-      expiredNotice: true,
-    }),
+    set((s) =>
+      s.paying
+        ? s
+        : {
+            photos: {},
+            metrics: undefined,
+            expiresAt: undefined,
+            expiredNotice: true,
+          },
+    ),
 
   clearExpiredNotice: () => set({ expiredNotice: false }),
 

@@ -53,9 +53,26 @@ export async function POST(req: Request) {
     const intent = await stripe().paymentIntents.create({
       amount: price.amountMinor,
       currency: price.currency,
-      // Lets Stripe surface card, wallets, Klarna, PayPal etc. according to
-      // what is enabled in the dashboard and what the buyer can actually use.
-      automatic_payment_methods: { enabled: true },
+      // Card, wallets, Link, SEPA — everything Stripe can complete WITHOUT
+      // leaving this page.
+      //
+      // `allow_redirects: "never"` is not a restriction for its own sake. The
+      // scan being paid for exists only in browser memory (lib/store.ts: no
+      // persistence, that is the privacy promise on the landing page). A
+      // redirect method — Klarna, PayPal, iDEAL — sends the buyer to another
+      // domain and brings them back as a FULL page load, at which point the
+      // scan, the photos and the open checkout are gone. They would return to
+      // /results having paid, and be bounced straight to /upload to start over.
+      //
+      // It also makes `redirect: "if_required"` in PaymentForm true rather
+      // than hopeful: with no redirect methods offered, "if required" is
+      // never required.
+      //
+      // Offering Klarna and PayPal is worth real money, so this is a decision
+      // to revisit — but only together with two things this codebase does not
+      // have yet: reading the return (`payment_intent` in the URL → confirm →
+      // unlock) and surviving the full page load with the scan intact.
+      automatic_payment_methods: { enabled: true, allow_redirects: "never" },
       receipt_email: session.email,
       // The webhook reads these back — it must never trust client input.
       metadata: {

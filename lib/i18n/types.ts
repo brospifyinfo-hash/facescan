@@ -488,6 +488,9 @@ export interface Dict {
     confirming: string;
     succeeded: string;
     /** The confirmation beat inside the sheet, after the charge. */
+    /** Delayed methods (SEPA, some Klarna): committed, not settled yet. */
+    payPendingTitle: string;
+    payPendingBody: string;
     paidTitle: string;
     paidUnlocking: string;
     expressOr: string;

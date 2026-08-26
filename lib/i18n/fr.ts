@@ -629,6 +629,9 @@ export const fr: Dict = {
     processing: "Traitement du paiement…",
     confirming: "Confirmation du paiement…",
     succeeded: "Paiement réussi — déverrouillage de votre analyse.",
+    payPendingTitle: "Paiement en cours",
+    payPendingBody:
+      "Ton paiement a été accepté et ta banque le confirme — avec un prélèvement, cela prend un à deux jours ouvrés. Nous débloquons automatiquement dès réception et t'envoyons un e-mail. Tu n'as rien d'autre à faire, et surtout ne paie pas une seconde fois.",
     paidTitle: "Paiement confirmé",
     paidUnlocking: "Déverrouillage …",
     expressOr: "ou payer par carte",

@@ -133,3 +133,51 @@ export async function createPaymentIntent(
     return { ok: false, error: "failed" };
   }
 }
+
+/**
+ * A payment that has been charged but not yet acknowledged.
+ *
+ * Written the instant confirmPayment resolves, read when the checkout mounts
+ * again. It exists because the `charged` latch in PaymentForm lives in React
+ * state, and every way out of the sheet — the backdrop, Escape, the X, the
+ * "choose a plan" link — unmounts that state. Reopening then asked for a brand
+ * new PaymentIntent on a card that had already paid, and the customer could
+ * enter it a second time.
+ *
+ * sessionStorage rather than localStorage: this is about the current tab and
+ * the current purchase, and it must not outlive the browser session.
+ */
+export const IN_FLIGHT_KEY = "facescan.payment.inflight";
+
+export interface InFlightPayment {
+  id: string;
+  plan: string;
+  at: number;
+}
+
+/** Ten minutes. Past that, Stripe's own record is the only sensible source. */
+const IN_FLIGHT_TTL_MS = 10 * 60 * 1000;
+
+export function readInFlight(): InFlightPayment | null {
+  try {
+    const raw = sessionStorage.getItem(IN_FLIGHT_KEY);
+    if (!raw) return null;
+    const value = JSON.parse(raw) as InFlightPayment;
+    if (!value?.id || typeof value.at !== "number") return null;
+    if (Date.now() - value.at > IN_FLIGHT_TTL_MS) {
+      clearInFlight();
+      return null;
+    }
+    return value;
+  } catch {
+    return null;
+  }
+}
+
+export function clearInFlight(): void {
+  try {
+    sessionStorage.removeItem(IN_FLIGHT_KEY);
+  } catch {
+    /* nothing to clean up if storage is unavailable */
+  }
+}

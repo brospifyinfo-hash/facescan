@@ -11,10 +11,16 @@ import type { StripeError } from "@stripe/stripe-js";
 import { AlertCircle, Loader2, Lock, ShieldCheck } from "lucide-react";
 import { PaymentIcons } from "./PaymentIcons";
 import { fill, useT } from "@/lib/i18n";
-import { VAT_RATE_PERCENT, type Amounts } from "@/lib/stripe/client";
+import {
+  IN_FLIGHT_KEY,
+  clearInFlight,
+  VAT_RATE_PERCENT,
+  type Amounts,
+} from "@/lib/stripe/client";
 import type { PlanId } from "@/lib/pricing";
 import { cn } from "@/lib/cn";
 import { PaidBurst } from "./PaidBurst";
+import { useFunnel } from "@/lib/store";
 
 /** Map Stripe's machine codes onto sentences a buyer can act on. */
 function messageFor(err: StripeError, t: ReturnType<typeof useT>): string {
@@ -67,7 +73,8 @@ export function PaymentForm({
   const [acceptedWithdrawal, setAcceptedWithdrawal] = useState(false);
   const [showConsentHint, setShowConsentHint] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [phase, setPhase] = useState<"idle" | "paying" | "confirming" | "done">("idle");
+  const setPaying = useFunnel((st) => st.setPaying);
+  const [phase, setPhase] = useState<"idle" | "paying" | "confirming" | "done" | "pending">("idle");
   const [error, setError] = useState<string | null>(null);
 
   /**
@@ -147,6 +154,7 @@ export function PaymentForm({
           if (res.ok && data.plan) {
             setPhase("done");
             setPaidPlan(data.plan as PlanId);
+            clearInFlight();
             return;
           }
         } catch {
@@ -165,6 +173,7 @@ export function PaymentForm({
           if (data.plan) {
             setPhase("done");
             setPaidPlan(data.plan as PlanId);
+            clearInFlight();
             return;
           }
         } catch {
@@ -194,12 +203,17 @@ export function PaymentForm({
     setBusy(true);
     setError(null);
     setPhase("paying");
+    // Freezes the privacy countdown for the duration. Without it the 15-minute
+    // timer can purge the scan and navigate away while the card is being
+    // charged — see lib/store.ts and components/checkout/SessionTimer.tsx.
+    setPaying(true);
 
     const submit = await elements.submit();
     if (submit.error) {
       setError(messageFor(submit.error, t));
       setBusy(false);
       setPhase("idle");
+      setPaying(false);
       return;
     }
 
@@ -213,6 +227,7 @@ export function PaymentForm({
       setError(messageFor(err, t));
       setBusy(false);
       setPhase("idle");
+      setPaying(false);
       return;
     }
     void viaExpress;
@@ -220,7 +235,43 @@ export function PaymentForm({
     // exception inside waitForEntitlement cannot leave a payable button.
     setCharged(true);
     setIntentId(paymentIntent?.id ?? null);
+
+    // AND LATCH IT OUTSIDE REACT, because the React state is exactly what
+    // gets thrown away in the case this guards against: the customer taps the
+    // backdrop, presses Escape or hits "Paket wählen" while the confirmation
+    // is still running, the sheet unmounts, and reopening it creates a brand
+    // new PaymentIntent on a card that has already been charged. Nothing in
+    // the component state survives that; sessionStorage does.
+    //
+    // The entry is read on the way back in (see StripeCheckout) and cleared
+    // once a plan is granted.
+    try {
+      if (paymentIntent?.id) {
+        sessionStorage.setItem(
+          IN_FLIGHT_KEY,
+          JSON.stringify({ id: paymentIntent.id, plan, at: Date.now() }),
+        );
+      }
+    } catch {
+      /* a full or disabled sessionStorage must not break a paid checkout */
+    }
+
+    // A PAYMENT THAT IS STILL ON ITS WAY IS NOT A FAILED PAYMENT.
+    //
+    // SEPA direct debit and some Klarna flows resolve as `processing`: the
+    // customer is committed, the money is not there yet, and the webhook will
+    // not grant anything until it settles — which can take days. Polling for
+    // an entitlement that cannot exist yet ended in "timeout" and told a
+    // paying customer that something had gone wrong. Now it says what is
+    // actually true: it worked, and the unlock follows by itself.
+    if (paymentIntent?.status === "processing") {
+      setPhase("pending");
+      setPaying(false);
+      return;
+    }
+
     await waitForEntitlement(paymentIntent?.id ?? null);
+    setPaying(false);
   };
 
   // Express wallets must not bypass the legal confirmations, so the element
@@ -427,7 +478,7 @@ export function PaymentForm({
       <button
         type="button"
         onClick={() => confirm(false)}
-        disabled={busy || charged || !stripe || phase === "done"}
+        disabled={busy || charged || !stripe || phase === "done" || phase === "pending"}
         className={cn(
           "flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 text-[15px] font-semibold transition-all duration-200",
           "bg-accent text-[var(--color-accent-ink)] shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_8px_24px_-8px_rgba(95,227,138,0.55)]",
@@ -445,6 +496,8 @@ export function PaymentForm({
           </>
         ) : phase === "done" ? (
           t.pay.succeeded
+        ) : phase === "pending" ? (
+          t.pay.payPendingTitle
         ) : (
           <>
             <Lock className="h-4 w-4" /> {t.pay.orderButton}

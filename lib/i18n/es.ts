@@ -629,6 +629,9 @@ export const es: Dict = {
     processing: "Procesando el pago…",
     confirming: "Confirmando el pago…",
     succeeded: "Pago correcto: desbloqueando tu análisis.",
+    payPendingTitle: "El pago está en camino",
+    payPendingBody:
+      "Tu pago fue aceptado y tu banco lo está confirmando; con domiciliación puede tardar uno o dos días laborables. Lo desbloquearemos automáticamente en cuanto llegue y te enviaremos un correo. No tienes que hacer nada más y no debes pagar otra vez.",
     paidTitle: "Pago confirmado",
     paidUnlocking: "Desbloqueando …",
     expressOr: "o paga con tarjeta",

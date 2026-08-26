@@ -14,6 +14,7 @@ import { useFunnel } from "@/lib/store";
 export function SessionTimer() {
   const expiresAt = useFunnel((s) => s.expiresAt);
   const unlocked = useFunnel((s) => s.unlocked);
+  const paying = useFunnel((s) => s.paying);
   const purge = useFunnel((s) => s.purge);
   const router = useRouter();
   const t = useT();
@@ -25,13 +26,22 @@ export function SessionTimer() {
   }, []);
 
   useEffect(() => {
-    if (expiresAt && !unlocked && now >= expiresAt) {
+    // NOT WHILE A PAYMENT IS RUNNING. `unlocked` turns true only once the
+    // entitlement is granted, which is seconds after the card is charged and
+    // can be minutes for a delayed method — so between those two moments this
+    // timer used to delete the very scan the customer was paying for and send
+    // them back to the home page. They would be charged, on the front page,
+    // with nothing to show for it.
+    if (expiresAt && !unlocked && !paying && now >= expiresAt) {
       purge();
       router.replace("/");
     }
-  }, [now, expiresAt, unlocked, purge, router]);
+  }, [now, expiresAt, unlocked, paying, purge, router]);
 
-  if (!expiresAt || unlocked) return null;
+  // The countdown also stops being SHOWN during payment: a clock running out
+  // while somebody is entering their card is pressure the product does not
+  // mean to apply, and it is no longer telling the truth anyway.
+  if (!expiresAt || unlocked || paying) return null;
 
   const remaining = Math.max(0, expiresAt - now);
   const mm = String(Math.floor(remaining / 60000)).padStart(2, "0");

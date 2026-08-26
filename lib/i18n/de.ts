@@ -638,6 +638,9 @@ export const de: Dict = {
     processing: "Zahlung wird verarbeitet…",
     confirming: "Zahlung wird bestätigt…",
     succeeded: "Zahlung erfolgreich — deine Analyse wird freigeschaltet.",
+    payPendingTitle: "Zahlung ist unterwegs",
+    payPendingBody:
+      "Deine Zahlung wurde angenommen und wird von deiner Bank bestätigt — bei Lastschrift dauert das ein bis zwei Werktage. Sobald sie da ist, schalten wir automatisch frei und schreiben dir eine E-Mail. Du musst nichts weiter tun und auf keinen Fall noch einmal bezahlen.",
     paidTitle: "Zahlung bestätigt",
     paidUnlocking: "Wird freigeschaltet …",
     expressOr: "oder mit Karte bezahlen",
