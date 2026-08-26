@@ -4,8 +4,26 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
 export const ACCESS_KEY = "facescan.access";
-const CODE = "09052008";
 const HOLD_MS = 5000;
+
+// THE CODE IS NOT IN THIS FILE ANY MORE.
+//
+// It used to be `const CODE = "09052008"` — compared in the browser, and
+// therefore shipped in the JavaScript bundle to every visitor. Anybody who
+// opened devtools and searched for the string found a key that unlocks every
+// paid section of the report. That was survivable while the site took test
+// payments. It stops being survivable on the day it takes real ones, which is
+// today.
+//
+// The prompt now asks the SERVER, against the same ADMIN_CODE that guards the
+// admin area: constant-time comparison, nothing to find in the bundle, and one
+// credential instead of two. A wrong code looks exactly like it did before.
+//
+// What this does NOT fix: the paid sections are still revealed by client-side
+// state, so somebody who edits that state in devtools sees them anyway. Only
+// the content that costs money to produce (/api/report, /api/style/*) is
+// genuinely gated, server-side, on requireCapability(). Closing the rest means
+// delivering the report from the server — a real piece of work, not a patch.
 
 /** Has the owner's access code been entered in this session? */
 export function hasAccessCode(): boolean {
@@ -21,20 +39,17 @@ export function hasAccessCode(): boolean {
  * paid experience can be reviewed exactly as a customer sees it — no banner,
  * no badge, nothing that marks it as a test.
  *
- * ⚠️ This is a convenience for the site owner, NOT access control. The check
- * runs in the browser, so the code sits in the shipped bundle and anyone who
- * looks will find it. The same is true of the paid unlock itself today —
- * both need a server-verified entitlement before launch.
- *
- * It follows that this value must NOT be reused as the credential for
- * anything that writes: the catalogue editor at /admin/products is gated on
- * a signed session plus ADMIN_EMAILS, checked server-side on every request,
- * precisely because a code shipped to the browser protects nothing.
+ * ⚠️ Still a convenience for the site owner, not access control. The code is
+ * checked server-side now (see the note at the top of this file), so it is no
+ * longer readable in the bundle — but what it flips is client state, and
+ * client state can be edited. The sections that cost money to produce are
+ * gated separately and properly, on requireCapability() in the API routes.
  */
 export function DevUnlock({ children }: { children: React.ReactNode }) {
   const [prompting, setPrompting] = useState(false);
   const [code, setCode] = useState("");
   const [shake, setShake] = useState(false);
+  const [busy, setBusy] = useState(false);
   const timer = useRef<number | null>(null);
 
   const clear = useCallback(() => {
@@ -60,9 +75,25 @@ export function DevUnlock({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [prompting]);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (code === CODE) {
+    if (busy) return;
+    setBusy(true);
+
+    // The admin login endpoint is the check: it compares against ADMIN_CODE
+    // server-side and mints its own cookie on success. Reusing it means this
+    // prompt carries no secret of its own — and that the owner who is already
+    // signed into the admin area uses the code they already know.
+    const ok = await fetch("/api/admin/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code }),
+    })
+      .then((r) => r.ok)
+      .catch(() => false);
+
+    setBusy(false);
+    if (ok) {
       sessionStorage.setItem(ACCESS_KEY, "1");
       setPrompting(false);
       setCode("");
