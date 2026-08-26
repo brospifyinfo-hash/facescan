@@ -595,7 +595,20 @@ class SheetsAffiliateStore implements InternalStore {
     if (!sheetsKvHealthy()) {
       throw new Error("[affiliate] the spreadsheet backend is unavailable — cannot read.");
     }
-    return await remote();
+    try {
+      return await remote();
+    } catch (first) {
+      // ONE RETRY, because the backend is a Google Apps Script: it answers in
+      // two to five seconds when warm and occasionally not at all when it is
+      // cold or somebody else is holding the script lock. Since a failed read
+      // now throws rather than pretending the store is empty, a single hiccup
+      // would otherwise show a partner an error page instead of their
+      // earnings. One retry turns almost all of those into a slow success;
+      // more than one would just make the page hang before failing anyway.
+      console.warn("[affiliate] spreadsheet read failed, retrying once:", first);
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      return await remote();
+    }
   }
 
   /**
