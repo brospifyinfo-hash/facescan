@@ -146,10 +146,10 @@ export function CheckoutModal({
         initial={{ opacity: 0, y: 24, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        className="glass-strong relative my-auto max-h-[calc(100dvh-2rem)] w-full max-w-[440px] scroll-slim overflow-y-auto overscroll-contain rounded-[28px]"
+        className="glass-strong relative my-auto flex max-h-[calc(100dvh-2rem)] w-full max-w-[440px] flex-col overflow-hidden rounded-[28px]"
       >
         {/* ---------- Header ---------- */}
-        <header className="relative px-6 pt-6 sm:px-7">
+        <header className="relative shrink-0 px-6 pt-6 sm:px-7">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <Logo height={24} />
@@ -212,7 +212,8 @@ export function CheckoutModal({
         </header>
 
         {step === "plan" ? (
-          <div className="px-6 pt-5 sm:px-7">
+          <>
+          <div className="scroll-slim min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pt-5 sm:px-7">
             <div className="flex flex-col gap-2.5">
               {PLAN_ORDER.map((id) => {
                 const active = plan === id;
@@ -387,31 +388,41 @@ export function CheckoutModal({
             </div>
 
             {/* ---------- Commit ----------
-                Sticky: the sheet scrolls on a phone, and a button that
-                scrolls away is a button that does not get pressed.
+                A REAL FOOTER, not a sticky child of the scroller.
+
+                The sheet is now header / scrolling body / footer, three flex
+                children of a column that does not scroll itself. The button
+                stays in view because the footer is a sibling of the scroll
+                area, which is how a dialog footer is supposed to work — no
+                `position: sticky` involved.
+
+                IT USED TO BE STICKY, AND THAT IS THE BUG THIS REPLACES. The
+                bar sat `sticky bottom-0` inside a container that is rounded,
+                `overflow-y-auto`, transformed by framer-motion and carrying
+                .glass-strong's `backdrop-filter: blur(48px)` — and for a
+                while it added a backdrop-filter of its own on top. iOS Safari
+                does not reliably repaint a sticky layer promoted into that
+                compositing group: the DOM updates and the screen keeps the
+                last painted frame.
+
+                That is the reported symptom exactly — the 1,95 € card lights
+                up and the button above it still reads 18,95 €. It cannot be a
+                state bug: the card renders from `plan === id` and this button
+                from `formatPrice(locale, plan)`, the same variable, verified
+                identical in the shipped bundle. Two views of one value cannot
+                disagree in a committed render. Only paint can.
+
+                Removing the bar's own blur was not enough, because the
+                ancestor's backdrop-filter is what promotes the sticky child.
+                Taking it out of the scroller removes the arrangement itself,
+                so there is no sticky-inside-backdrop-filter left to go stale.
+
                 OPAQUE, not a gradient — a translucent bar let the feature
                 list read straight through the button underneath it, which
-                looked like a rendering fault rather than a layer.
+                looked like a rendering fault rather than a layer. */}
+            </div>
 
-                AND NO backdrop-filter OF ITS OWN. It had `backdrop-blur-xl`,
-                which made this the THIRD nested backdrop-filter in the stack:
-                the overlay blurs, .glass-strong blurs the sheet, and this bar
-                blurred again — while sitting `sticky` inside that same
-                rounded, overflow-y-auto, framer-motion-transformed container.
-                iOS Safari does not reliably repaint a sticky layer in that
-                arrangement: the DOM updates and the compositor keeps showing
-                the last painted frame. The reported symptom is exactly that
-                shape — the 1,95 € card highlights, and the button above it
-                still reads 18,95 €, because the button was never repainted.
-                Card and button render from the same `plan` state (see the
-                map above and formatPrice below), so they CANNOT disagree in
-                a committed render; a stale paint is the only way that screen
-                can exist.
-
-                Nothing is lost by dropping it: at 0.97 alpha there was
-                almost no backdrop left to blur. Now fully opaque, and the
-                bar composites like any ordinary layer. */}
-            <div className="sticky bottom-0 -mx-6 mt-5 border-t border-white/[0.08] bg-[#090c11] px-6 pb-6 pt-4 sm:-mx-7 sm:px-7">
+            <div className="shrink-0 border-t border-white/[0.08] bg-[#090c11] px-6 pb-6 pt-4 sm:px-7">
               <button
                 type="button"
                 onClick={() => setStep("pay")}
@@ -433,9 +444,9 @@ export function CheckoutModal({
                 ))}
               </ul>
             </div>
-          </div>
+          </>
         ) : (
-          <div className="px-6 pb-6 pt-5 sm:px-7">
+          <div className="scroll-slim min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-6 pt-5 sm:px-7">
             <StripeCheckout
               plan={plan}
               onBack={() => setStep("plan")}
