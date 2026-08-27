@@ -26,7 +26,6 @@ import { visionPrivacy } from "@/lib/i18n/privacy";
 import { useFunnel } from "@/lib/store";
 import { AppHome } from "@/components/home/AppHome";
 import { Logo } from "@/components/ui/Logo";
-import { TrustStrip } from "@/components/landing/TrustStrip";
 import { operatorLine } from "@/lib/legal";
 import { HomeTabBar } from "@/components/home/HomeTabBar";
 
@@ -189,13 +188,6 @@ export function LandingPage() {
             );
           })}
         </section>
-
-        {/* Die drei Aussagen darueber erklaeren das Produkt; dieses Band
-            beantwortet die Fragen, die daneben stehen — womit bezahle ich,
-            wer sind die eigentlich, wird das ein Abo. Zusammen, weil es
-            dieselbe Frage aus zwei Richtungen ist. */}
-        <TrustStrip className="mt-12" />
-
         {/* ---------------- What gets measured ---------------- */}
         <section className="pt-20">
           <SectionHead

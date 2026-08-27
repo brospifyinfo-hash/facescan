@@ -46,8 +46,7 @@ export function TrustStrip({ className = "" }: { className?: string }) {
   ];
 
   return (
-    <section
-      aria-label={t.landing.trustPayment}
+    <div
       className={`rounded-[20px] border border-[var(--color-hairline)] bg-white/[0.02] p-4 sm:p-5 ${className}`}
     >
       <ul className="grid grid-cols-2 gap-x-4 gap-y-3.5 sm:grid-cols-4">
@@ -70,6 +69,6 @@ export function TrustStrip({ className = "" }: { className?: string }) {
         </span>
         <PaymentIcons />
       </div>
-    </section>
+    </div>
   );
 }
