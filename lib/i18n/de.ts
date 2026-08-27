@@ -81,6 +81,8 @@ export const de: Dict = {
     disclaimer:
       "FaceScan liefert geometrische Schätzwerte zur Orientierung bei der Selbstoptimierung. Es ist kein Medizinprodukt, und kein Ergebnis stellt eine medizinische, dermatologische oder psychologische Beurteilung dar.",
     imprint: "Impressum",
+    termsLink: "AGB",
+    withdrawalLink: "Widerruf",
     supportLink: "Support",
     privacyLink: "Datenschutz",
   },

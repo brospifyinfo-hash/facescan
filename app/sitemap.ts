@@ -50,5 +50,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "yearly",
       priority: 0.3,
     },
+    // Die Pflichtseiten. Sie rendern fuer jeden Besucher, brauchen nichts
+    // im Speicher und werden nach Namen gesucht — dieselbe Pruefung, die
+    // /support besteht. Niedrigste Prioritaet: gefunden werden ja, eine
+    // Produktsuche gewinnen nie.
+    ...['/impressum', '/privacy', '/terms', '/withdrawal'].map((path) => ({
+      url: absolute(path),
+      lastModified: now,
+      changeFrequency: 'yearly' as const,
+      priority: 0.2,
+    })),
   ];
 }

@@ -340,8 +340,35 @@ export function LandingPage() {
             {t.landing.disclaimer}
           </p>
           <div className={cn("flex gap-5 text-[11px] text-[var(--color-ink-tertiary)]")}>
-            <span>{t.landing.imprint}</span>
-            <span>{t.landing.privacyLink}</span>
+            {/* Waren <span>, also Text ohne Ziel, und die Seiten dahinter gab
+                es nicht. Fuer einen Shop ist beides Pflicht: Paragraf 5 DDG
+                verlangt das Impressum, Art. 13 DSGVO die Datenschutzerklaerung,
+                und AGB und Widerrufsbelehrung sind die Texte, auf die der
+                Checkout seine beiden Pflichthaken verlinkt. */}
+            <Link
+              href="/impressum"
+              className="transition-colors hover:text-[var(--color-ink-secondary)]"
+            >
+              {t.landing.imprint}
+            </Link>
+            <Link
+              href="/privacy"
+              className="transition-colors hover:text-[var(--color-ink-secondary)]"
+            >
+              {t.landing.privacyLink}
+            </Link>
+            <Link
+              href="/terms"
+              className="transition-colors hover:text-[var(--color-ink-secondary)]"
+            >
+              {t.landing.termsLink}
+            </Link>
+            <Link
+              href="/withdrawal"
+              className="transition-colors hover:text-[var(--color-ink-secondary)]"
+            >
+              {t.landing.withdrawalLink}
+            </Link>
             <Link
               href="/support"
               className="transition-colors hover:text-[var(--color-ink-secondary)]"
