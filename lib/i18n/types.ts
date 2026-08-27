@@ -543,6 +543,7 @@ export interface Dict {
   /** The customer profile at /konto. */
   /** The cookie/consent banner. */
   consent: {
+    privacyLink: string;
     title: string;
     body: string;
     accept: string;

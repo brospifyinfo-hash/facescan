@@ -683,6 +683,7 @@ export const es: Dict = {
     body: "Usamos cookies esenciales para el inicio de sesión y la compra. Con «Aceptar todo» permites además estadísticas anónimas de visitas (páginas vistas, país, tiempo en la página) que nos ayudan a mejorar.",
     accept: "Aceptar todo",
     essential: "Solo esenciales",
+    privacyLink: "Política de privacidad",
   },
   account: {
     title: "Tu cuenta",

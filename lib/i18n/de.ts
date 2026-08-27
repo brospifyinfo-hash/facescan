@@ -692,6 +692,7 @@ export const de: Dict = {
     body: "Wir nutzen essenzielle Cookies für Anmeldung und Kauf. Mit „Alle akzeptieren“ erlaubst du zusätzlich anonyme Besuchsstatistiken (Seitenaufrufe, Land, Verweildauer), die uns helfen, die Seite zu verbessern.",
     accept: "Alle akzeptieren",
     essential: "Nur essenzielle",
+    privacyLink: "Datenschutzerklärung",
   },
   account: {
     title: "Dein Konto",

@@ -77,9 +77,20 @@ export function UploadPage() {
         </p>
 
         <div className="mt-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="flex items-center gap-2 text-xs text-[var(--color-ink-tertiary)]">
+          {/* Der Link gehoert HIERHER und nicht nur in den Footer. Das ist
+              der Moment, in dem ein Gesicht uebergeben wird — die
+              Rechtsgrundlage dafuer ist die Einwilligung, und eine
+              Einwilligung ist nur wirksam, wenn informiert. Drei Klicks
+              entfernt im Seitenfuss ist nicht informiert. */}
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[var(--color-ink-tertiary)]">
             <ShieldCheck className="h-4 w-4 shrink-0 text-accent" />
             {t.upload.privacy}
+            <a
+              href="/privacy"
+              className="text-accent underline underline-offset-2 hover:text-accent-bright"
+            >
+              {t.consent.privacyLink}
+            </a>
           </p>
           <Button size="lg" disabled={!ready} onClick={() => router.push("/scan")}>
             {t.upload.cta} <ArrowRight className="h-4 w-4" />

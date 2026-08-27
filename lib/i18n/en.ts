@@ -681,6 +681,7 @@ export const en: Dict = {
     body: "We use essential cookies for sign-in and checkout. “Accept all” additionally allows anonymous visit statistics (page views, country, time on page) that help us improve the site.",
     accept: "Accept all",
     essential: "Essential only",
+    privacyLink: "Privacy policy",
   },
   account: {
     title: "Your account",

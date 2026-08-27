@@ -46,6 +46,21 @@ export function ConsentBanner() {
             <p className="mt-1 text-[12px] leading-relaxed text-[var(--color-ink-secondary)]">
               {t.consent.body}
             </p>
+            {/* EIN BANNER OHNE DIESEN LINK IST EINE EINWILLIGUNG INS UNGELESENE.
+                Art. 13 DSGVO verlangt, dass die Informationen zum Zeitpunkt
+                der Erhebung bereitstehen — und hier wird erhoben. Der Text
+                oben nennt die Zwecke in zwei Saetzen; wer die Empfaenger,
+                die Fristen und seine Rechte nachlesen will, braucht einen
+                Weg dorthin, und zwar von hier aus. Ein <a> statt <Link>:
+                die Datenschutzerklaerung fuer jeden Besucher
+                vorauszuladen, nur weil der Banner erscheint, waere genau
+                die Art von Datenhunger, die er beschraenkt. */}
+            <a
+              href="/privacy"
+              className="mt-2 inline-block text-[12px] text-accent underline underline-offset-2 hover:text-accent-bright"
+            >
+              {t.consent.privacyLink}
+            </a>
           </div>
         </div>
         <div className="mt-3.5 flex flex-col gap-2 sm:flex-row-reverse">

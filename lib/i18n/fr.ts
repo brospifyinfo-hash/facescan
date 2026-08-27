@@ -683,6 +683,7 @@ export const fr: Dict = {
     body: "Nous utilisons des cookies essentiels pour la connexion et l'achat. « Tout accepter » autorise en plus des statistiques de visite anonymes (pages vues, pays, temps passé) qui nous aident à améliorer le site.",
     accept: "Tout accepter",
     essential: "Essentiels uniquement",
+    privacyLink: "Politique de confidentialité",
   },
   account: {
     title: "Votre compte",
