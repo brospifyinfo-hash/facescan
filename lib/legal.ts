@@ -16,19 +16,22 @@ export const ADDRESS = {
 } as const;
 
 /**
- * ⚠️ MUSS VOR DEM ERSTEN VERKAUF EIN POSTFACH HABEN, DAS MAIL ANNIMMT.
+ * Die Kontaktadresse aus Impressum und Widerrufsbelehrung.
  *
  * §5 DDG verlangt eine Adresse, die eine "schnelle elektronische
- * Kontaktaufnahme" ermöglicht — eine, die Post annimmt und gelesen wird.
- * Für malookai.com ist derzeit KEIN MX-Eintrag gesetzt, an diese Adresse
- * kann also nichts zugestellt werden. Entweder ein Postfach einrichten und
- * den MX-Eintrag in der Vercel-DNS-Verwaltung nachtragen, oder hier eine
- * Adresse eintragen, die heute schon erreichbar ist.
+ * Kontaktaufnahme" ermöglicht — also eine, die Post tatsächlich annimmt und
+ * gelesen wird. Dieselbe Adresse steht in der Widerrufsbelehrung: dorthin
+ * richtet der Kunde seinen Widerruf, und kommt er nicht an, läuft die Frist
+ * nicht an.
  *
- * Dieselbe Adresse steht in der Widerrufsbelehrung: dorthin richtet der
- * Kunde seinen Widerruf. Kommt sie nicht an, läuft die Frist nicht an.
+ * BEWUSST EINE GMAIL-ADRESSE UND KEINE AUF DER EIGENEN DOMAIN. Für
+ * malookai.com ist kein MX-Eintrag gesetzt; an kontakt@malookai.com könnte
+ * derzeit nichts zugestellt werden. Eine repräsentative Adresse, die Post
+ * verwirft, ist an dieser Stelle schlechter als eine schlichte, die
+ * ankommt. Sobald für die Domain ein Postfach existiert, kann hier
+ * umgestellt werden — die vier Rechtsseiten ziehen mit.
  */
-export const CONTACT_EMAIL = "kontakt@malookai.com";
+export const CONTACT_EMAIL = "loomaxx.ai@gmail.com";
 
 /**
  * Umsatzsteuer-Identifikationsnummer, falls vorhanden.
