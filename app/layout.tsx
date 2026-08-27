@@ -5,6 +5,7 @@ import { META_DESCRIPTION, VISION_ACTIVE } from "@/lib/i18n/privacy";
 import { ParallaxField } from "@/components/ui/ParallaxField";
 import { ConsentBanner } from "@/components/ui/ConsentBanner";
 import { Tracker } from "@/components/ui/Tracker";
+import { MenuFab } from "@/components/home/MenuFab";
 import { BRAND, SITE_LOCALE, SITE_URL, absolute } from "@/lib/seo";
 import "./globals.css";
 
@@ -112,6 +113,11 @@ export default function RootLayout({
           {children}
           {/* Consent first, statistics second: the tracker checks the choice
               the banner wrote and stays silent without an "accept all". */}
+          {/* Hier und nicht in der LandingPage: das Menue soll auf jeder
+              Seite erreichbar sein, nicht nur auf der Startseite. Es
+              entscheidet selbst, wo es sich zurueckhaelt — siehe HIDDEN
+              in der Komponente. */}
+          <MenuFab />
           <ConsentBanner />
           <Tracker />
         </I18nProvider>

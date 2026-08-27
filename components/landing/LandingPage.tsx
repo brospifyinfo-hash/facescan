@@ -26,7 +26,6 @@ import { visionPrivacy } from "@/lib/i18n/privacy";
 import { useFunnel } from "@/lib/store";
 import { AppHome } from "@/components/home/AppHome";
 import { Logo } from "@/components/ui/Logo";
-import { MenuFab } from "@/components/home/MenuFab";
 import { BRAND } from "@/lib/seo";
 
 /**
@@ -422,7 +421,6 @@ export function LandingPage() {
           </div>
         </div>
       </footer>
-      <MenuFab />
     </main>
   );
 }
