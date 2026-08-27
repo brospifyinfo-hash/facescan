@@ -391,8 +391,27 @@ export function CheckoutModal({
                 scrolls away is a button that does not get pressed.
                 OPAQUE, not a gradient — a translucent bar let the feature
                 list read straight through the button underneath it, which
-                looked like a rendering fault rather than a layer. */}
-            <div className="sticky bottom-0 -mx-6 mt-5 border-t border-white/[0.08] bg-[rgba(9,12,17,0.97)] px-6 pb-6 pt-4 backdrop-blur-xl sm:-mx-7 sm:px-7">
+                looked like a rendering fault rather than a layer.
+
+                AND NO backdrop-filter OF ITS OWN. It had `backdrop-blur-xl`,
+                which made this the THIRD nested backdrop-filter in the stack:
+                the overlay blurs, .glass-strong blurs the sheet, and this bar
+                blurred again — while sitting `sticky` inside that same
+                rounded, overflow-y-auto, framer-motion-transformed container.
+                iOS Safari does not reliably repaint a sticky layer in that
+                arrangement: the DOM updates and the compositor keeps showing
+                the last painted frame. The reported symptom is exactly that
+                shape — the 1,95 € card highlights, and the button above it
+                still reads 18,95 €, because the button was never repainted.
+                Card and button render from the same `plan` state (see the
+                map above and formatPrice below), so they CANNOT disagree in
+                a committed render; a stale paint is the only way that screen
+                can exist.
+
+                Nothing is lost by dropping it: at 0.97 alpha there was
+                almost no backdrop left to blur. Now fully opaque, and the
+                bar composites like any ordinary layer. */}
+            <div className="sticky bottom-0 -mx-6 mt-5 border-t border-white/[0.08] bg-[#090c11] px-6 pb-6 pt-4 sm:-mx-7 sm:px-7">
               <button
                 type="button"
                 onClick={() => setStep("pay")}
