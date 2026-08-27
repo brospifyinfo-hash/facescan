@@ -30,7 +30,7 @@ import { DownloadPlan } from "@/components/report/DownloadPlan";
 import { StyleStudio } from "@/components/report/StyleStudio";
 import { SectionNav, type NavSection } from "@/components/report/SectionNav";
 import { AccountCard } from "@/components/report/AccountCard";
-import { can, formatPrice } from "@/lib/pricing";
+import { can, formatPrice, type PlanId } from "@/lib/pricing";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { fetchSession } from "@/lib/auth/client";
 import { bandFor } from "@/lib/tiers";
@@ -56,7 +56,20 @@ export function ResultsPage() {
   const router = useRouter();
   const t = useT();
   const { locale } = useI18n();
-  const { metrics, quiz, photos, unlocked, plan, unlock } = useFunnel();
+  // Field-by-field selectors, NOT the whole store.
+  //
+  // `useFunnel()` with no selector subscribes to every key in it, `paying`
+  // included — and `paying` is flipped by PaymentForm the instant the buy
+  // button is pressed. That re-rendered this entire page in the middle of a
+  // card confirmation, which is what reset the open checkout sheet (see the
+  // note in CheckoutModal). This page never reads `paying`; now it is not
+  // woken by it either.
+  const metrics = useFunnel((s) => s.metrics);
+  const quiz = useFunnel((s) => s.quiz);
+  const photos = useFunnel((s) => s.photos);
+  const unlocked = useFunnel((s) => s.unlocked);
+  const plan = useFunnel((s) => s.plan);
+  const unlock = useFunnel((s) => s.unlock);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [signedInAs, setSignedInAs] = useState<string | null>(null);
@@ -69,6 +82,23 @@ export function ResultsPage() {
     if (signedInAs) setCheckoutOpen(true);
     else setAuthOpen(true);
   }, [signedInAs]);
+
+  // Stable identities, because CheckoutModal takes them as props and an
+  // inline arrow is a new prop on every render. The modal no longer resets
+  // itself when they change (that was the bug), but a sheet holding a live
+  // PaymentIntent should not be handed churning props either.
+  const closeCheckout = useCallback(() => setCheckoutOpen(false), []);
+  const handlePaid = useCallback(
+    (granted: PlanId) => {
+      // `granted` comes from /api/stripe/confirm or /api/stripe/entitlement,
+      // i.e. from what Stripe verified and the server wrote — not from the
+      // client.
+      unlock(signedInAs ?? "", granted);
+      setCheckoutOpen(false);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    },
+    [unlock, signedInAs],
+  );
 
   useEffect(() => {
     if (!metrics) router.replace("/upload");
@@ -90,8 +120,20 @@ export function ResultsPage() {
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (cancelled || !data) return;
-        const plan = data.plan ?? (data.admin ? "blueprint" : null);
-        if (plan) unlock(signedInAs, plan);
+        // ONLY A PURCHASE UNLOCKS HERE.
+        //
+        // This read `data.plan ?? (data.admin ? "blueprint" : null)`, so
+        // merely holding the admin cookie — which the owner picks up by
+        // opening /admin and then keeps for twelve hours — silently unlocked
+        // every paid section of the report, with nothing on screen saying
+        // why. It is indistinguishable from the paywall failing open, and it
+        // made the one thing the owner most needs to test, the real buying
+        // flow, impossible to see.
+        //
+        // The owner's review path is untouched and still there: the access
+        // code in components/ui/DevUnlock.tsx, checked against ADMIN_CODE on
+        // the server, and deliberately entered rather than inherited.
+        if (data.plan) unlock(signedInAs, data.plan);
       })
       .catch(() => {});
     return () => {
@@ -483,17 +525,7 @@ export function ResultsPage() {
         }}
       />
 
-      <CheckoutModal
-        open={checkoutOpen}
-        onClose={() => setCheckoutOpen(false)}
-        onSuccess={(granted) => {
-          // `granted` comes from /api/stripe/entitlement, i.e. from what the
-          // verified webhook actually wrote — not from the client.
-          unlock(signedInAs ?? "", granted);
-          setCheckoutOpen(false);
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }}
-      />
+      <CheckoutModal open={checkoutOpen} onClose={closeCheckout} onSuccess={handlePaid} />
     </>
   );
 }

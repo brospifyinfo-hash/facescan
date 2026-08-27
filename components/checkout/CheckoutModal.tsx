@@ -78,14 +78,41 @@ export function CheckoutModal({
   const [plan, setPlan] = useState<PlanId>(initialPlan);
   const [step, setStep] = useState<"plan" | "pay">("plan");
 
+  // OPENING resets the sheet. Nothing else may.
+  //
+  // This used to be one effect together with the Escape listener below, and
+  // therefore carried `onClose` in its dependency array. `onClose` is an
+  // inline arrow at every call site, so it is a NEW function on every render
+  // of the parent — which made this effect re-run on every parent render and
+  // throw away both pieces of state it owns.
+  //
+  // Two bugs came out of that, and they were the two that got reported:
+  //
+  //   THE PICKED PLAN JUMPED BACK. Selecting the 1,95 € tier re-rendered the
+  //   results page, this effect fired, `plan` went back to `initialPlan` —
+  //   and the button under a selected 1,95 € card charged 18,95 €.
+  //
+  //   PRESSING PAY RETURNED TO THE PLAN STEP. confirm() opens with
+  //   setPaying(true) (lib/store.ts) and the results page subscribes to that
+  //   store, so the first thing the buy button did was re-render the parent,
+  //   re-run this effect and setStep("plan") — tearing down Elements and the
+  //   half-submitted payment with it.
+  //
+  // Splitting them fixes both: the reset now depends only on the things that
+  // mean "a new checkout has begun", and the listener may re-bind as often
+  // as it likes without touching state.
   useEffect(() => {
     if (!open) return;
     setPlan(initialPlan);
     setStep("plan");
+  }, [open, initialPlan]);
+
+  useEffect(() => {
+    if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose, initialPlan]);
+  }, [open, onClose]);
 
   // Deliberately NOT wrapped in <AnimatePresence>: a stalled exit animation
   // leaves the backdrop mounted at opacity 0 and swallows every click on the
