@@ -80,6 +80,12 @@ export const en: Dict = {
     disclaimer:
       "FaceScan provides geometric estimates for self-improvement guidance. It is not a medical device, and no result constitutes a medical, dermatological or psychological assessment.",
     imprint: "Imprint",
+    trustPayment: "Payments handled by Stripe",
+    trustOnce: "One-time · no subscription",
+    trustEncrypted: "Encrypted connection",
+    trustGermany: "Operated from Germany",
+    paymentLabel: "Payment methods",
+    rights: "All rights reserved.",
     legalGroup: "Legal",
     serviceGroup: "Service",
     termsLink: "Terms",

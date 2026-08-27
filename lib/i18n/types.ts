@@ -49,6 +49,12 @@ export interface Dict {
     ctaFinal: string;
     disclaimer: string;
     imprint: string;
+    trustPayment: string;
+    trustOnce: string;
+    trustEncrypted: string;
+    trustGermany: string;
+    paymentLabel: string;
+    rights: string;
     legalGroup: string;
     serviceGroup: string;
     termsLink: string;

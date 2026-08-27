@@ -26,6 +26,8 @@ import { visionPrivacy } from "@/lib/i18n/privacy";
 import { useFunnel } from "@/lib/store";
 import { AppHome } from "@/components/home/AppHome";
 import { Logo } from "@/components/ui/Logo";
+import { TrustStrip } from "@/components/landing/TrustStrip";
+import { operatorLine } from "@/lib/legal";
 import { HomeTabBar } from "@/components/home/HomeTabBar";
 
 /**
@@ -187,6 +189,12 @@ export function LandingPage() {
             );
           })}
         </section>
+
+        {/* Die drei Aussagen darueber erklaeren das Produkt; dieses Band
+            beantwortet die Fragen, die daneben stehen — womit bezahle ich,
+            wer sind die eigentlich, wird das ein Abo. Zusammen, weil es
+            dieselbe Frage aus zwei Richtungen ist. */}
+        <TrustStrip className="mt-12" />
 
         {/* ---------------- What gets measured ---------------- */}
         <section className="pt-20">
@@ -394,10 +402,24 @@ export function LandingPage() {
             ))}
           </nav>
 
-          <div className="mt-9 border-t border-white/[0.05] pt-5">
+          {/* Wer hier verkauft, steht am Fuss der Seite und nicht nur im
+              Impressum. Das ist die Zeile, nach der jemand sucht, der wissen
+              will, mit wem er es zu tun hat — und ein Shop ohne sie sieht aus
+              wie einer, der die Frage lieber nicht beantwortet.
+
+              OHNE JAHRESZAHL, absichtlich. new Date() in einer Komponente,
+              die serverseitig UND im Browser rendert, faellt zum
+              Jahreswechsel stundenlang auseinander (Server in UTC, Besucher
+              in seiner Zone) und produziert einen Hydrierungsfehler fuer
+              etwas, das niemand liest. Ein Rechtevermerk braucht die Zahl
+              nicht. */}
+          <div className="mt-9 flex flex-col gap-3 border-t border-white/[0.05] pt-5 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-[11px] text-[var(--color-ink-quaternary)]">
+              © {operatorLine()} · {t.landing.rights}
+            </p>
             <a
               href="/admin/products"
-              className="text-[11px] text-[var(--color-ink-quaternary)] transition-colors hover:text-[var(--color-ink-secondary)]"
+              className="shrink-0 text-[11px] text-[var(--color-ink-quaternary)] transition-colors hover:text-[var(--color-ink-secondary)]"
             >
               {t.navAdmin}
             </a>

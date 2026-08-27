@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronRight, LogIn } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { GoogleMark } from "@/components/auth/GoogleMark";
 import { fetchUser, type SessionUser } from "@/lib/auth/client";
 import { useT } from "@/lib/i18n";
 
@@ -35,13 +36,29 @@ export function AccountChip() {
   if (!user) {
     return (
       <>
+        {/* DAS GOOGLE-G STATT EINES GENERISCHEN TUERSYMBOLS.
+            Vorher stand hier ein Icon aus derselben Strichsammlung wie alles
+            andere — es sagte "hier kann man sich anmelden", was ohnehin schon
+            danebenstand. Die Frage, die ein neuer Besucher an dieser Stelle
+            wirklich hat, ist "muss ich mir ein weiteres Passwort ausdenken?".
+            Eine wiedererkennbare Marke beantwortet sie in einer Fuenftelsekunde;
+            ein Tuersymbol beantwortet sie gar nicht.
+
+            Auf weisser Scheibe, weil Googles Richtlinien das Mal so
+            vorsehen: ein eigener Knopf ist erlaubt, ein eingefaerbtes Logo
+            nicht. */}
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="interactive flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--color-hairline)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.09em] text-[var(--color-ink-secondary)] hover:border-white/25 sm:text-[12.5px]"
+          className="interactive flex shrink-0 items-center gap-2.5 rounded-full border border-[var(--color-hairline)] bg-white/[0.03] py-1.5 pl-4 pr-1.5 text-[11px] font-semibold uppercase tracking-[0.09em] text-[var(--color-ink-secondary)] transition-colors hover:border-white/25 hover:text-[var(--color-ink)] sm:text-[12.5px]"
         >
-          <LogIn className="h-3.5 w-3.5" aria-hidden />
           {t.home.login}
+          <span
+            aria-hidden
+            className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-white shadow-[0_1px_2px_rgba(0,0,0,0.35)] sm:h-[28px] sm:w-[28px]"
+          >
+            <GoogleMark size={15} />
+          </span>
         </button>
 
         <AuthModal

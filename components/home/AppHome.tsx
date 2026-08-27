@@ -25,6 +25,7 @@ import { DEMO_SUMMARY, fmtDelta, fmtScore, summarise, type ScanRecord } from "@/
 import { SLOT_SPECS } from "@/lib/site-images";
 import { DevUnlock } from "@/components/ui/DevUnlock";
 import { AccountChip } from "@/components/home/AccountChip";
+import { TrustStrip } from "@/components/landing/TrustStrip";
 import { Logo } from "@/components/ui/Logo";
 import { bandFor } from "@/lib/tiers";
 import { useI18n, useT } from "@/lib/i18n";
@@ -415,6 +416,12 @@ export function AppHome() {
 
       {/* ---- Products, routine, upgrade -------------------------------- */}
       <div className="order-7 flex flex-col gap-9 sm:gap-11 lg:col-span-6">
+        {/* Hier und nicht weiter oben: die Frage "kann ich denen mein Geld
+            geben" stellt sich, wenn der Blick von der Erklaerung zum Angebot
+            wandert — nicht in der ersten Sekunde, in der sie noch gar nicht
+            im Raum steht. Ein Vertrauensband ueber der Ueberschrift
+            beantwortet eine Frage, die niemand gestellt hat. */}
+        <TrustStrip />
         <ProductShowcase products={ranked} />
         <RoutineStrip />
       </div>
