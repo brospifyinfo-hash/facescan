@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { bookCommission, reverseCommission } from "@/lib/affiliate/commission";
 import { entitlements } from "@/lib/stripe/entitlements";
+import { sendPurchaseReceipt } from "@/lib/stripe/receipt";
 import { isPlanId, stripe } from "@/lib/stripe/server";
 
 // Node runtime: the signature is computed over the RAW body, and the edge
@@ -121,6 +122,21 @@ export async function POST(req: Request) {
           }),
         ]);
         console.info(`[stripe] granted ${plan} to ${email} (${intent.id})`);
+
+        // Der Beleg. Nach der Freischaltung, weil der Kunde auf sein Produkt
+        // wartet und nicht auf seine Quittung — und ausserhalb des
+        // Promise.all oben aus demselben Grund. sendPurchaseReceipt faengt
+        // jeden Fehler selbst ab: eine Ausnahme hier wuerde mit 500
+        // beantwortet, Stripe wuerde erneut zustellen, und die
+        // Freischaltung liefe ein zweites Mal — wegen einer E-Mail.
+        await sendPurchaseReceipt({
+          email,
+          plan,
+          amountMinor: typeof intent.amount === "number" ? intent.amount : null,
+          currency: intent.currency ?? null,
+          paymentIntentId: intent.id,
+          locale: intent.metadata?.locale ?? null,
+        });
 
         // AFTER the grant, and deliberately not inside the Promise.all above.
         // The customer is waiting on their product, not on a partner's

@@ -108,12 +108,13 @@ export type IntentResult =
 export async function createPaymentIntent(
   plan: PlanId,
   currency: "eur" | "usd",
+  locale: string,
 ): Promise<IntentResult> {
   try {
     const res = await fetch("/api/stripe/create-payment-intent", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan, currency }),
+      body: JSON.stringify({ plan, currency, locale }),
     });
     const data = await res.json();
     if (!res.ok) return { ok: false, error: data.error ?? "failed" };

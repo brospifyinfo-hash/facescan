@@ -3,6 +3,7 @@ import { currentSession } from "@/lib/auth/session";
 import { entitlements } from "@/lib/stripe/entitlements";
 import { isStripeConfigured, stripe } from "@/lib/stripe/server";
 import { mayClaim } from "@/lib/stripe/claim";
+import { sendPurchaseReceipt } from "@/lib/stripe/receipt";
 
 export const runtime = "nodejs";
 
@@ -91,6 +92,18 @@ export async function POST(req: Request) {
         at: Date.now(),
       }),
     ]);
+
+    // Beide Freischaltungswege muenden hier in denselben Beleg. Welcher
+    // zuerst da ist, entscheidet der Marker in sendPurchaseReceipt — der
+    // Kunde bekommt ihn genau einmal.
+    await sendPurchaseReceipt({
+      email: session.email,
+      plan,
+      amountMinor: typeof intent.amount === "number" ? intent.amount : null,
+      currency: intent.currency ?? null,
+      paymentIntentId: intent.id,
+      locale: intent.metadata?.locale ?? null,
+    });
 
     console.info(`[stripe] confirm granted ${plan} to ${session.email} (${intent.id})`);
     return NextResponse.json({ plan });

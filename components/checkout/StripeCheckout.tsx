@@ -107,7 +107,7 @@ export function StripeCheckout({
       };
     }
 
-    createPaymentIntent(plan, currency)
+    createPaymentIntent(plan, currency, locale)
       .then((res) => {
         if (cancelled) return;
         if (!res.ok) {
@@ -135,7 +135,7 @@ export function StripeCheckout({
     return () => {
       cancelled = true;
     };
-  }, [plan, currency, t]);
+  }, [plan, currency, locale, t]);
 
   if (error) {
     return (

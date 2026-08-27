@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
   }
 
-  let body: { plan?: unknown; currency?: unknown };
+  let body: { plan?: unknown; currency?: unknown; locale?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -84,6 +84,10 @@ export async function POST(req: Request) {
         plan: body.plan,
         grossMinor: String(price.grossMinor),
         vatMinor: String(price.vatMinor),
+        // Damit die Kaufbestaetigung die Sprache des Kunden spricht. Der
+        // Webhook kommt ohne Browser an — was hier nicht in die Metadaten
+        // wandert, ist spaeter nicht mehr zu erfahren.
+        locale: typeof body.locale === "string" ? body.locale.slice(0, 5) : "de",
       },
     });
 
