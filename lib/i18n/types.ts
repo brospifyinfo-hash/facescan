@@ -143,6 +143,7 @@ export interface Dict {
     };
     upgrade: { title: string; sub: string; cta: string };
     tabsLabel: string;
+    menuLabel: string;
     tabs: Record<"home" | "scan" | "analysis" | "profile", string>;
   };
   quiz: {

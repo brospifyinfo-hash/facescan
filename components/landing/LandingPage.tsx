@@ -26,8 +26,8 @@ import { visionPrivacy } from "@/lib/i18n/privacy";
 import { useFunnel } from "@/lib/store";
 import { AppHome } from "@/components/home/AppHome";
 import { Logo } from "@/components/ui/Logo";
-import { operatorLine } from "@/lib/legal";
-import { HomeTabBar } from "@/components/home/HomeTabBar";
+import { MenuFab } from "@/components/home/MenuFab";
+import { BRAND } from "@/lib/seo";
 
 /**
  * Positions of the two photo-related items in the dictionaries.
@@ -137,6 +137,10 @@ export function LandingPage() {
     midface: t.results.midface,
   } as const;
 
+  // Der Platz unten hielt die feste Leiste frei. Die ist weg, der Menueknopf
+  // schwebt jetzt in der Ecke — freigehalten wird aber weiter, sonst deckt er
+  // beim Herunterscrollen die letzte Zeile des Footers zu. Ein Knopf, der die
+  // Zeile verdeckt, nach der jemand gerade sucht, ist schlimmer als etwas Luft.
   return (
     <main className="flex min-h-dvh flex-col pb-[88px]">
       {/* ---------------- App home ----------------
@@ -407,7 +411,7 @@ export function LandingPage() {
               nicht. */}
           <div className="mt-9 flex flex-col gap-3 border-t border-white/[0.05] pt-5 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-[11px] text-[var(--color-ink-quaternary)]">
-              © {operatorLine()} · {t.landing.rights}
+              © {BRAND} · {t.landing.rights}
             </p>
             <a
               href="/admin/products"
@@ -418,7 +422,7 @@ export function LandingPage() {
           </div>
         </div>
       </footer>
-      <HomeTabBar />
+      <MenuFab />
     </main>
   );
 }

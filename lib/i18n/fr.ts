@@ -168,6 +168,7 @@ export const fr: Dict = {
     upgrade: { title: "Deviens la meilleure version de toi.", sub: "Le rapport complet montre chaque mesure, ton plan et tes produits.", cta: "Commencer" },
     tabsLabel: "Navigation principale",
     tabs: { home: "Accueil", scan: "Scan", analysis: "Analyse", profile: "Profil" },
+    menuLabel: "Menu",
   },
   quiz: {
     progress: "Question {n} sur {total}",

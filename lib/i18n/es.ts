@@ -168,6 +168,7 @@ export const es: Dict = {
     upgrade: { title: "Conviértete en tu mejor versión.", sub: "El informe completo muestra cada medida, tu plan y tus productos.", cta: "Empezar ahora" },
     tabsLabel: "Navegación principal",
     tabs: { home: "Inicio", scan: "Escaneo", analysis: "Análisis", profile: "Perfil" },
+    menuLabel: "Menú",
   },
   quiz: {
     progress: "Pregunta {n} de {total}",
