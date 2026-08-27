@@ -81,6 +81,8 @@ export const es: Dict = {
     disclaimer:
       "FaceScan ofrece estimaciones geométricas como orientación para la mejora personal. No es un producto sanitario y ningún resultado constituye una valoración médica, dermatológica ni psicológica.",
     imprint: "Aviso legal",
+    legalGroup: "Legal",
+    serviceGroup: "Servicio",
     termsLink: "Condiciones",
     withdrawalLink: "Desistimiento",
     supportLink: "Soporte",

@@ -40,7 +40,6 @@ const PHOTO_TRUST_INDEX = 0;
 const PHOTO_STEP_INDEX = 1;
 const PHOTO_SCAN_STEP_INDEX = 2;
 const PHOTO_FAQ_INDEX = 2;
-import { cn } from "@/lib/cn";
 
 const TRUST_ICONS = [ShieldCheck, Cpu, Lock];
 
@@ -333,59 +332,72 @@ export function LandingPage() {
       </div>
 
       {/* ---------------- Footer ---------------- */}
-      <footer className="border-t border-white/[0.07] py-9">
-        <div className="mx-auto flex w-full max-w-4xl flex-col gap-5 px-5 sm:px-8">
+      {/*
+          ZWEI SPALTEN, WEIL ES SIEBEN LINKS GEWORDEN SIND.
+
+          Vorher lagen sie alle in EINER flex-Reihe. Mit drei Eintraegen ging
+          das; seit die vier Pflichtseiten dazugekommen sind, brach die Reihe
+          auf dem Telefon um und ergab einen Absatz aus Linktexten, in dem
+          nichts mehr zusammengehoerte. Sieben gleichrangige Woerter sind
+          keine Navigation, sondern eine Aufzaehlung.
+
+          Gruppiert statt nur umbrochen: was man aus rechtlichen Gruenden
+          sucht, steht links, was man aus eigenem Antrieb sucht, rechts. Die
+          Ueberschriften machen die Spalten lesbar, statt sie nur zu setzen.
+      */}
+      <footer className="border-t border-white/[0.07] py-10">
+        <div className="mx-auto w-full max-w-4xl px-5 sm:px-8">
           <Logo height={22} className="opacity-70" />
-          <p className="max-w-2xl text-[11px] leading-relaxed text-[var(--color-ink-tertiary)]">
+          <p className="mt-5 max-w-2xl text-[11px] leading-relaxed text-[var(--color-ink-tertiary)]">
             {t.landing.disclaimer}
           </p>
-          <div className={cn("flex gap-5 text-[11px] text-[var(--color-ink-tertiary)]")}>
-            {/* Waren <span>, also Text ohne Ziel, und die Seiten dahinter gab
-                es nicht. Fuer einen Shop ist beides Pflicht: Paragraf 5 DDG
-                verlangt das Impressum, Art. 13 DSGVO die Datenschutzerklaerung,
-                und AGB und Widerrufsbelehrung sind die Texte, auf die der
-                Checkout seine beiden Pflichthaken verlinkt. */}
-            <Link
-              href="/impressum"
-              className="transition-colors hover:text-[var(--color-ink-secondary)]"
-            >
-              {t.landing.imprint}
-            </Link>
-            <Link
-              href="/privacy"
-              className="transition-colors hover:text-[var(--color-ink-secondary)]"
-            >
-              {t.landing.privacyLink}
-            </Link>
-            <Link
-              href="/terms"
-              className="transition-colors hover:text-[var(--color-ink-secondary)]"
-            >
-              {t.landing.termsLink}
-            </Link>
-            <Link
-              href="/withdrawal"
-              className="transition-colors hover:text-[var(--color-ink-secondary)]"
-            >
-              {t.landing.withdrawalLink}
-            </Link>
-            <Link
-              href="/support"
-              className="transition-colors hover:text-[var(--color-ink-secondary)]"
-            >
-              {t.landing.supportLink}
-            </Link>
-            {/* The programme's only door for somebody who is not signed in.
-                Without it the page exists and nobody can reach it. */}
-            <Link
-              href="/partner"
-              className="transition-colors hover:text-[var(--color-ink-secondary)]"
-            >
-              {t.partner.title}
-            </Link>
+
+          <nav className="mt-8 grid grid-cols-2 gap-x-8 gap-y-7 sm:max-w-lg">
+            {[
+              {
+                heading: t.landing.legalGroup,
+                links: [
+                  { href: "/impressum", label: t.landing.imprint },
+                  { href: "/privacy", label: t.landing.privacyLink },
+                  { href: "/terms", label: t.landing.termsLink },
+                  { href: "/withdrawal", label: t.landing.withdrawalLink },
+                ],
+              },
+              {
+                heading: t.landing.serviceGroup,
+                links: [
+                  { href: "/support", label: t.landing.supportLink },
+                  // Die einzige Tuer zum Partnerprogramm fuer jemanden, der
+                  // nicht angemeldet ist. Ohne sie gibt es die Seite und
+                  // niemand kommt hin.
+                  { href: "/partner", label: t.partner.title },
+                ],
+              },
+            ].map((column) => (
+              <div key={column.heading} className="flex flex-col gap-3">
+                <h2 className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-ink-quaternary)]">
+                  {column.heading}
+                </h2>
+                <ul className="flex flex-col gap-2.5">
+                  {column.links.map((item) => (
+                    <li key={item.href}>
+                      <Link
+                        href={item.href}
+                        className="text-[12px] text-[var(--color-ink-tertiary)] transition-colors hover:text-[var(--color-ink)]"
+                      >
+                        {item.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </nav>
+
+          <div className="mt-9 border-t border-white/[0.05] pt-5">
             <a
               href="/admin/products"
-              className="ml-auto text-[var(--color-ink-quaternary)] transition-colors hover:text-[var(--color-ink-secondary)]"
+              className="text-[11px] text-[var(--color-ink-quaternary)] transition-colors hover:text-[var(--color-ink-secondary)]"
             >
               {t.navAdmin}
             </a>

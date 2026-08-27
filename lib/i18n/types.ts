@@ -49,6 +49,8 @@ export interface Dict {
     ctaFinal: string;
     disclaimer: string;
     imprint: string;
+    legalGroup: string;
+    serviceGroup: string;
     termsLink: string;
     withdrawalLink: string;
     /** Footer link to the support form. */

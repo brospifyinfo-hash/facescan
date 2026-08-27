@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { absolute } from "@/lib/seo";
 import { Block, LegalPage, Section } from "@/components/legal/LegalPage";
+import { WithdrawalForm } from "@/components/legal/WithdrawalForm";
 import { CONTACT_EMAIL, addressLines, operatorLine } from "@/lib/legal";
 
 export const metadata: Metadata = {
@@ -64,6 +65,18 @@ export default function WithdrawalPage() {
           über die Ausübung des Widerrufsrechts vor Ablauf der Widerrufsfrist
           absendest.
         </p>
+      </Section>
+
+      <Section title="Widerruf jetzt erklären">
+        <p>
+          Am schnellsten geht es hier. Pflicht sind nur dein Name und die
+          E-Mail-Adresse der Bestellung — alles Weitere hilft uns beim
+          Zuordnen, ist aber freiwillig. Du bekommst die Eingangsbestätigung
+          sofort per E-Mail.
+        </p>
+        <div className="mt-2">
+          <WithdrawalForm />
+        </div>
       </Section>
 
       <Section title="Folgen des Widerrufs">
