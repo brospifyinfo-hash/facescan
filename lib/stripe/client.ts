@@ -74,6 +74,22 @@ export const appearance: Appearance = {
       boxShadow: `0 0 0 3px ${alpha(BRAND.accent, 0.12)}`,
     },
     ".Input--invalid": { border: "1px solid rgba(248,113,113,0.6)" },
+    // AUTOFILL — die gelbe Zeile mit der unsichtbaren Kartennummer.
+    //
+    // Fuellt Safari oder Chrome die Kartennummer automatisch aus, malen sie
+    // den Feldhintergrund in ihrem eigenen Gelb und lassen die Schriftfarbe
+    // stehen. Die steht hier auf #fafafa. Weiss auf Gelb ist nicht schlecht
+    // lesbar, sondern gar nicht: der Kunde sieht eine leere gelbe Zeile und
+    // haelt sie fuer einen Fehler.
+    //
+    // Diese Felder liegen in Stripes eigenem iframe, den app/globals.css
+    // nicht erreicht — die Appearance ist der einzige Weg hinein. Das
+    // Gegenstueck fuer unsere eigenen Felder steht dort unter
+    // `input:-webkit-autofill`.
+    ".Input--webkit-autofill": {
+      backgroundColor: "#0d0d0f",
+      color: "#fafafa",
+    },
     ".Label": {
       color: "#a1a1aa",
       fontSize: "11px",
