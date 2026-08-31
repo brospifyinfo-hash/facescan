@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { currentSession } from "@/lib/auth/session";
 import { referralMetadataFor } from "@/lib/affiliate/commission";
 import { isPlanId, isStripeConfigured, priceFor, stripe } from "@/lib/stripe/server";
+import { isEmail, normalizeEmail } from "@/lib/auth/store";
+import { hasPassword } from "@/lib/auth/password";
+import { entitlements } from "@/lib/stripe/entitlements";
 
 export const runtime = "nodejs";
 
@@ -20,12 +23,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "unconfigured" }, { status: 501 });
   }
 
-  const session = await currentSession();
-  if (!session) {
-    return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
+  // ANMELDEN IST KEINE VORAUSSETZUNG MEHR — EINE ADRESSE SCHON.
+  //
+  // Vorher endete hier jeder, der kein Konto hatte, mit 401. Das war eine
+  // Huerde vor der Kasse, und sie stand ausgerechnet dort, wo die
+  // Anmeldecodes gerade nicht zuverlaessig ankommen. Wer angemeldet ist,
+  // kauft weiter auf seine bestaetigte Adresse; wer nicht, gibt eine an.
+  //
+  // Eine kaputte Sitzung darf den Kauf nicht blockieren: currentSession()
+  // wirft, wenn AUTH_SECRET fehlt — dieselbe Ueberlegung wie in /api/support.
+  let session: Awaited<ReturnType<typeof currentSession>> = null;
+  try {
+    session = await currentSession();
+  } catch {
+    session = null;
   }
 
-  let body: { plan?: unknown; currency?: unknown; locale?: unknown };
+  let body: { plan?: unknown; currency?: unknown; locale?: unknown; email?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -34,6 +48,35 @@ export async function POST(req: Request) {
 
   if (!isPlanId(body.plan)) {
     return NextResponse.json({ error: "invalid_plan" }, { status: 400 });
+  }
+
+  // WESSEN ADRESSE HIER LANDET, ENTSCHEIDET, WER SPAETER FREIGESCHALTET IST.
+  //
+  // Deshalb die Sperre unten. Eine Freischaltung haengt allein an der
+  // Adresse; wer eine FREMDE eintippen und darauf kaufen koennte, bekaeme
+  // hinterher eine Sitzung fuer sie — und damit Zugriff auf alles, was diese
+  // Adresse frueher gekauft hat. Fuer 95 Cent waere das eine
+  // Kontouebernahme.
+  //
+  // Gastkauf gilt daher nur fuer Adressen, die noch niemandem gehoeren: kein
+  // Passwort gesetzt, keine Freischaltung vorhanden. Wem eine davon gehoert,
+  // der meldet sich an — und kauft dann als er selbst.
+  let email: string;
+  if (session) {
+    email = session.email;
+  } else {
+    const typed = typeof body.email === "string" ? normalizeEmail(body.email) : "";
+    if (!isEmail(typed)) {
+      return NextResponse.json({ error: "invalid_email" }, { status: 400 });
+    }
+    const [owned, bought] = await Promise.all([
+      hasPassword(typed).catch(() => false),
+      entitlements.get(typed).catch(() => null),
+    ]);
+    if (owned || bought) {
+      return NextResponse.json({ error: "account_exists" }, { status: 409 });
+    }
+    email = typed;
   }
   const currency = body.currency === "usd" ? "usd" : "eur";
   const price = priceFor(body.plan, currency);
@@ -47,7 +90,7 @@ export async function POST(req: Request) {
   // `.catch` on top of a function that already swallows everything is
   // deliberate belt-and-braces: this line sits in the checkout path, and no
   // shape of failure in the partner programme may cost a sale.
-  const refMeta = await referralMetadataFor(session.email).catch(() => ({}));
+  const refMeta = await referralMetadataFor(email).catch(() => ({}));
 
   try {
     const intent = await stripe().paymentIntents.create({
@@ -73,14 +116,14 @@ export async function POST(req: Request) {
       // have yet: reading the return (`payment_intent` in the URL → confirm →
       // unlock) and surviving the full page load with the scan intact.
       automatic_payment_methods: { enabled: true, allow_redirects: "never" },
-      receipt_email: session.email,
+      receipt_email: email,
       // The webhook reads these back — it must never trust client input.
       metadata: {
         // Spread first so the four fields below always win. They are what
         // the entitlement is granted from; nothing derived from a partner
         // record may shadow them, however the affiliate code changes later.
         ...refMeta,
-        email: session.email,
+        email: email,
         plan: body.plan,
         grossMinor: String(price.grossMinor),
         vatMinor: String(price.vatMinor),

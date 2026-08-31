@@ -67,16 +67,29 @@ export function CheckoutModal({
   onClose,
   onSuccess,
   initialPlan = "blueprint",
+  signedInAs = null,
 }: {
   open: boolean;
   onClose: () => void;
   onSuccess: (plan: PlanId) => void;
   initialPlan?: PlanId;
+  /** Angemeldete Adresse, wenn es eine gibt. Sonst fragt das Sheet danach. */
+  signedInAs?: string | null;
 }) {
   const t = useT();
   const { locale } = useI18n();
   const [plan, setPlan] = useState<PlanId>(initialPlan);
   const [step, setStep] = useState<"plan" | "pay">("plan");
+  // ANMELDEN IST KEINE VORAUSSETZUNG MEHR, EINE ADRESSE SCHON.
+  //
+  // Vorher fuehrte der Weg zur Kasse durch das Anmeldefenster. Das war eine
+  // Huerde vor dem Kauf, und sie stand ausgerechnet dort, wo die
+  // Anmeldecodes gerade nicht zuverlaessig ankommen. Gebraucht wird die
+  // Adresse trotzdem — an ihr haengen Beleg, Freischaltung und der Weg
+  // zurueck zum Gekauften.
+  const [email, setEmail] = useState("");
+  const emailOk = /^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(email.trim());
+  const needsEmail = !signedInAs;
 
   // OPENING resets the sheet. Nothing else may.
   //
@@ -105,6 +118,7 @@ export function CheckoutModal({
     if (!open) return;
     setPlan(initialPlan);
     setStep("plan");
+    setEmail("");
   }, [open, initialPlan]);
 
   useEffect(() => {
@@ -378,6 +392,26 @@ export function CheckoutModal({
               </p>
             ) : null}
 
+            {/* ---------- Wohin der Beleg geht ----------
+                Nur wenn niemand angemeldet ist. Wer angemeldet ist, hat die
+                Adresse laengst bestaetigt, und ein zweites Mal danach zu
+                fragen sieht aus wie ein Formular, das seinem eigenen Konto
+                nicht traut. */}
+            {needsEmail ? (
+              <div className="mt-4">
+                <input
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t.checkout.emailPlaceholder}
+                  aria-label={t.checkout.emailPlaceholder}
+                  className="w-full rounded-[16px] border border-white/[0.14] bg-white/[0.05] px-4 py-3.5 text-[16px] text-[var(--color-ink)] outline-none transition-colors placeholder:text-[var(--color-ink-quaternary)] focus:border-[var(--color-accent)]/55"
+                />
+              </div>
+            ) : null}
+
             {/* How you can pay is part of deciding whether to buy at all, so
                 the marks sit at the decision and not only at the payment
                 step. Above the pinned bar rather than inside it: they inform
@@ -426,7 +460,8 @@ export function CheckoutModal({
               <button
                 type="button"
                 onClick={() => setStep("pay")}
-                className="interactive flex w-full items-center justify-center gap-2 rounded-full bg-[var(--color-accent)] py-3.5 text-[14px] font-bold text-[var(--color-accent-ink)] hover:bg-[var(--color-accent-bright)]"
+                disabled={needsEmail && !emailOk}
+                className="interactive flex w-full items-center justify-center gap-2 rounded-full bg-[var(--color-accent)] py-3.5 text-[14px] font-bold text-[var(--color-accent-ink)] hover:bg-[var(--color-accent-bright)] disabled:cursor-not-allowed disabled:opacity-45"
               >
                 {t.checkout.unlockNow}
                 <span className="tabular-nums">· {formatPrice(locale, plan)}</span>
@@ -449,6 +484,7 @@ export function CheckoutModal({
           <div className="scroll-slim min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-6 pt-5 sm:px-7">
             <StripeCheckout
               plan={plan}
+              email={signedInAs ? "" : email.trim()}
               onBack={() => setStep("plan")}
               onPaid={(granted) => onSuccess(granted)}
             />

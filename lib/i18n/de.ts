@@ -667,6 +667,8 @@ export const de: Dict = {
       authRequired: "Deine Bank verlangt eine zusätzliche Bestätigung. Bitte schließ sie ab.",
       network: "Verbindungsproblem. Es wurde nichts abgebucht — bitte erneut versuchen.",
       generic: "Die Zahlung konnte nicht abgeschlossen werden. Es wurde nichts abgebucht.",
+      accountExists: "Für diese Adresse gibt es schon ein Konto. Bitte melde dich oben rechts an — dann liegt der Kauf bei deinen bisherigen.",
+      emailNeeded: "Bitte gib eine gültige E-Mail-Adresse an.",
       timeout: "Die Zahlung ist durch, die Freischaltung dauert noch einen Moment. Lade die Seite in ein paar Sekunden neu.",
     },
   },

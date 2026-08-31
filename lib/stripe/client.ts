@@ -119,18 +119,31 @@ export interface IntentResponse {
 
 export type IntentResult =
   | { ok: true; data: IntentResponse }
-  | { ok: false; error: "unauthenticated" | "unconfigured" | "invalid_plan" | "failed" };
+  | {
+      ok: false;
+      error:
+        | "unauthenticated"
+        | "unconfigured"
+        | "invalid_plan"
+        // Die Adresse gehoert schon jemandem — Gastkauf ist dafuer gesperrt,
+        // siehe die Begruendung in der Route.
+        | "account_exists"
+        | "invalid_email"
+        | "failed";
+    };
 
 export async function createPaymentIntent(
   plan: PlanId,
   currency: "eur" | "usd",
   locale: string,
+  /** Leer, wenn angemeldet — dann entscheidet die Sitzung. */
+  email: string,
 ): Promise<IntentResult> {
   try {
     const res = await fetch("/api/stripe/create-payment-intent", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan, currency, locale }),
+      body: JSON.stringify({ plan, currency, locale, email }),
     });
     const data = await res.json();
     if (!res.ok) return { ok: false, error: data.error ?? "failed" };

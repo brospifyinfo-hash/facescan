@@ -31,7 +31,6 @@ import { StyleStudio } from "@/components/report/StyleStudio";
 import { SectionNav, type NavSection } from "@/components/report/SectionNav";
 import { AccountCard } from "@/components/report/AccountCard";
 import { can, formatPrice, type PlanId } from "@/lib/pricing";
-import { AuthModal } from "@/components/auth/AuthModal";
 import { fetchSession } from "@/lib/auth/client";
 import { bandFor } from "@/lib/tiers";
 import { potentialFor } from "@/lib/potential";
@@ -71,17 +70,20 @@ export function ResultsPage() {
   const plan = useFunnel((s) => s.plan);
   const unlock = useFunnel((s) => s.unlock);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [authOpen, setAuthOpen] = useState(false);
   const [signedInAs, setSignedInAs] = useState<string | null>(null);
   const [showRaw, setShowRaw] = useState(false);
 
-  // Sign in first, then pay: the address is what the receipt and the scan
-  // history hang off, so collecting it before checkout keeps the purchase
-  // attached to an account that already exists.
-  const startUnlock = useCallback(() => {
-    if (signedInAs) setCheckoutOpen(true);
-    else setAuthOpen(true);
-  }, [signedInAs]);
+  // DIREKT ZUR KASSE. Vorher fuehrte dieser Weg durch das Anmeldefenster:
+  // wer nicht angemeldet war, sah als Naechstes ein Konto-Formular statt der
+  // Pakete. Das ist eine Huerde vor dem Kauf, und sie stand ausgerechnet
+  // dort, wo die Anmeldecodes gerade nicht zuverlaessig zugestellt werden.
+  //
+  // Die Adresse wird weiterhin gebraucht — an ihr haengen Beleg,
+  // Freischaltung und der Weg zurueck zum Gekauften. Sie wird jetzt IM
+  // Sheet erfragt, einen Schritt spaeter und ohne Konto (siehe
+  // CheckoutModal). Das Anmeldefenster bleibt, wo es hingehoert: hinter dem
+  // Knopf oben rechts, fuer Kunden, die schon eines haben.
+  const startUnlock = useCallback(() => setCheckoutOpen(true), []);
 
   // Stable identities, because CheckoutModal takes them as props and an
   // inline arrow is a new prop on every render. The modal no longer resets
@@ -90,6 +92,11 @@ export function ResultsPage() {
   const closeCheckout = useCallback(() => setCheckoutOpen(false), []);
   const handlePaid = useCallback(
     (granted: PlanId) => {
+      // Nach einem Gastkauf hat /api/stripe/confirm serverseitig eine
+      // Sitzung gesetzt — aus Stripes bestaetigtem Datensatz, nicht aus
+      // einer Eingabe. Sie hier einzusammeln ist der Unterschied zwischen
+      // "der Kauf gilt bis zum Neuladen" und "der Kauf gilt".
+      void fetchSession().then(setSignedInAs);
       // `granted` comes from /api/stripe/confirm or /api/stripe/entitlement,
       // i.e. from what Stripe verified and the server wrote — not from the
       // client.
@@ -515,17 +522,12 @@ export function ResultsPage() {
         />
       ) : null}
 
-      <AuthModal
-        open={authOpen}
-        onClose={() => setAuthOpen(false)}
-        onSignedIn={(mail) => {
-          setSignedInAs(mail);
-          setAuthOpen(false);
-          setCheckoutOpen(true);
-        }}
+      <CheckoutModal
+        open={checkoutOpen}
+        signedInAs={signedInAs}
+        onClose={closeCheckout}
+        onSuccess={handlePaid}
       />
-
-      <CheckoutModal open={checkoutOpen} onClose={closeCheckout} onSuccess={handlePaid} />
     </>
   );
 }

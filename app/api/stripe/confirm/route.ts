@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { currentSession } from "@/lib/auth/session";
+import { currentSession, setSessionCookie } from "@/lib/auth/session";
 import { entitlements } from "@/lib/stripe/entitlements";
 import { isStripeConfigured, stripe } from "@/lib/stripe/server";
 import { mayClaim } from "@/lib/stripe/claim";
@@ -37,9 +37,27 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "unconfigured" }, { status: 501 });
   }
 
-  const session = await currentSession();
-  if (!session) {
-    return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
+  // OHNE SITZUNG GEHT ES JETZT AUCH — DIE ZAHLUNG SELBST IST DER AUSWEIS.
+  //
+  // Wer als Gast gekauft hat, hat kein Konto und trotzdem bezahlt. Ihm hier
+  // 401 zu geben hiesse, ihm sein Produkt vorzuenthalten, weil er sich nicht
+  // angemeldet hat — genau die Huerde, die gerade fallen sollte.
+  //
+  // Was an die Stelle der Sitzung tritt, ist die Intent-Kennung. Sie ist ein
+  // Inhaberausweis: nur der Browser, der bezahlt hat, kennt sie, sie hat
+  // genug Entropie, um nicht geraten zu werden, und alles Weitere kommt aus
+  // Stripes eigenem Datensatz — nicht aus dem Aufruf.
+  //
+  // Die dritte Pruefung aus mayClaim bleibt fuer angemeldete Kunden scharf:
+  // eine fremde Kennung schaltet dort nichts frei. Fuer Gaeste faellt sie
+  // weg, und das ist vertretbar, WEIL /api/stripe/create-payment-intent
+  // Gastkaeufe auf Adressen beschraenkt, die noch niemandem gehoeren. Auf
+  // eine fremde Adresse kann also gar kein Gast-Intent entstehen.
+  let session: Awaited<ReturnType<typeof currentSession>> = null;
+  try {
+    session = await currentSession();
+  } catch {
+    session = null;
   }
 
   let body: { paymentIntentId?: unknown };
@@ -58,7 +76,11 @@ export async function POST(req: Request) {
   try {
     const intent = await stripe().paymentIntents.retrieve(id);
 
-    const verdict = mayClaim(intent, session.email);
+    // Ohne Sitzung ist die Adresse aus Stripes Metadaten massgeblich — die
+    // hat unser Server beim Anlegen des Intents geschrieben, nicht der
+    // Aufrufer.
+    const claimant = session?.email ?? intent.metadata?.email ?? "";
+    const verdict = mayClaim(intent, claimant);
     if (!verdict.ok) {
       if (verdict.reason !== "not_paid") {
         console.warn(`[stripe] confirm refused (${verdict.reason})`, intent.id);
@@ -69,6 +91,19 @@ export async function POST(req: Request) {
       );
     }
     const { plan } = verdict;
+    const owner = session?.email ?? claimant;
+
+    // Der Gast bekommt jetzt eine Sitzung — sonst waere sein Kauf beim
+    // naechsten Neuladen verschwunden, weil /api/stripe/entitlement eine
+    // braucht. Sie wird aus dem BESTAETIGTEN Datensatz gesetzt, nicht aus
+    // einer Eingabe: Stripe hat die Zahlung als erfolgreich gemeldet und die
+    // Adresse stammt aus den Metadaten, die dieser Server geschrieben hat.
+    if (!session) {
+      await setSessionCookie(owner).catch(() => {
+        // Eine Sitzung, die nicht gesetzt werden kann, darf die
+        // Freischaltung nicht verhindern — der Kunde hat bezahlt.
+      });
+    }
 
     // Both are idempotent — grant keeps the higher tier, recordPayment
     // deduplicates by intent id — so racing the webhook is harmless.
@@ -79,12 +114,12 @@ export async function POST(req: Request) {
     // deduplicates by intent id — so racing the other grant path is still
     // harmless.
     await Promise.all([
-      entitlements.grant(session.email, {
+      entitlements.grant(owner, {
         plan,
         paymentIntentId: intent.id,
         grantedAt: Date.now(),
       }),
-      entitlements.recordPayment(session.email, {
+      entitlements.recordPayment(owner, {
         plan,
         paymentIntentId: intent.id,
         amount: typeof intent.amount === "number" ? intent.amount : null,
@@ -97,7 +132,7 @@ export async function POST(req: Request) {
     // zuerst da ist, entscheidet der Marker in sendPurchaseReceipt — der
     // Kunde bekommt ihn genau einmal.
     await sendPurchaseReceipt({
-      email: session.email,
+      email: owner,
       plan,
       amountMinor: typeof intent.amount === "number" ? intent.amount : null,
       currency: intent.currency ?? null,
@@ -105,7 +140,7 @@ export async function POST(req: Request) {
       locale: intent.metadata?.locale ?? null,
     });
 
-    console.info(`[stripe] confirm granted ${plan} to ${session.email} (${intent.id})`);
+    console.info(`[stripe] confirm granted ${plan} to ${owner} (${intent.id})`);
     return NextResponse.json({ plan });
   } catch (err) {
     console.error("[stripe] confirm failed:", err);

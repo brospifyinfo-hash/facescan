@@ -34,10 +34,13 @@ const INTL_LOCALE: Record<string, string> = {
  */
 export function StripeCheckout({
   plan,
+  email,
   onBack,
   onPaid,
 }: {
   plan: PlanId;
+  /** Die im Sheet eingegebene Adresse; leer, wenn angemeldet. */
+  email: string;
   onBack: () => void;
   onPaid: (plan: PlanId) => void;
 }) {
@@ -107,16 +110,18 @@ export function StripeCheckout({
       };
     }
 
-    createPaymentIntent(plan, currency, locale)
+    createPaymentIntent(plan, currency, locale, email)
       .then((res) => {
         if (cancelled) return;
         if (!res.ok) {
           setError(
             res.error === "unconfigured"
               ? t.pay.unconfigured
-              : res.error === "unauthenticated"
-                ? t.auth.title
-                : t.pay.errors.generic,
+              : res.error === "account_exists"
+                ? t.pay.errors.accountExists
+                : res.error === "unauthenticated" || res.error === "invalid_email"
+                  ? t.pay.errors.emailNeeded
+                  : t.pay.errors.generic,
           );
           return;
         }
@@ -135,7 +140,7 @@ export function StripeCheckout({
     return () => {
       cancelled = true;
     };
-  }, [plan, currency, locale, t]);
+  }, [plan, currency, locale, email, t]);
 
   if (error) {
     return (

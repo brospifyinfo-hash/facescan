@@ -520,6 +520,8 @@ export interface Dict {
       authRequired: string;
       network: string;
       generic: string;
+    accountExists: string;
+    emailNeeded: string;
       timeout: string;
     };
   };
