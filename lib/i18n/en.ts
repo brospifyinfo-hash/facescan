@@ -302,6 +302,7 @@ export const en: Dict = {
     replace: "Replace photo",
     privacy:
       "Photos stay in this browser tab — nothing is uploaded during the free scan.",
+    ageConfirm: "I am at least 18 years old.",
     cta: "Start Analysis",
     errType: "Please choose an image file (JPG, PNG, WebP).",
     errSize: "Image is larger than 10 MB — please pick a smaller one.",

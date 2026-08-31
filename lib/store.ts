@@ -45,39 +45,7 @@ export function bmiOf(q: QuizAnswers): number | null {
   return Number((q.weight / (m * m)).toFixed(1));
 }
 
-/**
- * Quiz shape. `keys` are stable identifiers stored in the answers; the
- * visible labels live in the dictionaries and are index-aligned with them,
- * so translating a label can never change the plan rules.
- *
- * `kind: "number"` questions capture a measurement instead of a choice.
- */
-export type QuizStep =
-  | { kind: "choice"; field: keyof QuizAnswers; keys: readonly string[] }
-  | {
-      kind: "number";
-      field: "height" | "weight";
-      min: number;
-      max: number;
-      step: number;
-      unit: string;
-      preset: number;
-    };
 
-export const QUIZ_STEPS: readonly QuizStep[] = [
-  { kind: "choice", field: "gender", keys: ["male", "female", "diverse", "undisclosed"] },
-  { kind: "choice", field: "age", keys: ["under18", "18-24", "25-34", "35-44", "45plus"] },
-  { kind: "number", field: "height", min: 140, max: 215, step: 1, unit: "cm", preset: 178 },
-  { kind: "number", field: "weight", min: 40, max: 180, step: 1, unit: "kg", preset: 78 },
-  { kind: "choice", field: "bodyFat", keys: ["under12", "12-18", "19-25", "over25", "unsure"] },
-  { kind: "choice", field: "training", keys: ["none", "1-2", "3-4", "5plus"] },
-  { kind: "choice", field: "sleep", keys: ["under6", "6-7", "7-8", "over8"] },
-  { kind: "choice", field: "skincare", keys: ["none", "basic", "advanced"] },
-  { kind: "choice", field: "smoking", keys: ["no", "occasionally", "daily"] },
-  { kind: "choice", field: "insecurity", keys: ["asymmetry", "jawline", "eyes", "skin", "hair"] },
-  { kind: "choice", field: "mewing", keys: ["never", "sometimes", "daily"] },
-  { kind: "choice", field: "goal", keys: ["model", "dating", "self", "curious"] },
-] as const;
 
 export interface PhotoData {
   dataUrl: string;
@@ -151,6 +119,20 @@ export interface ScanMetrics {
 export const SESSION_TTL_MS = 15 * 60 * 1000;
 
 interface FunnelState {
+  /**
+   * DER FRAGEBOGEN IST WEG, DAS FELD NICHT.
+   *
+   * Es bleibt leer, und das ist Absicht. Die Analyse spricht QuizAnswers als
+   * Eingabe — buildPlan, die Produktzuordnung, der Report-Prompt und der
+   * Stil-Prompt nehmen es entgegen und kommen alle mit einem leeren Objekt
+   * zurecht (der Plan liefert dann acht rein messwertgetriebene Massnahmen
+   * statt der auf Antworten zugeschnittenen). Den Typ aus der Engine zu
+   * reissen waere eine Operation an sechs Modulen fuer null sichtbaren
+   * Gewinn; ihn hier zu behalten kostet ein leeres Objekt.
+   *
+   * Wer den Fragebogen je zurueckholen will, fuellt dieses Feld — und alles
+   * dahinter funktioniert wieder wie vorher.
+   */
   quiz: QuizAnswers;
   photos: { front?: PhotoData; side?: PhotoData };
   metrics?: ScanMetrics;
@@ -171,7 +153,6 @@ interface FunnelState {
   plan?: PlanId;
   email?: string;
   expiredNotice: boolean;
-  setAnswer: (key: keyof QuizAnswers, value: string | number) => void;
   setPhoto: (slot: "front" | "side", photo: PhotoData) => void;
   completeScan: (metrics: ScanMetrics) => void;
   setPaying: (paying: boolean) => void;
@@ -187,9 +168,6 @@ export const useFunnel = create<FunnelState>((set) => ({
   unlocked: false,
   paying: false,
   expiredNotice: false,
-
-  setAnswer: (key, value) =>
-    set((s) => ({ quiz: { ...s.quiz, [key]: value } })),
 
   setPhoto: (slot, photo) =>
     set((s) => ({ photos: { ...s.photos, [slot]: photo } })),

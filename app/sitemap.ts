@@ -17,14 +17,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
-      // The quiz is a real entry point: it renders on its own, needs
-      // nothing in memory, and is where a search visitor should start.
-      url: absolute("/quiz"),
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
       // The partner programme's explainer. It renders for a stranger — the
       // signed-out state is the pitch, not a login wall — so it passes the
       // same test the quiz does.

@@ -233,7 +233,7 @@ export function AppHome() {
         </ul>
 
         <Link
-          href="/quiz"
+          href="/upload"
           className="interactive relative mt-5 flex w-[72%] min-w-[230px] items-center gap-2.5 rounded-full bg-[var(--color-accent)] py-3.5 pl-5 pr-4 text-[13px] font-bold uppercase tracking-[0.05em] text-[var(--color-accent-ink)] hover:bg-[var(--color-accent-bright)] sm:mt-7 sm:py-4 sm:text-[15px]"
         >
           <Scan className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" aria-hidden />

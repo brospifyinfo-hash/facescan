@@ -153,7 +153,8 @@ export interface Dict {
     minorTitle: string;
     minorBody: string;
     minorCta: string;
-    /** Index-aligned with QUIZ_STEPS. `options` is absent on number steps. */
+    /** Reste des entfernten Fragebogens. `t.quiz.back` wird noch im Checkout
+     *  benutzt, deshalb bleibt der Block vorerst stehen. */
     questions: Array<{ title: string; sub?: string; options?: string[] }>;
     numberHint: string;
     next: string;
@@ -172,6 +173,7 @@ export interface Dict {
     added: string;
     replace: string;
     privacy: string;
+    ageConfirm: string;
     cta: string;
     errType: string;
     errSize: string;

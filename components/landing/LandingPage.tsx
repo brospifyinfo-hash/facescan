@@ -325,7 +325,7 @@ export function LandingPage() {
               </h2>
               <p className="mt-2 text-[13px] text-[var(--color-ink-tertiary)]">{t.landing.ctaNote}</p>
             </div>
-            <Link href="/quiz" className="shrink-0">
+            <Link href="/upload" className="shrink-0">
               <Button size="lg">
                 {t.landing.ctaFinal} <ArrowUpRight className="h-4 w-4" />
               </Button>

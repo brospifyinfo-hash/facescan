@@ -115,7 +115,7 @@ export function RoutineStrip() {
             </p>
           </div>
           <Link
-            href="/quiz"
+            href="/upload"
             className="interactive hidden shrink-0 items-center gap-1.5 rounded-full bg-[var(--color-accent)] px-4 py-2.5 text-[12px] font-semibold text-[var(--color-accent-ink)] hover:bg-[var(--color-accent-bright)] sm:flex sm:text-[13.5px]"
           >
             {t.home.upgrade.cta}
@@ -125,7 +125,7 @@ export function RoutineStrip() {
         {/* On a phone the button goes full width underneath rather than being
             squeezed to three characters beside the text. */}
         <Link
-          href="/quiz"
+          href="/upload"
           className="interactive relative mt-3.5 flex items-center justify-center gap-1.5 rounded-full bg-[var(--color-accent)] py-2.5 text-[12px] font-semibold text-[var(--color-accent-ink)] hover:bg-[var(--color-accent-bright)] sm:hidden"
         >
           {t.home.upgrade.cta}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, Lightbulb, ShieldCheck } from "lucide-react";
@@ -17,7 +17,23 @@ export function UploadPage() {
   const { photos, setPhoto } = useFunnel();
   // Only the front photo drives the measurements, so it is the only one
   // required. The side shot just gives the AI report a second angle.
-  const ready = Boolean(photos.front);
+  // DIE ALTERSBESTAETIGUNG STAND IM QUIZ, UND DAS QUIZ IST WEG.
+  //
+  // Sie war dort kein Formfeld unter anderen, sondern eine Sperre: wer
+  // "unter 18" waehlte, kam nicht weiter, mit der Begruendung, dass eine
+  // aesthetische Bewertung von Gesichtern Minderjaehriger nicht in Ordnung
+  // ist. Mit dem Quiz waere dieser Schutz ersatzlos verschwunden — und
+  // Paragraf 2 der AGB verlangt 18 Jahre, waehrend Vertraege mit
+  // Minderjaehrigen nach Paragrafen 104 ff. BGB ohnehin schwebend unwirksam
+  // sind.
+  //
+  // Also hierher, an die Stelle, an der es zuerst zaehlt: vor dem Foto, nicht
+  // erst vor der Zahlung. Verarbeitet wird das Gesicht, nicht die Karte.
+  const [is18, setIs18] = useState(false);
+
+  // Only the front photo drives the measurements, so it is the only one
+  // required. The side shot just gives the AI report a second angle.
+  const ready = Boolean(photos.front) && is18;
 
   // Pick up ?raw=1 here so the diagnostic survives to /results.
   useEffect(() => {
@@ -76,7 +92,17 @@ export function UploadPage() {
           {t.upload.sideSkipNote}
         </p>
 
-        <div className="mt-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <label className="mt-6 flex cursor-pointer items-start gap-2.5 text-[13px] leading-relaxed text-[var(--color-ink-secondary)]">
+          <input
+            type="checkbox"
+            checked={is18}
+            onChange={(e) => setIs18(e.target.checked)}
+            className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--color-accent)]"
+          />
+          {t.upload.ageConfirm}
+        </label>
+
+        <div className="mt-5 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
           {/* Der Link gehoert HIERHER und nicht nur in den Footer. Das ist
               der Moment, in dem ein Gesicht uebergeben wird — die
               Rechtsgrundlage dafuer ist die Einwilligung, und eine

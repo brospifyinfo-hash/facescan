@@ -33,7 +33,7 @@ export default function NotFound() {
 
       <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
         <Link
-          href="/quiz"
+          href="/upload"
           className="rounded-full bg-[var(--color-accent)] px-6 py-3 text-[13px] font-semibold text-[#05080d] transition-opacity hover:opacity-90"
         >
           Analyse starten

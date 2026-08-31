@@ -303,6 +303,7 @@ export const es: Dict = {
     replace: "Cambiar foto",
     privacy:
       "Las fotos permanecen en esta pestaña — no se sube nada durante el escaneo gratuito.",
+    ageConfirm: "Tengo al menos 18 años.",
     cta: "Iniciar análisis",
     errType: "Elige un archivo de imagen (JPG, PNG, WebP).",
     errSize: "La imagen supera los 10 MB — elige una más pequeña.",

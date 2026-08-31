@@ -41,7 +41,7 @@ import { useT } from "@/lib/i18n";
 //   /calibrate    genau während man stillhalten soll.
 //   /admin/*    — Betreiberwerkzeuge, kein Kundenweg.
 //
-// Überall sonst steht es: Startseite, Quiz, Konto, Partner, Support und die
+// Überall sonst steht es: Startseite, Scan, Konto, Partner, Support und die
 // Rechtsseiten.
 
 /** Abstand der Kreise von der Mitte des Hauptknopfs. */
@@ -66,7 +66,7 @@ export function MenuFab() {
 
   const items = [
     { href: "/", icon: Home, label: t.home.tabs.home, gold: false },
-    { href: "/quiz", icon: Scan, label: t.home.tabs.scan, gold: false },
+    { href: "/upload", icon: Scan, label: t.home.tabs.scan, gold: false },
     { href: "/konto", icon: User, label: t.home.tabs.profile, gold: false },
     // Der Stern in Gold. Das Partnerprogramm ist der einzige Eintrag, der
     // etwas anderes anbietet als die eigene Analyse — er darf sich von den
