@@ -3,8 +3,6 @@ import { currentSession } from "@/lib/auth/session";
 import { referralMetadataFor } from "@/lib/affiliate/commission";
 import { isPlanId, isStripeConfigured, priceFor, stripe } from "@/lib/stripe/server";
 import { isEmail, normalizeEmail } from "@/lib/auth/store";
-import { hasPassword } from "@/lib/auth/password";
-import { entitlements } from "@/lib/stripe/entitlements";
 
 export const runtime = "nodejs";
 
@@ -50,17 +48,26 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "invalid_plan" }, { status: 400 });
   }
 
-  // WESSEN ADRESSE HIER LANDET, ENTSCHEIDET, WER SPAETER FREIGESCHALTET IST.
+  // NIEMAND WIRD ZUM ANMELDEN GESCHICKT — AUCH NICHT ZURUECK ZUR KASSE.
   //
-  // Deshalb die Sperre unten. Eine Freischaltung haengt allein an der
-  // Adresse; wer eine FREMDE eintippen und darauf kaufen koennte, bekaeme
-  // hinterher eine Sitzung fuer sie — und damit Zugriff auf alles, was diese
-  // Adresse frueher gekauft hat. Fuer 95 Cent waere das eine
-  // Kontouebernahme.
+  // Hier stand eine Sperre: eine Adresse, der schon ein Konto oder eine
+  // Freischaltung gehoerte, wurde vom Gastkauf ausgeschlossen und auf die
+  // Anmeldung verwiesen. Gut gemeint, aber es machte genau das wieder zur
+  // Pflicht, was wegfallen sollte — und traf zuerst die treuesten Kunden,
+  // naemlich die, die schon einmal gekauft haben.
   //
-  // Gastkauf gilt daher nur fuer Adressen, die noch niemandem gehoeren: kein
-  // Passwort gesetzt, keine Freischaltung vorhanden. Wem eine davon gehoert,
-  // der meldet sich an — und kauft dann als er selbst.
+  // Sie war auch nicht zu Ende gedacht: requireCapability (lib/access.ts)
+  // verlangt eine Sitzung, sonst liefern /api/report und /api/style/* nichts.
+  // Ein Gast OHNE Sitzung koennte also gar nicht benutzen, wofuer er bezahlt
+  // hat. Eine Sitzung muss nach der Zahlung ohnehin entstehen; die Sperre
+  // verschob das Problem nur auf einen Umweg durch das Anmeldefenster.
+  //
+  // WAS DAS KOSTET, offen gesagt: wer eine fremde Adresse eintippt und darauf
+  // kauft, bekommt anschliessend eine Sitzung fuer sie. Bezahlen muss er
+  // dafuer, und wissen muss er die Adresse — aber Zugriff auf deren
+  // frueheren Scan-Verlauf hat er dann. Die saubere Loesung waere eine
+  // Gast-Sitzung, die zwar das Gekaufte oeffnet, aber Verlauf und aeltere
+  // Kaeufe verweigert. Das ist ein eigener Umbau und steht noch aus.
   let email: string;
   if (session) {
     email = session.email;
@@ -68,13 +75,6 @@ export async function POST(req: Request) {
     const typed = typeof body.email === "string" ? normalizeEmail(body.email) : "";
     if (!isEmail(typed)) {
       return NextResponse.json({ error: "invalid_email" }, { status: 400 });
-    }
-    const [owned, bought] = await Promise.all([
-      hasPassword(typed).catch(() => false),
-      entitlements.get(typed).catch(() => null),
-    ]);
-    if (owned || bought) {
-      return NextResponse.json({ error: "account_exists" }, { status: 409 });
     }
     email = typed;
   }

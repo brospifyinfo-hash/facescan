@@ -125,9 +125,6 @@ export type IntentResult =
         | "unauthenticated"
         | "unconfigured"
         | "invalid_plan"
-        // Die Adresse gehoert schon jemandem — Gastkauf ist dafuer gesperrt,
-        // siehe die Begruendung in der Route.
-        | "account_exists"
         | "invalid_email"
         | "failed";
     };

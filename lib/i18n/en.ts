@@ -656,7 +656,6 @@ export const en: Dict = {
       authRequired: "Your bank needs an extra confirmation. Please complete it.",
       network: "Connection problem. Nothing was charged — please try again.",
       generic: "The payment couldn't be completed. Nothing was charged.",
-      accountExists: "There is already an account for this address. Please sign in at the top right — your purchase then joins the others.",
       emailNeeded: "Please enter a valid email address.",
       timeout: "Payment went through; unlocking is taking a moment. Reload in a few seconds.",
     },

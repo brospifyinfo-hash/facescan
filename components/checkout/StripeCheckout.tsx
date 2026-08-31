@@ -117,11 +117,9 @@ export function StripeCheckout({
           setError(
             res.error === "unconfigured"
               ? t.pay.unconfigured
-              : res.error === "account_exists"
-                ? t.pay.errors.accountExists
-                : res.error === "unauthenticated" || res.error === "invalid_email"
-                  ? t.pay.errors.emailNeeded
-                  : t.pay.errors.generic,
+              : res.error === "unauthenticated" || res.error === "invalid_email"
+                ? t.pay.errors.emailNeeded
+                : t.pay.errors.generic,
           );
           return;
         }

@@ -658,7 +658,6 @@ export const fr: Dict = {
       authRequired: "Votre banque demande une confirmation supplémentaire. Merci de la finaliser.",
       network: "Problème de connexion. Rien n'a été débité — réessayez.",
       generic: "Le paiement n'a pas pu aboutir. Rien n'a été débité.",
-      accountExists: "Un compte existe déjà pour cette adresse. Connecte-toi en haut à droite : ton achat rejoindra les précédents.",
       emailNeeded: "Saisis une adresse e-mail valide.",
       timeout: "Le paiement est passé ; le déverrouillage prend un instant. Rechargez dans quelques secondes.",
     },
