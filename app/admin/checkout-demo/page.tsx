@@ -17,6 +17,6 @@ export default async function CheckoutDemoPage({
   const raw = Array.isArray(params.plan) ? params.plan[0] : params.plan;
   const start = (PLAN_ORDER as string[]).includes(raw ?? "")
     ? (raw as PlanId)
-    : "blueprint";
+    : PLAN_ORDER[0];
   return <CheckoutDemo start={start} />;
 }

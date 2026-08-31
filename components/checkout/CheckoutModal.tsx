@@ -66,13 +66,22 @@ export function CheckoutModal({
   open,
   onClose,
   onSuccess,
-  initialPlan = "blueprint",
+  initialPlan = PLAN_ORDER[0],
   signedInAs = null,
 }: {
   open: boolean;
   onClose: () => void;
   onSuccess: (plan: PlanId) => void;
   initialPlan?: PlanId;
+  /**
+   * Vorausgewaehlt ist das GUENSTIGSTE Paket, nicht das teuerste.
+   *
+   * Vorher stand hier "blueprint". Eine Voreinstellung ist keine Empfehlung,
+   * sondern die Antwort, die gilt, wenn jemand nichts tut — und das teuerste
+   * Paket vorzuwaehlen heisst, den Aufpreis von der Traegheit des Kunden zu
+   * nehmen statt von seiner Entscheidung. Wer mehr will, tippt es an; die
+   * Aufstiegszeile darunter rechnet ihm die Differenz sogar vor.
+   */
   /** Angemeldete Adresse, wenn es eine gibt. Sonst fragt das Sheet danach. */
   signedInAs?: string | null;
 }) {
@@ -90,6 +99,28 @@ export function CheckoutModal({
   const [email, setEmail] = useState("");
   const emailOk = /^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(email.trim());
   const needsEmail = !signedInAs;
+
+  // ERST WENN SIE FERTIG GETIPPT IST, gilt sie.
+  //
+  // StripeCheckout legt beim Einhaengen den PaymentIntent an, und in dessen
+  // Metadaten steht die Adresse — Beleg und Freischaltung haengen daran. Jede
+  // Aenderung muss den Intent also neu anlegen. Bei jedem Tastenanschlag
+  // entstuenden auf dem Weg von "a@b.de" zu "a@b.desweiteren.de" ein halbes
+  // Dutzend verwaister Intents, und das Zahlungsformular baute sich unter den
+  // Fingern staendig neu auf.
+  //
+  // Also eine kurze Ruhepause: 700 ms nach der letzten Aenderung, und nur
+  // wenn die Adresse ueberhaupt eine sein kann.
+  const [settledEmail, setSettledEmail] = useState("");
+  useEffect(() => {
+    if (!needsEmail) return;
+    if (!emailOk) {
+      setSettledEmail("");
+      return;
+    }
+    const id = window.setTimeout(() => setSettledEmail(email.trim()), 700);
+    return () => window.clearTimeout(id);
+  }, [email, emailOk, needsEmail]);
 
   // OPENING resets the sheet. Nothing else may.
   //
@@ -119,6 +150,7 @@ export function CheckoutModal({
     setPlan(initialPlan);
     setStep("plan");
     setEmail("");
+    setSettledEmail("");
   }, [open, initialPlan]);
 
   useEffect(() => {
@@ -392,26 +424,6 @@ export function CheckoutModal({
               </p>
             ) : null}
 
-            {/* ---------- Wohin der Beleg geht ----------
-                Nur wenn niemand angemeldet ist. Wer angemeldet ist, hat die
-                Adresse laengst bestaetigt, und ein zweites Mal danach zu
-                fragen sieht aus wie ein Formular, das seinem eigenen Konto
-                nicht traut. */}
-            {needsEmail ? (
-              <div className="mt-4">
-                <input
-                  type="email"
-                  inputMode="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={t.checkout.emailPlaceholder}
-                  aria-label={t.checkout.emailPlaceholder}
-                  className="w-full rounded-[16px] border border-white/[0.14] bg-white/[0.05] px-4 py-3.5 text-[16px] text-[var(--color-ink)] outline-none transition-colors placeholder:text-[var(--color-ink-quaternary)] focus:border-[var(--color-accent)]/55"
-                />
-              </div>
-            ) : null}
-
             {/* How you can pay is part of deciding whether to buy at all, so
                 the marks sit at the decision and not only at the payment
                 step. Above the pinned bar rather than inside it: they inform
@@ -460,8 +472,7 @@ export function CheckoutModal({
               <button
                 type="button"
                 onClick={() => setStep("pay")}
-                disabled={needsEmail && !emailOk}
-                className="interactive flex w-full items-center justify-center gap-2 rounded-full bg-[var(--color-accent)] py-3.5 text-[14px] font-bold text-[var(--color-accent-ink)] hover:bg-[var(--color-accent-bright)] disabled:cursor-not-allowed disabled:opacity-45"
+                className="interactive flex w-full items-center justify-center gap-2 rounded-full bg-[var(--color-accent)] py-3.5 text-[14px] font-bold text-[var(--color-accent-ink)] hover:bg-[var(--color-accent-bright)]"
               >
                 {t.checkout.unlockNow}
                 <span className="tabular-nums">· {formatPrice(locale, plan)}</span>
@@ -482,9 +493,39 @@ export function CheckoutModal({
           </>
         ) : (
           <div className="scroll-slim min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-6 pt-5 sm:px-7">
+{/* ---------- Wohin der Beleg geht ----------
+                Im ZAHLSCHRITT, nicht bei der Paketwahl. Vorher stand das
+                Feld eine Stufe frueher und sperrte den Weiter-Knopf: wer nur
+                die Preise vergleichen wollte, wurde erst nach seiner Adresse
+                gefragt und dann nach dem Paket. Eine Adresse gehoert dorthin,
+                wo klar ist, wofuer sie da ist — neben die Zahlung, an der
+                Beleg und Freischaltung haengen.
+
+                Nur wenn niemand angemeldet ist: wer angemeldet ist, hat sie
+                laengst bestaetigt, und ein zweites Mal danach zu fragen sieht
+                aus wie ein Formular, das seinem eigenen Konto nicht traut. */}
+            {needsEmail ? (
+              <div className="mb-4">
+                <label className="mb-1.5 block text-[12px] text-[var(--color-ink-tertiary)]">
+                  {t.checkout.emailPlaceholder}
+                </label>
+                <input
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  autoFocus
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t.checkout.emailPlaceholder}
+                  aria-label={t.checkout.emailPlaceholder}
+                  className="w-full rounded-[16px] border border-white/[0.14] bg-white/[0.05] px-4 py-3.5 text-[16px] text-[var(--color-ink)] outline-none transition-colors placeholder:text-[var(--color-ink-quaternary)] focus:border-[var(--color-accent)]/55"
+                />
+              </div>
+            ) : null}
+
             <StripeCheckout
               plan={plan}
-              email={signedInAs ? "" : email.trim()}
+              email={signedInAs ? null : settledEmail}
               onBack={() => setStep("plan")}
               onPaid={(granted) => onSuccess(granted)}
             />

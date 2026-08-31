@@ -39,8 +39,12 @@ export function StripeCheckout({
   onPaid,
 }: {
   plan: PlanId;
-  /** Die im Sheet eingegebene Adresse; leer, wenn angemeldet. */
-  email: string;
+  /**
+   * null  — angemeldet, die Sitzung liefert die Adresse.
+   * ""    — eine wird gebraucht, steht aber noch nicht fest.
+   * sonst — die eingegebene Adresse.
+   */
+  email: string | null;
   onBack: () => void;
   onPaid: (plan: PlanId) => void;
 }) {
@@ -64,6 +68,14 @@ export function StripeCheckout({
       setError(t.pay.unconfigured);
       return;
     }
+
+    // OHNE ADRESSE KEIN INTENT.
+    //
+    // Sie steht in dessen Metadaten, und daran haengen Beleg und
+    // Freischaltung — ein Intent ohne sie waere eine Zahlung, die niemandem
+    // zugeordnet werden kann. Das Feld dafuer steht im Sheet direkt darueber;
+    // sobald es ausgefuellt ist, laeuft dieser Effekt erneut.
+    if (email === "") return;
 
     // A CHARGE THAT IS ALREADY OUT THERE IS NOT A REASON TO OPEN A NEW ONE.
     //
@@ -110,7 +122,7 @@ export function StripeCheckout({
       };
     }
 
-    createPaymentIntent(plan, currency, locale, email)
+    createPaymentIntent(plan, currency, locale, email ?? "")
       .then((res) => {
         if (cancelled) return;
         if (!res.ok) {
@@ -166,6 +178,24 @@ export function StripeCheckout({
       <div className="flex flex-col items-center gap-4 py-10">
         <BrandSpinner label={t.pay.confirming} />
       </div>
+    );
+  }
+
+  // Wartet auf die Adresse: kein Fehler und kein Spinner — es fehlt schlicht
+  // noch eine Eingabe, und ein Ladekringel darueber wuerde behaupten, dass
+  // etwas passiert.
+  //
+  // Aber NICHT null: der Rueckweg zur Paketwahl muss stehen bleiben. Ein
+  // Schritt ohne Ausgang ist genau das, was Leute den Tab schliessen laesst —
+  // dieselbe Ueberlegung wie beim Ladezustand weiter unten.
+  if (email === "") {
+    return (
+      <button
+        onClick={onBack}
+        className="flex items-center gap-1.5 self-start text-[12px] text-[var(--color-ink-tertiary)] transition-colors hover:text-[var(--color-ink-secondary)]"
+      >
+        <ArrowLeft className="h-3.5 w-3.5" /> {t.checkout.choosePlan}
+      </button>
     );
   }
 
