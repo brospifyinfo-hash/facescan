@@ -51,6 +51,21 @@ const { piiKeyConfigured, encryptSecret, decryptSecret } = await import("../lib/
 const { CODE_ALPHABET, randomCode, normalizeCode } = await import("../lib/affiliate/codes");
 
 import type { Affiliate, AffiliateConfig, Commission, LevelNumber } from "../lib/affiliate/model";
+import { AMOUNTS } from "../lib/pricing";
+
+// NUR DIE FREMDWAEHRUNGSPRUEFUNG HAENGT AN DER PREISTABELLE.
+//
+// bookCommission nimmt einen Euro-Betrag, wie er kommt — die Vorlage unten
+// darf deshalb eine feste Zahl benutzen und tut das absichtlich: sie prueft
+// Provisionsarithmetik, nicht den Katalog, und alle Erwartungswerte in
+// dieser Datei sind aus ihr gerechnet.
+//
+// Fuer eine FREMDE Waehrung ist das anders. Dort ist die Frage gerade, ob
+// der Betrag dem Euro-Preis entspricht (gleiche Zahl, andere Waehrung) oder
+// ein umgerechneter ist — und dafuer schaut die Buchung in AMOUNTS. Eine
+// eingetippte Zahl liesse diesen einen Test bei jeder Preisaenderung
+// fehlschlagen, an einer Stelle, die mit Provisionen nichts zu tun hat.
+const CURRENT_BLUEPRINT_CENTS = Math.round(AMOUNTS.blueprint * 100);
 
 let failed = 0;
 let checks = 0;
@@ -843,15 +858,21 @@ await bindCustomer("kunde9@example.com", p8);
 await bookCommission({
   ...intentFor("pi_p8_usd", "kunde9@example.com", p8.code),
   currency: "usd",
+  amount: CURRENT_BLUEPRINT_CENTS,
+  metadata: {
+    ...intentFor("pi_p8_usd", "kunde9@example.com", p8.code).metadata,
+    grossMinor: String(CURRENT_BLUEPRINT_CENTS),
+  },
 });
 ok(
   "ein USD-Verkauf zum selben Preis wird gebucht",
   (await affiliateStore.listCommissions(p8.email)).length === 1,
-  "die englische Storefront verkauft 18,95 USD zum selben Zahlenwert wie 18,95 EUR",
+  "die englische Storefront verkauft denselben Zahlenwert in USD wie in EUR",
 );
 ok(
   "und zwar mit demselben Betrag",
-  (await affiliateStore.listCommissions(p8.email))[0]?.amountCents === 190,
+  (await affiliateStore.listCommissions(p8.email))[0]?.amountCents ===
+    Math.round(CURRENT_BLUEPRINT_CENTS * 0.1),
 );
 
 // Sobald der Preis wirklich umgerechnet würde, greift die Bremse wieder.

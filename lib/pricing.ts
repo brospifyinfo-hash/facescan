@@ -19,9 +19,9 @@ export type PlanId = "raw" | "pro" | "blueprint";
 export const PLAN_ORDER: PlanId[] = ["raw", "pro", "blueprint"];
 
 export const AMOUNTS: Record<PlanId, number> = {
-  raw: 1.95,
-  pro: 5.95,
-  blueprint: 18.95,
+  raw: 0.95,
+  pro: 3.95,
+  blueprint: 11.95,
 };
 
 /**
@@ -41,13 +41,13 @@ export const SCAN_QUOTA: Record<PlanId, number> = {
 /**
  * Capability flags — the UI asks these, never the plan id directly.
  *
- * THE THREE TIERS, AS THE OWNER DEFINED THEM (19.08.2026):
+ * DIE DREI STUFEN, WIE DER BETREIBER SIE FESTGELEGT HAT (31.08.2026):
  *
- *   1.95  raw        the general analysis, nothing else
- *   5.95  pro        the full analysis plus the product recommendations
- *  18.95  blueprint  everything: the glow-up plan (action plan), the
- *                    four-week plan, products, the hairstyle studio, the
- *                    result image (projection), the AI deep-dive, the export
+ *   0,95  raw        die Analyse und die Produktempfehlungen
+ *   3,95  pro        alles aus raw plus den Glow-Up-Plan (actionPlan)
+ *  11,95  blueprint  alles: dazu der Vier-Wochen-Plan, das Frisuren-Studio,
+ *                    das Resultat-Bild (projection), die KI-Tiefenanalyse
+ *                    und der Export
  *
  * The card copy in the dictionaries has to match this table LINE FOR LINE —
  * they drifted apart once (pro advertised the four-week programme its own
@@ -55,12 +55,13 @@ export const SCAN_QUOTA: Record<PlanId, number> = {
  * refund waiting to happen.
  */
 export const CAPABILITIES = {
-  // 1.95 — the analysis, and nothing else.
+  // 0,95 — die Analyse UND die Produktempfehlungen. Die Empfehlungen lagen
+  // vorher eine Stufe höher; sie sind jetzt Teil des Einstiegs.
   raw: {
     metrics: true,
     actionPlan: false,
     history: false,
-    products: false,
+    products: true,
     simulation: false,
     monthly: false,
     hairstyle: false,
@@ -68,12 +69,12 @@ export const CAPABILITIES = {
     blueprint: false,
     download: false,
   },
-  // 5.95 — the analysis plus the product recommendations (and the account
-  // history to come back to; the unlock simulation is a moment, not a
-  // listed feature). The PLANS live in blueprint.
+  // 3,95 — alles aus der Basis plus den Glow-Up-Plan. "Glow-Up-Plan" ist in
+  // diesem Code actionPlan; der Vier-Wochen-Plan (monthly) ist etwas
+  // anderes und bleibt oben.
   pro: {
     metrics: true,
-    actionPlan: false,
+    actionPlan: true,
     history: true,
     products: true,
     simulation: true,
@@ -83,7 +84,7 @@ export const CAPABILITIES = {
     blueprint: false,
     download: false,
   },
-  // 18.95 — everything.
+  // 11,95 — alles.
   blueprint: {
     metrics: true,
     actionPlan: true,

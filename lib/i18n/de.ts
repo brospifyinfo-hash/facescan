@@ -235,30 +235,31 @@ export const de: Dict = {
   plans: {
     raw: {
       name: "Basis-Analyse",
-      tagline: "Die allgemeine Analyse",
+      tagline: "Analyse plus Produktempfehlungen",
       features: [
         "Die allgemeine Analyse deines Gesichts",
         "Alle 15 Messwerte mit Referenzbereich",
         "Deine Stärken & Optimierungsfelder",
+        "Produktempfehlungen mit Direktlink zum Produkt",
       ],
       excluded: [
-        "Produktempfehlungen mit Direktlink",
-        "Glow-Up-Plan & 4-Wochen-Plan",
-        "Frisuren-Studio & Resultat-Bild",
+        "Glow-Up-Plan",
+        "4-Wochen-Plan & Frisuren-Studio",
+        "Resultat-Bild & KI-Tiefenanalyse",
       ],
     },
     pro: {
       name: "Analyse Pro",
-      tagline: "Die volle Analyse plus Produktempfehlungen",
+      tagline: "Alles aus der Basis plus den Glow-Up-Plan",
       features: [
-        "Die komplette Analyse — alle 15 Messwerte im Detail",
-        "Persönliche Produktempfehlungen mit Direktlink zum Produkt",
+        "Alles aus der Basis-Analyse",
+        "Glow-Up-Plan — dein persönlicher Maßnahmenplan",
         "Scan-Verlauf in deinem Konto",
       ],
       excluded: [
-        "Glow-Up-Plan & 4-Wochen-Plan",
+        "4-Wochen-Plan",
         "Frisuren-Studio & Resultat-Bild",
-        "KI-Tiefenanalyse",
+        "KI-Tiefenanalyse & PDF-Export",
       ],
     },
     blueprint: {
@@ -266,9 +267,7 @@ export const de: Dict = {
       tagline: "Alles drin: Pläne, Frisur, Resultat-Bild",
       features: [
         "Alles aus Basis & Pro",
-        "Glow-Up-Plan — dein persönlicher Maßnahmenplan",
         "4-Wochen-Plan, Woche für Woche",
-        "Produktempfehlungen mit Direktlink zum Produkt",
         "Frisuren-Studio für deine Gesichtsform",
         "Dein Resultat-Bild — so könntest du aussehen",
         "KI-Tiefenanalyse als Dokument + PDF-Export",
